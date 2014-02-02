@@ -1,0 +1,16 @@
+<?xml version = '1.0' encoding = 'utf-8'?>
+<TestScenario>
+<RunList after_run_pause="5000">
+   <item script="./start_fg.sh" args=""  silent_mode="1" chdir="../../Utils/SharedMemory/" ignore_terminated="0" ignore_run_failed="0" name="SharedMemory"/>
+</RunList>
+<TestList>
+	<test name="Test N1 (msleep)" ignore_failed="1">
+	    <check test="event" id="101" val="2" timeout="8000" check_pause="500"/>
+	 	<action name="set" id="101@LocalhostNode" val="0"/>
+		<action name="msleep" msec="5000"/>
+		<action name="set" id="101@LocalhostNode" val="1"/>
+		<check test="TRUE" id="101@LocalhostNode"/>
+		<check test="event" id="101" val="2" timeout="15000" check_pause="2000"/>		
+	</test>
+</TestList>
+</TestScenario>

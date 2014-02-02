@@ -1,0 +1,324 @@
+<?xml version="1.0"?>
+<interface>
+  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-naming-policy project-wide -->
+  <object class="GtkWindow" id="window1">
+    <child>
+      <object class="GtkHBox" id="main">
+        <property name="visible">True</property>
+        <child>
+          <object class="GtkCheckButton" id="cbtn">
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="border_width">5</property>
+            <property name="use_action_appearance">False</property>
+            <property name="draw_indicator">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTable" id="modbus_box">
+            <property name="visible">True</property>
+            <property name="n_rows">2</property>
+            <property name="n_columns">5</property>
+            <property name="column_spacing">4</property>
+            <child>
+              <object class="GtkLabel" id="lblTest1">
+                <property name="visible">True</property>
+                <property name="xpad">6</property>
+                <property name="label" translatable="yes">mbreg</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="y_options">GTK_SHRINK</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="lblTest2">
+                <property name="visible">True</property>
+                <property name="xpad">6</property>
+                <property name="label" translatable="yes">mbaddr</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="y_options">GTK_SHRINK</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="lblTest3">
+                <property name="visible">True</property>
+                <property name="xpad">6</property>
+                <property name="label" translatable="yes">nbit</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="right_attach">4</property>
+                <property name="y_options">GTK_SHRINK</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="lblTest4">
+                <property name="visible">True</property>
+                <property name="xpad">6</property>
+                <property name="label" translatable="yes">mbfunc</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="right_attach">3</property>
+                <property name="y_options">GTK_SHRINK</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="lblTest5">
+                <property name="visible">True</property>
+                <property name="xpad">6</property>
+                <property name="label" translatable="yes">vtype</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="right_attach">5</property>
+                <property name="y_options">GTK_SHRINK</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="mbreg">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">&#x25CF;</property>
+                <property name="invisible_char_set">True</property>
+              </object>
+              <packing>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="mbfunc">
+                <property name="visible">True</property>
+                <property name="model">liststore2</property>
+                <child>
+                  <object class="GtkCellRendererText" id="cellrenderertext2"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="right_attach">3</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+                <property name="y_options">GTK_EXPAND</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="vtype">
+                <property name="visible">True</property>
+                <property name="model">liststore3</property>
+                <child>
+                  <object class="GtkCellRendererText" id="cellrenderertext3"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="right_attach">5</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+                <property name="y_options">GTK_EXPAND</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="mbaddr">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">&#x25CF;</property>
+                <property name="invisible_char_set">True</property>
+                <property name="adjustment">adjustment1</property>
+                <property name="numeric">True</property>
+                <property name="wrap">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="nbit">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">&#x25CF;</property>
+                <property name="invisible_char_set">True</property>
+                <property name="adjustment">adjustment2</property>
+                <property name="numeric">True</property>
+                <property name="wrap">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="right_attach">4</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHBox" id="val_box">
+            <child>
+              <object class="GtkLabel" id="lblTest">
+                <property name="visible">True</property>
+                <property name="xpad">6</property>
+                <property name="label" translatable="yes">=</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="val">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">&#x25CF;</property>
+                <property name="invisible_char_set">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkListStore" id="liststore2">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name mbfunc -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">0x01 ReadCoilStatus</col>
+        <col id="1" translatable="yes">1</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">0x02 ReadInputStatus</col>
+        <col id="1" translatable="yes">2</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">0x03 ReadOutputRegisters</col>
+        <col id="1" translatable="yes">3</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">0x04 ReadInputRegisters</col>
+        <col id="1" translatable="yes">4</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">0x05 ForceSingleCoil</col>
+        <col id="1" translatable="yes">5</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">0x06 WriteOutputSingleRegister</col>
+        <col id="1" translatable="yes">6</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">0x0F ForceMultipleCoils</col>
+        <col id="1" translatable="yes">15</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">0x10 WriteOutputRegisters</col>
+        <col id="1" translatable="yes">16</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore3">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name type -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">signed (&#x441;&#x43B;&#x43E;&#x432;&#x43E;, 2 &#x431;&#x430;&#x439;&#x442;&#x430;)</col>
+        <col id="1" translatable="yes">signed</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">unsigned (&#x431;&#x435;&#x437;&#x43D;&#x430;&#x43A;&#x43E;&#x432;&#x43E;&#x435; &#x441;&#x43B;&#x43E;&#x432;&#x43E;)</col>
+        <col id="1" translatable="yes">unsigned</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">int  (&#x446;&#x435;&#x43B;&#x43E;&#x435; 4 &#x431;&#x430;&#x439;&#x442;&#x430;)</col>
+        <col id="1" translatable="yes">I2</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">unsigned int (&#x431;&#x435;&#x437;&#x437;&#x43D;&#x430;&#x43A;&#x43E;&#x432;&#x43E;&#x435; &#x446;&#x435;&#x43B;&#x43E;&#x435; 4 &#x431;&#x430;&#x439;&#x442;&#x430;)</col>
+        <col id="1" translatable="yes">U2</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">float (4 &#x431;&#x430;&#x439;&#x442;&#x430;)</col>
+        <col id="1" translatable="yes">F2</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">double (float 8 &#x431;&#x430;&#x439;&#x442;)</col>
+        <col id="1" translatable="yes">F4</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">byte</col>
+        <col id="1" translatable="yes">byte</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkAdjustment" id="adjustment1">
+    <property name="upper">254</property>
+    <property name="value">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment2">
+    <property name="lower">-1</property>
+    <property name="upper">16</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+</interface>

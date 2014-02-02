@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+	<RunList>
+		<item ignore_run_failed="0" ignore_terminated="0" script="./scriptXX.sh"/>
+	</RunList>
+	<TestList logfile="result.test.failedrun.txt" logfile_trunc="1">
+		<test ignore_failed="1" name="Test N31" num="1">
+			<action id="101 " name="set" val="0"/>
+			<check id="101" test="false"/>
+			<action id="101" name="set" val="1"/>
+			<check id="101" test="true"/>
+		</test>
+		<test ignore_failed="1" name="Test N32" num="2">
+			<action id="101 " name="set" val="0"/>
+			<check id="101" test="false"/>
+			<action id="101" name="set" val="1"/>
+			<check id="101" test="true"/>
+		</test>
+		<test ignore="1" name="Test N33 (ignore)" num="3">
+			<action id="101 " name="set" val="0"/>
+			<check id="101" test="false"/>
+		</test>
+	</TestList>
+</TestScenario>

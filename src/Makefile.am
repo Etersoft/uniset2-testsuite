@@ -1,0 +1,2 @@
+SUBDIRS = guiTestPlayer
+#TestEditor  cliTestPlayer

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+	<TestList logfile="RESFILE" logfile_trunc="1">
+		<test name="link replace test" num="1">
+			<action id="MyName1" name="set" val="0"/>
+			<check id="MyName1" test="false"/>
+			<action id="MyName1" name="set" val="1"/>
+			<check id="MyName1" test="true"/>
+		</test>
+		<test name="link replace test 2" num="2">
+			<action id="MyName2" name="set" val="0"/>
+			<check id="MyName2" test="false"/>
+			<action id="MyName2" name="set" val="1"/>
+			<check id="MyName2" test="true"/>
+		</test>
+		<test name="Global replace" num="3">
+			<action id="MyGlobalVar" name="set" val="1"/>
+			<check id="MyGlobalVar" test="true"/>
+			<action id="MyGlobalVar" name="set" val="0"/>
+			<check id="MyGlobalVar" test="false"/>
+		</test>
+		<test name="Test replace" num="4">
+			<action id="MyTestVar" name="set" val="0"/>
+			<check id="MyTestVar" test="false"/>
+		</test>
+		<test name="REPLACE_NAME" num="5">
+			<action id="MyTestVar" name="ACT" val="0"/>
+			<check id="MyTestVar" test="TEST"/>
+		</test>
+	</TestList>
+</TestScenario>

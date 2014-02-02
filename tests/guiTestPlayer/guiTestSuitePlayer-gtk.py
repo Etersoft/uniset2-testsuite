@@ -1,0 +1,1 @@
+../../src/guiTestPlayer/guiTestSuitePlayer-gtk.py

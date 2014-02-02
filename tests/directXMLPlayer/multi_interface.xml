@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+	<RunList after_run_pause="5000">
+		<item after_run_pause="0" chdir="../../Utils/SharedMemory/" ignore_run_failed="1" ignore_terminated="1" name="SharedMemory" script="./start_fg.sh" silent_mode="1"/>
+		<item after_run_pause="0" chdir="../../Utils/SharedMemory/" ignore_run_failed="1" ignore_terminated="1" name="SharedMemory2" script="./start2_fg.sh" silent_mode="0"/>
+	</RunList>	
+    <Config>
+        <aliases>
+            <item alias="c1" confile="configure.xml"/>
+            <item alias="c2" mbslave="localhost:2049" type="modbus"/>
+        </aliases>                                                                                                                                                                  
+    </Config> 
+	<TestList logfile="result.multitest.txt" logfile_trunc="1">
+		<test ignore_failed="1" name="Test N21" num="1">
+			<action id="Test_DI " name="set" val="1" config="c1"/>
+			<check id="Test_DI" test="equal" val="1" config="c1"/>
+			<check test="true" id="0x10" config="c2"/> 
+		</test>
+	</TestList>
+</TestScenario>

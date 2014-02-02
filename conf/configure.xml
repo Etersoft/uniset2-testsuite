@@ -1,0 +1,80 @@
+<?xml version = '1.0' encoding = 'utf-8'?>
+<UTestSuite id="">
+    
+	<!-- Общие параметры по UniSet -->
+    <UniSet>
+        <LocalNode name="LocalhostNode"/>
+        <RootSection name="TESTSUITE"/>
+        <ServicesSection name="Services"/>
+        <NameService host="localhost" port="2809"/> 
+        <CountOfNet name="1"/>
+        <RepeatCount name="2"/>
+        <RepeatTimeoutMS name="10"/>
+        <ImagesPath name="images"/>
+        <SizeOfMessageQueue name="100000"/>
+        
+        <WatchDogTime name="0"/> <!-- [мин] -->
+        <PingNodeTime name="0"/> <!-- [сек] -->
+        <AutoStartUpTime name="1"/> <!-- [сек] -->
+        <DumpStateTime name="10"/><!-- [сек] -->
+        <SleepTickMS name="500"/><!-- [мсек] -->
+        <LocalIOR name="0"/> <!-- 1 для реальной системы (подменяется на 1 при сборке пакета); 0 - использование omniNames -->
+        
+        <UniSetDebug name="unideb" levels="" file=""/>
+        
+        <!-- Если не указано, то считается текущий каталог -->
+        <ConfDir name=""/>
+        <DataDir name="./"/>
+        <BinDir name=""/>
+        <LogDir name=""/>
+        <DocDir name=""/>
+        <LockDir name=""/>
+    </UniSet>
+    
+    <Services/>
+    
+    <SharedMemory1 name="SharedMemory1" shmID="LSM" time_msec="1000"/>
+    <HeartBeatTime name="HeartBeatTime" time_msec="1000"/>
+    
+    <ObjectsMap idfromfile="1">
+        
+        <nodes port="2809">
+            <item id="3001" name="LocalhostNode" alias="" textname="Контроллер N1" ip="127.0.0.1" infserver="" dbserver=""/>
+        </nodes>
+        
+        <!-- ************************ Датчики ********************** -->
+        <sensors name="Sensors" section="Sensors" >
+            <item id="101" name="Test_DI" iotype="DI" default="0" textname="Test DI"/>
+            <item id="102" name="ThreshHi" iotype="DI" textname="Threshold high"/>
+            <item id="103" name="ThreshLo" iotype="DI" textname="Threshold low"/>
+            <item id="104" name="Test_AI" iotype="AI" textname="Test AI"/>
+            <item id="107" name="Start_Timer_DI" iotype="DI" default="0" textname="Start Timer"/>
+            <item id="105" name="TSCPU_Confirm_S" iotype="DI" textname="Квитирование ЦПУ"/>
+            <item id="106" name="pulsar" textname="xxpulsar" iotype="DI"/>
+            <item id="109" name="TSCPU_Confirm_VeryLongName_S" iotype="AI" textname="test long name"/>
+        </sensors>
+            
+            
+        <thresholds name="thresholds">
+        </thresholds>
+            
+        <!-- ******************* Идентификаторы контроллеров ***************** -->
+        <controllers name="Controllers" section="Controllers" >
+              <item id="21605" name="SharedMemory1" />
+        </controllers>
+            
+        <!-- ******************* Идентификаторы сервисов ***************** -->
+        <services name="Services" section="Services">
+        </services>
+            
+        <!-- ******************* Идентификаторы объектов ***************** -->
+        <objects name="objects" section="Objects">
+                <item id="21607" name="TestProc"/>
+        </objects>
+            
+    </ObjectsMap>
+        
+        <messages name="messages" idfromfile="1">
+        </messages>
+        
+</UTestSuite>

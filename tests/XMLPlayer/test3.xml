@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+	<TestList logfile="result.test3.txt" logfile_trunc="1">
+		<test ignore_failed="1" name="Test N31" num="1">
+			<action id="101 " name="set" val="0"/>
+			<check id="101" test="false"/>
+			<action id="101" name="set" val="1"/>
+			<check id="101" test="true"/>
+		</test>
+		<test ignore_failed="1" name="Test N32" num="2">
+			<action id="101 " name="set" val="0"/>
+			<check id="101" test="false"/>
+			<action id="101" name="set" val="1"/>
+			<check id="101" test="true"/>
+		</test>
+		<test ignore="1" name="Test N33 (ignore)" num="3">
+			<action id="101 " name="set" val="0"/>
+			<check id="101" test="false"/>
+		</test>
+	</TestList>
+</TestScenario>

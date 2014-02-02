@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+	<Config>
+		<aliases>
+			<item alias="c1" confile="configure.xml"/>
+			<item alias="c2" confile="configure2.xml"/>
+		</aliases>
+	</Config>
+	<TestList logfile="result.test6.txt" logfile_trunc="1">
+		<test config="c2" ignore_failed="1" name="Test N61" num="1">
+			<action id="101 " name="set" val="0"/>
+			<check id="101" test="false"/>
+			<action config="c1" id="101" name="set" val="1"/>
+			<check config="c1" id="101" test="true"/>
+		</test>
+	</TestList>
+</TestScenario>

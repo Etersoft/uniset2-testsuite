@@ -1,0 +1,592 @@
+/*! \mainpage Краткое описание принципов работы uniset-testsuite
+
+   - \ref uts_Common
+   - \ref uts_TestScenario
+   - \ref uts_Scenario
+   - \ref uts_unisetID_Format
+   - \ref uts_modbusID_Format
+   - \ref uts_Test
+   - \ref uts_Actions
+		- \ref uts_Actions_SET
+		- \ref uts_Actions_MULTISET
+		- \ref uts_Actions_MSLEEP
+		- \ref uts_Actions_SCRIPT
+
+   - \ref uts_Check
+		- \ref uts_Check_FALSE
+		- \ref uts_Check_TRUE
+		- \ref uts_Check_EQUAL
+		- \ref uts_Check_GREAT
+		- \ref uts_Check_LESS
+		- \ref uts_Check_MULTICHECK
+		- \ref uts_Check_LINK
+		- \ref uts_Check_OUTLINK
+   - \ref uts_TestParams
+   - \ref uts_Templates
+   - \ref uts_Nodes
+   - \ref uts_Aliases
+   - \ref uts_UseAliases
+   - \ref uts_Modbus
+   - \ref uts_multiInterface_Scenario
+   - \ref uts_RunList
+   - \ref uts_RunParam
+   - \ref uts_Editor
+
+	\section uts_Common Общая часть
+     В самом общем виде процесс тестирования можно сформулировать как "подать некоторое воздействие на систему и проверить реакцию".
+     \b uniset-testsuite предназначен для автоматизации этого процесса. При этом система тестирования расчитана на взаимодействие
+     с тестируемой системой по цифровому протоколу.
+     
+     На данный момент поддерживается два интерфейса:
+     - uniset
+     - MobusTCP
+     
+    Подача тестовых воздействий и проверка реакции записывается в виде тестового сценария, который можно проигрывать сколько угодно раз.
+
+
+   \section uts_TestScenario Тестовый сценарий.
+   В общем случае сценарий может быть написан в любом виде. Главное при этом, чтобы был для этого "вида" написан "проигрыватель".
+В текущей версии реализовано проигрывание сценариев написанных в формате xml.
+
+   \section uts_Scenario Сценарий
+
+   Сценарий представляет из себя xml-файл с инструкциями. При этом все тесты необходимо распологать между тегами \<TestList>..\</TestList>. 
+На данный момент поддерживается два вида сценариев:
+ - uniset
+ - modbus
+ 
+ Тип сценария записывается в теге \b \<TestList type="..."> ("modbus" или "uniset"). Эти два вида различаются только способом задания параметров.
+
+ Отдельно можно указывать тип для конкретной конфигурации. См. \ref uts_multiInterface_Scenario.
+
+ Ниже приведён пример записи uniset-сценария из двух тестов.
+\code
+<?xml version = '1.0' encoding = 'utf-8'?>
+<TestScenario>
+<Config>
+...
+</Config>
+<TestList type="uniset" logfile="result.test2.txt" logfile_trunc="1">
+	<test num="2" name="DG1 Running">
+		<check test="equal" id="SES1_CtlMode_AS" val="2" comm="SES1: mode=PultControl"/>
+		<action name="set" id="DG1_Start_S" val="1" reset_time="300" val2="0" comm="start DG1"/>
+		<check test="event" id="SEES1_State_AS" val="9" comm="SES1: state=Running" timeout="15000" check_pause="200"/>
+		<check test="true" id="DG1_LampON_C"/>
+		<action name="msleep" msec="2000" />
+		<check test="false" id="DG1_Start_C"/>
+		<check test="false" id="DG1_Stop_C"/>
+	</test>
+	<test num="3" name="QG1 ON">
+		<check test="equal" id="SEES1_State_AS" val="9" comm="SES1: state=Running"/>
+		<action name="set" id="QG1_On_S" val="1" reset_time="300" val2="0" comm="QG1 on command"/>
+		<check test="event" id="QG1_State_AS" val="1" timeout="8000" check_pause="500" comm="QG1: state=ON"/>
+		<check test="equal" id="SEES1_State_AS" val="1" comm="SES1: state=ON"/>
+		<check test="true" id="QG1_LampON_C" comm="QG1: lamp ON"/>
+		<action name="msleep" msec="2000" />
+		<check test="false" id="QG1_On_C" comm="QG1: on command OFF"/>
+		<check test="false" id="QG1_Off_C" comm="QG1: off command OFF"/>
+		<check test="true" id="SEES1_NotAloneWorking_C"/>
+    </test>
+</TestList>
+</TestScenario>
+\endcode
+
+Пример modbus-сценария:
+\code
+<?xml version = '1.0' encoding = 'utf-8'?>
+<TestScenario>
+<Config>
+  <aliases>
+	<item default="1" alias="c1" mbslave="localhost:2048"/>
+	<item alias="c2" mbslave="localhost:2049"/>
+  </aliases>
+</Config>
+<RunList after_run_pause="200">
+	<item script="./start_mbslave1.sh" args=""  silent_mode="1" chdir="../../Utils/Modbus/" ignore_terminated="0" ignore_run_failed="0" name="MBSlave1"/>
+    <item script="./start_mbslave2.sh" args="" chdir="../../Utils/Modbus/" ignore_terminated="0" ignore_run_failed="0" name="MBSlave2"/>
+</RunList>
+<TestList logfile="result.txt" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101" type="modbus">
+	<test name="Test simple read" ignore_failed="1">
+		<action name="set" id="0x10=2"/>
+		<check test="true" id="0x10"/>
+	 	<check test="true" id="0x1@0x02:0x02" config="c2"/>
+	</test>
+	<test name="Test simple write" ignore_failed="1">
+		<action name="set" id="0x25" val="10"/>
+		<action name="set" id="0x25:0x10" val="10"/>
+		<action name="set" id="0x25@0x02" val="10" config="c2"/>
+		<action name="set" id="0x25@0x02:0x05" val="10" config="c2"/>
+	</test>
+	<test name="Test other 'check'" ignore_failed="1">
+		<check test="event" id="0x20" val="0x20" timeout="1000" check_pause="100"/>
+		<check test="equal" id="0x20" val="0x20"/>
+		<check test="multicheck" id="0x25=0x25,0x20:04=0x20,0x19:03=0x19" />
+	</test>
+	<test name="Test 'great'" ignore_failed="1">
+		<action name="set" id="109" val="10"/>
+		<check test="great" id="109" val="5" />
+		<check test="great" id="109" val="10" />
+	</test>
+	<test name="Test 'less'" ignore_failed="1">
+		<action name="set" id="109" val="10"/>
+		<check test="less" id="109" val="11" />
+		<check test="less" id="109" val="10" />
+	</test>
+	<test name="Test other 'action'" ignore_failed="1">
+		<action name="multiset" set="20@2=1,21@0x02:5=1,103@2:0x10=12" config="c2"/>
+	</test>
+</TestList>
+</TestScenario>
+\endcode
+
+ При этом для всего сценария можно задать следующие параметры:
+
+ \b logfile="filname" - задаёт имя файла куда будет писатся лог прохождения теста
+
+ \b logfile_trunc="1" - "1" означает каждый раз писать файл сначала (очищать перед записью)
+
+ \b notimestamp="1"  - "1" означает не выводить дату и время при прохождении тестов
+
+ \b replace="var1:val1,var2:val2,.." - 'Список замен'. Смотри раздел \ref uts_Templates
+   
+   \section uts_unisetID_Format Формат записи поля 'id' в uniset-сценарии
+   
+   Поддерживаются следующие формы записи идентификатора датчика:
+
+   \a id="100", \a id="SensorName", \a id="100@LocalhostNode", \a id="SensorName@Host2"
+
+    Т.е. задаётся пара - \a "идентификатор@узел", при этом в качестве идентификатора узла можно задавать
+   как числовое значение, так и название (в любом сочетании).
+   \note Если идентификатор узла не задан, то будет использован LocalNode заданный в соответствующем конфигурационном файле.
+
+   \section uts_modbusID_Format Формат записи поля 'id' в modbus-сценарии
+   
+   Поддерживается следующая форма записи регистра опроса: \a "mbreg@mbaddr:mbfunc:nbit:vtype",
+   где
+   \b mbreg - регистр (для опроса или записи)
+
+   Остальные параметры являются не обязательными и имеют значения по умолчанию.
+   
+   \b mbaddr - адрес устройства на шине. По умолчанию: 0x01
+
+   \b mbfunc - функция опроса или записи. По умолчанию для опроса используется mbfunc=0x04, а для записи mbfunc=0x06
+
+   \b nbit   - номер бита [0...15]. Для случая, если опрос ведётся функцией чтения "слова", а при этом данные хранятся в каком-то бите.
+             По умолчанию nbit=-1 - что означает не использовать.
+   
+   \b vtype  - тип запрашиваемого значения, задаётся строковым значением. По умолчанию "signed".
+
+   Все поддерживаемые типы описаны в include/libuniset/extensions/VTypes.h.
+\code
+   	/*! Тип переменной для Modbus[RTU|TCP] */
+		enum VType
+		{
+			vtUnknown,
+			vtF2,		// двойное слово float(4 байта). В виде строки задаётся как "F2".
+			vtF4,		// 8-х байтовое слово (double). В виде строки задаётся как "F4".
+			vtByte,		// байт.  В виде строки задаётся как \b "byte".
+			vtUnsigned,	// беззнаковое целое (2 байта).  В виде строки задаётся как "unsigned".
+			vtSigned,	// знаковое целое (2 байта). В виде строки задаётся как "signed".
+			vtI2,		// целое (4 байта). В виде строки задаётся как "I2".
+			vtU2		// беззнаковое целое (4 байта). В виде строки задаётся как "U2".
+		};
+\endcode
+
+   При этом для функций записи регистра используются только поля \b mbreg, \b mbaddr, \b mbfunc.
+   Поля \b mbaddr, \b mbfunc так же являются не обязательными.
+
+	
+   \section uts_Test Тесты
+   
+   Каждый тест заключается в теги \<test>...\</test>. Все тесты проигрываются последовательно.
+
+   Все взможные действия деляться на два вида
+   - \b "action" - это действия по имитации действий
+   - \b "check"  - это проверка реакции тестируемой системы
+   
+   \subsection uts_Actions "Действия"(actions)
+   
+   Доступны следующие виды "действий":
+   - 1. \b set        - выставление значения
+   - 2. \b multiset   - выставление нескольких значений
+   - 3. \b msleep     - пауза
+      
+   \subsection uts_Actions_SET 1. 'SET'. Выставление значения.
+   Выставление значения может быть двух видов. Просто выставить и выставить с автоматическим сбросом через заданное время.
+   Ниже показан пример записи обоих форм "set".
+\code   
+   <action name="set" id="101" val="0"/>
+   <action name="set" id="TestSensor" val="0"/>
+   <action name="set" id="100" val="0" reset_time="300" val2="1"/>
+\endcode
+  Где id - можно задавать, как число или как имя.
+  reset_time - Время в мсек. через которое датчик примет значение заданное параметром val2.
+  \note Следует иметь ввиду, что сброс значения происходит параллельно работе теста.
+  Т.е. тест продолжается сразу после выставления значения.
+   
+   \subsection uts_Actions_MULTISET 2. 'MULTISET'. Выставление сразу нескольких значений.
+     Датчики и их значения перечисляются через запятую. И записываются в формате "id1=val,id2@host2=val2,...".
+\code   
+   <action name="multiset" set="101=1,102=3,123=4"/>
+   <action name="multiset" set="TestSensor=1,TestSensor2@Node4=23,340=5"/>
+\endcode
+  Где также id - можно задавать, числом или как именем.   
+   
+   \subsection uts_Actions_MSLEEP 3. 'MSLEEP'. Пауза.
+     Реализация паузы в милесекундах.
+\code   
+   <action name="msleep" msec="1000"/>
+\endcode
+
+	\subsection uts_Actions_SCRIPT 4. 'SCRIPT'. Вызов внешнего скрипта.
+     Вызов внешнего скрипта. Скрипт должен возвращать \b 0 - в случае \b успеха и "не ноль" - в любом другом случае.
+	При вызове скрипта никаких проверок не производиться, поэтому требуется его аккуратное(вдумчивое) использование,
+	чтобы исключить возможные зависания. Помимо этого скрипт САМ должен обеспечивать корректное освобождение ресурсов после своей работы
+	(например уничтожать свои дочерние процессы, если он их порождал во время своей работы, корркетно завершать работу с какими-либо устройствами
+	и т.п.)
+	
+	По умолчанию вывод на экран отключён. Если требуется увидеть stdout и stderr, то можно задать параметр \b show_output="1".
+
+\code   
+   <action name="script" script="command for run script" show_output="1"/>
+\endcode 
+
+
+  \section uts_Check "Проверки"(checks)
+  
+  Доступны следующие виды проверок:
+
+  - 1. false
+  - 2. true
+  - 3. equal
+  - 4. great
+  - 5. less
+  - 6. multicheck
+  - 7. link
+  - 8. outlink
+
+ \note Для всех видов тестов (кроме link,outlink) разрешено использование полей \b timeout и \b check_pause.
+   - \b  timeout - задаёт время ожидания в мсек.
+   - \b check_pause - задаёт паузу между проверками значения.
+
+ \note Если \a timeout > 0, то провека будет повторяться каждые \a check_pause миллисекунд, пока не будет успешна, или
+пока не истечёт время ожидания (\a timeout).
+  
+  \subsection uts_Check_FALSE 1. 'FALSE'. Проверка ложности значения.
+\code
+   <check test="false" id="101"/>
+   <check test="false" id="CheckSensorName"/>
+\endcode
+   При этом если указывается идентификатор(или имя) аналогового датчика. То происходит сравнение с нулём (0).
+  
+  \subsection uts_Check_TRUE 2. 'TRUE'. Проверка истинности значения.
+\code
+   <check test="true" id="101"/>
+   <check test="true" id="CheckSensorName"/>
+\endcode
+   При этом если указывается идентификатор(или имя) аналогового датчика. То происходит сравнение "не ноль"
+  
+  \subsection uts_Check_EQUAL 3. 'EQUAL'. Проверка условия эквивалетности значения.
+\code
+   <check test="equal" id="101" val="1"/>
+   <check test="equal" id="CheckSensorName" val="10"/>
+\endcode
+  
+  \subsection uts_Check_GREAT 4. 'GREAT'. Проверка условия, что значение больше (или равно) заданному
+\code
+   <check test="great" id="101" val="1"/>
+   <check test="great" id="CheckSensorName" val="10"/>
+\endcode
+  
+  \subsection uts_Check_LESS 5. 'LESS'. Проверка условия, что значение меньше (или равно) заданному
+\code
+   <check test="less" id="101" val="1"/>
+   <check test="less" id="CheckSensorName" val="10"/>
+\endcode
+
+  \subsection uts_Check_MULTICHECK 6. 'MULTICHECK'. Проверка сразу нескольких условий.
+\code
+   <check test="multicheck" id="101=1,CheckSensorName=10,CheckSensorName2=23,102=0"/>
+\endcode
+
+  \subsection uts_Check_LINK 7. 'LINK'. Ссылка на другой тест в данном файле.
+	\a link - это ссылка на тест находящийся в этом же файле. При этом чтобы сослаться на тест, необходимо указать два поля
+	prop=value. Т.е. будет осуществлён поиск теста у которого prop="value"
+    Ниже представлен пример, в котором в тесте 22 идёт ссылка на тест 21, но не по полю 'name', а по полю num="1".
+\code
+	<test num="1" name="Test N21">
+	 	<action name="set" id="101 " val="0"/>
+		<check test="false" id="101" />
+		<action name="set" id="101" val="1"/>
+		<check test="true" id="101" />
+	</test>
+	<test num="2" name="Test N22" ignore_failed="1">
+	 	<action name="set" id="101 " val="0"/>
+		<check test="link" link="num=1"/>
+	</test>
+\endcode
+   
+  \subsection uts_Check_OUTLINK 8. 'OUTLINK'. Ссылка на другой файл.
+	\a outlink - позволяет ссылаться на тест в другом файле. Формат записи аналогичен \a 'link' только добавляется задание файла.
+\code
+	<test num="2" name="Test N22" ignore_failed="1">
+		<check test="outlink" file="exttestfile.xml" link="num=1"/>
+		<check test="outlink" file="exttestfile.xml" link="ALL" ignore_run_list="1"/>
+	</test>
+\endcode
+   Специальное слово \b \a "ALL" означает ссылку на весь файл (все тесты). Т.е сценарий в файле \a exttestfile.xml будет
+   "проигрываться" полностью (а не конкретный тест).
+
+	\b ignore_run_list - [0,1] игнорировать (или нет) список запускаемых процессов (\<RunList>)
+   
+   
+   \section uts_TestParams Параметры тестов
+   
+   Сами тесты позволяют задавать следующий свойства:
+   ignore_failed="1" - Не останавливаться в случае "провала" теста. По умолчанию тестирование будет прервано.
+   ignore="1" - Пропустить данный тест при проверке.
+   
+   Помимо этого каждому тесту можно отдельно указать файл для записи лога. Эти настройки "перекрывают" глобальные.
+
+   \b logfile="filname" - задаёт имя файла куда будет писатся лог прохождения теста
+
+   \b logfile_trunc="1" - "1" означает каждый раз писать файл сначала (очищать перед записью)
+
+\code
+	<test num="1" name="Test N21"  ignore_failed="1">
+	 	<action name="set" id="101 " val="0"/>
+		<check test="false" id="101" />
+		<action name="set" id="101" val="1"/>
+		<check test="true" id="101" />
+	</test>
+	<test num="2" name="Test N22">
+	 	<action name="set" id="101 " val="0"/>
+		<check test="link" link="num=1"/>
+	</test>
+\endcode
+
+  \section uts_Templates Шаблоны в тестах
+  
+  В uniset-testsuite встроен механизм позволяющий делать автоматические замены. Определяется он при помощи свойства
+  replace="var1:val1,var2:val2,..". Заменять можно любое свойство относящееся к стандартным (обрабатываемым плээром),
+  включая настроечные поля (test,id,link,val,name,ignore_failed,logfile,logfile_trunc и т.п.) и даже свойство replace (!)
+  \note Следует иметь ввиду что происходит замена той части слова которая совпала с одним из "ключей". При этом далее
+замене подвергается уже "модифицированное" предыдущей заменой слово.
+
+  Поле \a 'replace' - задаёт список пар для замены, через запятую. Сами пары записываются в виде \a "слово:замена".
+
+  Список замены имеет область видимости в зависимости от места в котором он был задан. Имеется три облати видимости:
+  
+  1. Глобальная область видимости.
+     Задаётся в секции \<TestList>. Пример:
+\code
+...
+<TestList logfile="result.test2.txt" logfile_trunc="1" global_replace="MyGlobalVar:val2,MyGlobalVar2:val2">
+...
+\endcode
+  
+  2. Область видимости для конкретного теста.
+     Задаётся в теге \<test>. Пример:
+\code
+	<test num="1" name="Test replace"  ignore_failed="1" replace="MyTestVar1:val1">
+	 ...
+	</test>
+\endcode
+  3. Область видимости для тестов 'link' и 'outlink'. Пример:
+\code
+	<test name="Test 1"  ignore_failed="1">
+		<check test="outlink" file="exttestfile.xml" link="num=1" replace="MyVariable1:101,MyVariable2:102"/>
+	</test>
+\endcode
+  А вызываемый тест при этом:
+\code
+	<test num="1" name="Test replace"  ignore_failed="1">
+	 	<action name="MyVariable10" id="MyVariable1" val="0"/>
+		<check test="false" id="MyVariable1" />
+		<action name="set" id="MyVariable2" val="MyVariable3"/>
+		<check test="true" id="MyVariable2" />
+	</test>
+\endcode
+
+  \note Следует иметь ввиду. Локальная область видимости "перекрывает" глобальную.
+ 
+  \section uts_Nodes Работа с удалёнными узлами
+  
+  Собственно работа заложена в способе задания id. См. "Формат записи поля 'id'".
+  Т.е. при задании идентификатора узла \a "id@nodename", будет идти обращение к узлу 'node'
+  в соответствии с секцией \<nodes> в конфигурационном файле.
+  
+  \section uts_Aliases Работа с несколькими конфигурационными файлами одновременно (для uniset-сценариев)
+  
+  Система поддерживает работу сразу с несколькими конфигурационными файлами. Это необходимо в случае
+  работы теста сразу с несколькими "взаимодействующими системами". Например команды подаются на "стенд"
+  (со своим configure.xml и списком узлов), а проверяются датчики в тестируемой системе (со своим configure
+  и списком узлов).
+     Существует несколько способов задания списка файлов
+  
+  1. В файле сценария в секции \<Config>\<aliases>
+\code
+<?xml version = '1.0' encoding = 'utf-8'?>
+<TestScenario>
+<Config>
+<aliases>
+	<item alias="default" confile="configure.xml"/>
+	<item alias="c1" confile="configure1.xml"/>
+	<item alias="c2" confile="configure2.xml"/>
+  </aliases>
+</Config>
+<TestList>
+...
+</TestList>
+</TestScenario>
+\endcode
+     В данном случае задаётся три файла, и им присваиваются короткие имена.
+     
+  2. Второй способ, в параметрах командной строки
+     При запуске uniset-testsuite-xmlplayer --confile configure.xml,c1@configure1.xml,c2@configure2.xml,...
+
+  Первый файл в списке устанавливается по умолчанию, если не будет указан в файле теста другой файл.
+
+  \note Следует иметь ввиду, что списки указанные в командной строке и в файле "складываются".
+  \note Если название совпадает, приоритетным является командная строка.
+     
+  \section uts_UseAliases Указание используемого конфигурационного файла в тестах
+  
+  В системе используется четыре области видимости для задания файла.
+  1. Глобальная
+     Используется default - файл. См. выше.
+  2. Область Файла с тестами
+\code
+	<TestList config="c1">
+     ...
+     </TestList>
+\endcode  
+  3. Область конкретного теста
+    Распространяется на \<test>. Задаётся параметром 'config'. При этом указывается alias.
+    Пример записи:
+\code
+	<test num="1" name="Test replace"  ignore_failed="1" config="c1">
+     ...
+     </test>
+\endcode
+  
+  4. Область 'шага'
+    Распространяется на кокнретный \<check> или \<action>. Задаётся параметром 'config'. При этом указывается alias.
+    Пример записи:
+\code
+	<test num="1" name="Test replace"  ignore_failed="1" config="c1">
+     <check test="false" id="Sensor1@nodename2" config="c2">
+     ...
+     </test>
+\endcode
+    В данном случае при проверке этого теста, будет использован конфигурационный файл с alias-ом 'c2'.
+
+   Все эти параметры являются не обязательными. По умолчанию используется файл указанный при запуске теста.
+
+  \section uts_Modbus Указание адресов опрашиваемых ModbusSlave-узлов (в modbus-сценариях)
+  
+  Для modbus-сценариев также используется секция \<Config>..\<Config>. Только в ней указываются,
+  ip адреса и порты slave-устройств. Ниже приведён пример записи:
+  \code
+<Config>
+  <aliases>
+	<item default="1" alias="c1" mbslave="localhost:2048" config="reglist.xml"/>
+	<item alias="c2" mbslave="localhost:2049"/>
+  </aliases>
+</Config>
+  \endcode
+  Адрес записывается в виде \b mbslave="hostname:port".
+  Один из адресов можно назначить, как адрес по умолчанию, просто дописав в соответствующей строке \b default="1".
+  Тогда в тестах, где явно не указано config="..alias..", будет использоваться адрес по умолчанию.
+
+  \section uts_multiInterface_Scenario Использование нескольких интерфейсов обмена в одном сценарии
+   Система позволяет в одном сценарии одновременно обращаться и через uniset интерфейс и через ModbusTCP. Для этого
+	достаточно указать \b тип \b интерфейса в секции \b \<Config>. Ниже показан пример такого сценария:
+\code
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+	<RunList after_run_pause="5000">
+		<item after_run_pause="0" chdir="../../Utils/SharedMemory/" ignore_run_failed="1" ignore_terminated="1" name="SharedMemory" script="./start_fg.sh" silent_mode="1"/>
+	</RunList>
+    <Config>
+        <aliases>
+            <item alias="c1" confile="configure.xml"/>
+            <item alias="c2" mbslave="localhost:2049" type="modbus"/>
+        </aliases>
+    </Config>
+	<TestList logfile="result.multitest.txt" logfile_trunc="1">
+		<test ignore_failed="1" name="Test N21" num="1">
+			<action id="Test_DI " name="set" val="1" config="c1"/>
+			<check id="Test_DI" test="equal" val="1" config="c1"/>
+			<check test="true" id="0x10" config="c2"/>
+		</test>
+	</TestList>
+</TestScenario>
+\endcode
+
+Как видно из примера в списке указыватся тип конфигурации \b type, а в самом тесте указывается поле \b config.
+как и в случае использования нескольких конфигураций.
+  
+  \section uts_RunList Развёртывание системы (запуск фоновых скриптов)
+  
+  В uniset-testsuite встроен механизм позволяющий запускать необходимые скрипты перед началом тестирования и завершать
+  их после завершения теста. Список задаётся в файле теста в секции \<RunList>.
+\code
+<TestScenario>
+<RunList after_run_pause="5000">
+   <item script="./start_fg.sh" args="arg1 arg2" chdir="../../Utils/SharedMemory/" ignore_terminated="0" ignore_run_failed="0" name="SharedMemory"/>
+</RunList>
+<TestList ...>
+...
+</TestList>
+\endcode
+  У тега \<RunList>
+
+  \b after_run_pause - [мсек], пауза после запуска скриптов. Default: 0.
+  
+  У \<item> можно использовать следующие параметры:
+
+  \b script - собственно запускаемая программа
+
+  \b args - аргументы передаваемые при запуске
+
+  \b chdir - можно задать "каталог" в который нужно перейти перед запуском программы
+
+  \b ignore_terminated - игнорировать "вылет" программы во время тестирования.
+                      В другом случае процесс тестирования будет остановлен.
+
+  \b ignore_run_failed - игнорировать неудачный "пуск" программы.
+                      В другом случае процесс тестирования будет остановлен.
+  
+  \b after_run_pause   - [мсек], пауза после запуска скрипта.
+
+  \b silent_mode   - [0,1] перенаправить весь вывод в /dev/null
+  
+  \b name - можно задать альтернативное имя скрипту (для вывода в логах). Иначе используется название программы.
+  
+  Следует иметь в виду. Если используется ссылка на другой xml-файл (outlink) и там есть секция \<RunList>, она будет
+  исполнена, а по завершении - проессы будут остановлены.
+
+  \section uts_RunParam Параметры запуска тестов
+  
+  можно увидеть запустив
+  - для консольного плеера:  uniset-testsuite-xmlplayer [-h | --help]
+  - для графического плеера (uniset-testsuite-gtkplayer): все параметры настраиваются в меню "Параметры".
+
+  \section uts_Editor Редактор
+     Самое простое это напрямую редактировать xml-файлы сценариев в любом удобном текстовом редакторе.
+  Их формат достаточно простой и методом "копирования" можно писать довольно быстро.
+
+    Но во время наладки самого сценария иногда удобнее прямо "на ходу", подправлять какие-то параметры.
+  Для этих целей в графический плээр встроен простейший редактор сценариев. Позволяющий добавлять тесты и проверки,
+  а так же редактировать параметры существующих. Но не более того.
+
+  Редактирование параметров осуществляется двойным кликом на элементе ("тесте" или "проверке").
+  Остальные меню доступны по правому клику мыши.
+
+  Помимо этого, в меню "Параметры/Параметры сценария" можно отредактировать список запускаемых процессов
+  и используемых конфигурационных файлов.
+
+  \note Данный редактор позволяет редактировать не все детали сценариев. Поэтому в некоторых случаях,
+  редактирование параметров реализуется непосредственно правкой в xml-файле.
+*/

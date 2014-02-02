@@ -1,0 +1,47 @@
+<?xml version = '1.0' encoding = 'utf-8'?>
+<TestScenario>
+<Config>
+  <aliases>
+	<item default="1" alias="c1" mbslave="localhost:2048" />
+	<item alias="c2" mbslave="localhost:2049"/>
+  </aliases>
+</Config>
+<RunList after_run_pause="200">
+	<item script="./start_mbslave1.sh" args=""  silent_mode="1" chdir="../../Utils/Modbus/" ignore_terminated="0" ignore_run_failed="0" name="MBSlave1"/>
+    <item script="./start_mbslave2.sh" args="" chdir="../../Utils/Modbus/" ignore_terminated="0" ignore_run_failed="0" name="MBSlave2"/>
+</RunList>
+<TestList logfile="result.txt" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101" type="modbus">
+	<test name="Test simple read" ignore_failed="1">
+		<check test="true" id="0x10"/>
+	 	<check test="true" id="0x24:0x04"/>
+	 	<check test="true" id="0x24"/>
+	 	<check test="true" id="0x1@0x02:0x02" config="c2"/>
+	 	<check test="true" id="0x24:0x06"/>
+	</test>
+	<test name="Test simple write" ignore_failed="1">
+		<action name="set" id="0x10"/>
+		<action name="set" id="0x25" val="10"/>
+		<action name="set" id="0x25:0x10" val="10"/>
+		<action name="set" id="0x25@0x02" val="10" config="c2"/>
+		<action name="set" id="0x25@0x02:0x05" val="10" config="c2"/>
+	</test>
+	<test name="Test other 'check'" ignore_failed="1">
+		<check test="event" id="0x20" val="0x20" timeout="1000" check_pause="100"/>
+		<check test="equal" id="0x20" val="0x20"/>
+		<check test="multicheck" id="0x25=0x25,0x20:04=0x20,0x19:03=0x19" />
+	</test>
+	<test name="Test 'great'" ignore_failed="1">
+		<action name="set" id="109" val="10"/>
+		<check test="great" id="109" val="5" />
+		<check test="great" id="109" val="10" />
+	</test>
+	<test name="Test 'less'" ignore_failed="1">
+		<action name="set" id="109" val="10"/>
+		<check test="less" id="109" val="11" />
+		<check test="less" id="109" val="10" />
+	</test>
+	<test name="Test other 'action'" ignore_failed="1">
+		<action name="multiset" set="20@2=1,21@0x02:5=1,103@2:0x10=12" config="c2"/>
+	</test>		
+</TestList>
+</TestScenario>

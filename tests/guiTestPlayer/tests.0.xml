@@ -1,0 +1,8 @@
+<?xml version = '1.0' encoding = 'utf-8'?>
+<TestScenario>
+<TestList logfile="result.txt" logfile_trunc="1" replace="MyGlobalVar:101">
+	<test name="Test outlink:ALL (replace)" ignore_failed="1" replace="MyTestVar:102">
+		<check test="outlink" file="test5_replace.xml" link="num=52" replace="MyName:104,MyVal:10,LNK:num=51"/>
+	</test>			
+</TestList>
+</TestScenario>
