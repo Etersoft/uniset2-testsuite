@@ -5,8 +5,7 @@ import sys
 
 import time
 import subprocess
-from uniset import *
-
+import uniset2.UInterface
 from TestSuiteGlobal import *
 
 class TestSuiteInterface():
@@ -28,6 +27,7 @@ class TestSuiteInterface():
         self.log_numstr = 0
         self.log_show_numstr = False
         self.ignore_nodes = False
+        self.rcheck = re.compile(r"([\w@\ ]{1,})([!><]{0,}[=]{0,})([\d\ ]{1,})")
     
     def get_aliasname(self, cname):
         v = cname.strip().split('@')
@@ -393,8 +393,8 @@ class TestSuiteInterface():
            self.log(t_FAILED,"EQUAL","(%s=%d) error: %s"%(s_id,val,e.getError()), True)
 
         return False
-    
-    def isGreat(self, s_id, val, t_out, t_check, ui=None):
+
+    def isNotEqual(self, s_id, val, t_out, t_check, ui=None):
         if ui == None:
            ui = self.default_ui
 
@@ -407,90 +407,94 @@ class TestSuiteInterface():
         # (т.к. ноль включается в цикл)
         if t_out > 0:
            t_tick = t_tick - 1
-
+           
         try:
            if self.log_flush:
               sys.stdout.flush()
+           
+           v = 0 # ui.getValue(s_id)
            while t_tick >= 0:
-              v = ui.getValue(s_id)
-              if v >= val:
-                 self.log(t_PASSED, "GREAT", "%s >= %d" % (s_id,val),False)
-                 return True
+               v = ui.getValue(s_id)
+               if v != val:
+                  self.log(t_PASSED, "NOTEQUAL", "%s = %d" % (s_id,val),False)
+                  return True
+                  
+               time.sleep(t_sleep)
+               t_tick = t_tick - 1
 
-              time.sleep(t_sleep)
-              t_tick = t_tick - 1
-
-           self.log(t_FAILED,"GREAT", "%s=%d not >= %d timeout=%d msec" % (s_id,v,val,t_out), True )
-
-        except UException, e:
-            self.log(t_FAILED,"GREAT","(%s>%d) error: %s"%(s_id,val,e.getError()), True)
-
-        return False
-    
-    def isLess(self, s_id, val, t_out, t_check, ui=None):
-        if ui == None:
-           ui = self.default_ui
-
-        t_tick = round(t_out/t_check)
-        t_sleep = (t_check/1000.)
-        # т.к. пришлось сделать
-        # while t_tick >= 0
-        # чтобы хоть раз тест проходил
-        # то... надо делать -1, чтобы было правильное количество tick-ов
-        # (т.к. ноль включается в цикл)
-        if t_out > 0:
-           t_tick = t_tick - 1
-
-        try:
-           if self.log_flush:
-              sys.stdout.flush()
-           while t_tick >= 0:
-              v = ui.getValue(s_id)
-              if v <= val:
-                 self.log(t_PASSED, "LESS", "%s <= %d" % (s_id,val),False)
-                 return True
-
-              time.sleep(t_sleep)
-              t_tick = t_tick - 1
-
-           self.log(t_FAILED,"LESS", "%s=%d not <= %d timeout=%d msec" % (s_id,v,val,t_out), True )
-
-        except UException, e:
-            self.log(t_FAILED,"LESS","(%s<=%d) error: %s"%(s_id,val,e.getError()), True)
-
-        return False
-
-    def isEvent(self, s_id, s_val, t_out, t_check, ui=None):
-        if ui == None:
-           ui = self.default_ui
-
-        t_tick = round(t_out/t_check)
-        t_sleep = (t_check/1000.)
-        # т.к. пришлось сделать
-        # while t_tick >= 0
-        # чтобы хоть раз тест проходил
-        # то... надо делать -1, чтобы было правильное количество tick-ов
-        # (т.к. ноль включается в цикл)
-        if t_out > 0:
-           t_tick = t_tick - 1
-
-        try:
-           if self.log_flush:
-              sys.stdout.flush()
-           while t_tick >= 0:
-              if ui.getValue(s_id) == s_val:
-                 self.log(t_PASSED, "EVENT", "%s = %d" % (s_id,s_val),False)
-                 return True
-
-              time.sleep(t_sleep)
-              t_tick = t_tick - 1
-           self.log(t_FAILED,"EVENT", "%s != %d timeout=%d msec" % (s_id,s_val,t_out),True)
-
-        except UException, e:
-           self.log(t_FAILED,"EVENT","(%s=%d) error: %s"%(s_id,s_val,e.getError()), True)
-
-        return False
+           self.log(t_FAILED,"NOTEQUAL", "%s=%d != %d timeout=%d msec" % (s_id,v,val,t_out), True )
         
+        except UException, e:
+           self.log(t_FAILED,"NOTEQUAL","(%s=%d) error: %s"%(s_id,val,e.getError()), True)
+
+        return False
+    
+    def isGreat(self, s_id, val, t_out, t_check, ui=None, cond='>='):
+        if ui == None:
+           ui = self.default_ui
+
+        t_tick = round(t_out/t_check)
+        t_sleep = (t_check/1000.)
+        # т.к. пришлось сделать
+        # while t_tick >= 0
+        # чтобы хоть раз тест проходил
+        # то... надо делать -1, чтобы было правильное количество tick-ов
+        # (т.к. ноль включается в цикл)
+        if t_out > 0:
+           t_tick = t_tick - 1
+
+        try:
+           if self.log_flush:
+              sys.stdout.flush()
+           while t_tick >= 0:
+              v = ui.getValue(s_id)
+              if ( cond=='>=' and v>=val ) or ( cond=='>' and v>val ):
+                    self.log(t_PASSED, "GREAT", "%s %s %d" % (s_id,cond,val),False)
+                    return True
+
+              time.sleep(t_sleep)
+              t_tick = t_tick - 1
+
+           self.log(t_FAILED,"GREAT", "%s=%d not %s %d timeout=%d msec" % (s_id,v,cond,val,t_out), True )
+
+        except UException, e:
+            self.log(t_FAILED,"GREAT","(%s %s %d) error: %s"%(s_id,cond,val,e.getError()), True)
+
+        return False
+    
+    def isLess(self, s_id, val, t_out, t_check, ui=None, cond='<='):
+        if ui == None:
+           ui = self.default_ui
+
+        t_tick = round(t_out/t_check)
+        t_sleep = (t_check/1000.)
+        # т.к. пришлось сделать
+        # while t_tick >= 0
+        # чтобы хоть раз тест проходил
+        # то... надо делать -1, чтобы было правильное количество tick-ов
+        # (т.к. ноль включается в цикл)
+        if t_out > 0:
+           t_tick = t_tick - 1
+
+        try:
+           if self.log_flush:
+              sys.stdout.flush()
+           while t_tick >= 0:
+              v = ui.getValue(s_id)
+              if ( cond=='<=' and v<=val ) or ( cond=='<' and v<val ):
+                  self.log(t_PASSED, "LESS", "%s %s %d" % (s_id,cond,val),False)
+                  return True
+
+              time.sleep(t_sleep)
+              t_tick = t_tick - 1
+
+           self.log(t_FAILED,"LESS", "%s=%d not %s %d timeout=%d msec" % (s_id,v,cond,val,t_out), True )
+
+        except UException, e:
+            self.log(t_FAILED,"LESS","(%s %s %d) error: %s"%(s_id,cond,val,e.getError()), True)
+
+        return False
+
     def msleep(self, msec):
         if self.log_flush:
            sys.stdout.flush()
@@ -542,31 +546,35 @@ class TestSuiteInterface():
            ui = self.default_ui
         
         res = ""
+        
+        s_id = None     
+        s_val = None 
+
         tname = node.prop("test").upper()
-        if tname == 'TRUE':
-           s = ui.getIDinfo(node.prop("id"))
-           res = "(%5s): %s=true timeout=%d"%(tname.lower(),s[2],to_int(to_int(node.prop("timeout"))))
-        elif tname == 'FALSE':
-           s = ui.getIDinfo(node.prop("id"))
-           res = "(%5s): %s=false timeout=%d"%(tname.lower(),s[2],to_int(node.prop("timeout")))
-        elif tname == 'EVENT':
-           s = ui.getIDinfo(node.prop("id"))
-           res = "(%5s): %s=%s timeout=%d"%(tname.lower(),s[2],node.prop("val"),to_int(node.prop("timeout")))
-        elif tname == 'GREAT':
-           s = ui.getIDinfo(node.prop("id"))
-           res = "(%5s): %s >= %s timeout=%d"%(tname.lower(),s[2],node.prop("val"),to_int(node.prop("timeout")))
-        elif tname == 'LESS':
-           s = ui.getIDinfo(node.prop("id"))
-           res = "(%5s): %s <= %s timeout=%d"%(tname.lower(),s[2],node.prop("val"),to_int(node.prop("timeout")))
-        elif tname == 'EQUAL':
-           s = ui.getIDinfo(node.prop("id"))
-           res = "(%5s): %s = %s timeout=%d"%(tname.lower(),s[2],node.prop("val"),to_int(node.prop("timeout")))
+        if tname!='LINK' and tname!='OUTLINK':
+           clist = self.rcheck.findall(tname)
+           if len(clist) == 1:
+              tname = clist[0][1].upper()
+              s_id = clist[0][0]
+              s_val = to_int(clist[0][2])
+           elif len(clist) > 1:
+              tname = 'MULTICHECK'
+
+        if tname == '=':
+           s = ui.getIDinfo(s_id)
+           res = "%s=%s timeout=%d"%(s[2],s_val,to_int(node.prop("timeout")))
+        elif tname == '>' or tname == '>=':
+           s = ui.getIDinfo(s_id)
+           res = "%s %s %s timeout=%d"%(s[2],tname,s_val,to_int(node.prop("timeout")))
+        elif tname == '<' or tname == '<=':
+           s = ui.getIDinfo(s_id)
+           res = "%s %s %s timeout=%d"%(s[2],tname,s_val,to_int(node.prop("timeout")))
         elif tname == 'MULTICHECK':
-           res = "(%5s): %s"%(tname.lower(),node.prop("id"))
+           res = "%s"%(node.prop("set"))
         elif tname == 'LINK':
-           res = "(%5s): link='%s'"%(tname.lower(),node.prop("link"))
+           res = "LINK: link='%s'"%(node.prop("link"))
         elif tname == 'OUTLINK':
-           res = "(%5s): file='%s' link='%s'"%(tname.lower(),node.prop("file"),node.prop("link"))   
+           res = "OUTLINK: file='%s' link='%s'"%(node.prop("file"),node.prop("link"))   
         
         return res
     
@@ -577,13 +585,17 @@ class TestSuiteInterface():
         if ui == None:
            ui = self.default_ui
         res = ""
-        tname = node.prop("name").upper()           
+        tname = 'SET'
+        if to_str(node.prop("msleep")) != '':
+            tname='MSLEEP'
+        elif to_str(node.prop("script")) != '':
+            tname='SCRIPT'
+            
         if tname == 'SET':
-           s = ui.getIDinfo(node.prop("id"))
-           res = "(%5s): %s=%s"%(tname.lower(),s[2],node.prop("val"))
-        elif tname == 'MULTISET':
            res = "(%5s): %s"%(tname.lower(),node.prop("set"))
         elif tname == 'MSLEEP':
-           res = "(%5s): %s msec"%(tname.lower(),node.prop("msec"))        
+           res = "(%5s): %s msec"%(tname.lower(),node.prop("msleep"))        
+        elif tname == 'SCRIPT':
+           res = "(%5s): script='%s'"%(tname.lower(),node.prop("script"))        
         
         return res

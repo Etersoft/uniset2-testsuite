@@ -63,8 +63,6 @@ class MultipleValEditor(gtk.HBox):
         self.config = None
         self.dlg_xlist = None
         self.xmlnode = None
-        self.field = "unknown"
-        self.field_val = "?"
 
         self.mb_params = [
             ["e_mbreg","mbreg","dummy",False],
@@ -92,7 +90,7 @@ class MultipleValEditor(gtk.HBox):
             ["u_val_box","val_box",None],
             ["u_cbtn","cbtn",None],
             ["u_val","val","val",False],
-            ["u_lbl","lblTest",None],
+            ["u_testbox","testbox",None],
             ["uniset_box","main",None],
             ["u_btn","btnSel",None]
         ]
@@ -155,7 +153,7 @@ class MultipleValEditor(gtk.HBox):
            self.builder.get_object("btnADD").set_sensitive(True)
 
         b = gtk.Builder()
-        b.add_objects_from_file(self.ubox_uifile,["main","liststore1","adjustment1","adjustment2"])
+        b.add_objects_from_file(self.ubox_uifile,["main","liststore1","liststore2","adjustment1","adjustment2"])
         b.connect_signals(self)
 
         e = EmptyClass()
@@ -167,9 +165,23 @@ class MultipleValEditor(gtk.HBox):
         e.u_cbtn.show()
         e.u_btn.set_data("e",e)
         init_elements_value(e,self.uniset_params,self.u_default_xmlnode)
-        e.u_lbl.set_text('=')
+        self.set_u_test(e,'=')
         e.tout.hide()
         e.cpause.hide()
+
+    def set_u_test(self,e,txt):
+        m = e.u_testbox.get_model()
+        if m == None:
+            return
+        
+        it = m.get_iter_first()
+        while it is not None:
+            if txt.upper() == str(m.get_value(it,0)).upper():
+                 e.u_testbox.set_active_iter(it)
+                 return
+            it = m.iter_next(it)
+        
+        e.u_testbox.set_active_iter(m.get_iter_first())
 
     def set_mb_count(self, num):
         if num > self.mb_count:
@@ -384,7 +396,6 @@ class MultipleValEditor(gtk.HBox):
         #print "SAVE ITEM: %s"%s_out
         if s_out != "":
            self.xmlnode.setProp(xmlfield, s_out)
-           self.xmlnode.setProp(self.field, self.field_val)
            self.xmlnode.setName(self.get_etype())
            return True
 

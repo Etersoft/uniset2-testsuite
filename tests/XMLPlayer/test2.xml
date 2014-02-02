@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
-	<TestList logfile="result.test2.txt" logfile_trunc="1">
+	<TestList logfile="" logfile_trunc="1">
 		<test ignore_failed="1" name="Test N21" num="1">
-			<action id="101 " name="set" val="0"/>
-			<check id="101" test="false"/>
-			<action id="101" name="set" val="1"/>
-			<check id="101" test="true"/>
+			<action set="101 =0" />
+			<check test="101=0"/>
+			<action set="101=1" />
+			<check test="101!=0"/>
 			<check file="test3.xml" link="num=1" test="outlink"/>
 		</test>
 		<test ignore_failed="1" name="Test N22" num="2">
-			<action id="101" name="set" val="0"/>
-			<check id="101" test="false"/>
-			<action id="101" name="set" val="1"/>
-			<check id="101" test="true"/>
+			<action set="101=0" />
+			<check test="101=0"/>
+			<action set="101=1" />
+			<check test="101!=0"/>
 		</test>
 	</TestList>
 </TestScenario>

@@ -275,7 +275,8 @@ class guiTestSuitePlayer():
         self.log_tv.connect("button-press-event", self.on_logview_press_event)
         
         # run main window
-        self.time_start = 0;
+        self.time_start = time.time()
+        self.lbl_time.set_text("0:00:00")
         
         self.mwin = self.builder.get_object("MainWindow")
 #        self.mwin.maximize()
@@ -444,28 +445,45 @@ class guiTestSuitePlayer():
         xmlnode = model.get_value(iter,fid.xmlnode)
         old_name = xmlnode.prop("name")
         t = model.get_value(iter,fid.etype)
-        val = ""
+        editor_name = ""
         for i in range(1,10):
             if xmlnode.name == "test":
-               val = "test"
+               editor_name = "test"
                tbox.set_sensitive(False)
                if t == tt.Link or t == tt.Outlink:
                   dlg = self.builder.get_object("dlgLinkChange")
                   res = dlg.run()
                   dlg.hide()
                   if res == 1: # link
-                     xmlnode = model.get_value(iter,fid.link_xmlnode)
+                     xmlnode = model.get_editor_nameue(iter,fid.link_xmlnode)
                      tbox.set_sensitive(True)
                   elif res == 2: #test
-                     val = "test"
+                     editor_name = "test"
                      break
                   else:
                      return False
             elif xmlnode.name == "action":
-               val = xmlnode.prop("name")
+               tname = xmlnode.prop("set")
+               if tname != None:
+                    if len( tname.split(",") ) > 1:
+                        editor_name = "multiset"
+                        break;
+                    editor_name = "set"
+                    break;
+
+               tname = xmlnode.prop("msleep")
+               if tname != None:
+                    editor_name = "msleep"
+                    break
+
+               tname = xmlnode.prop("script")
+               if tname != None:
+                    editor_name = "script"
+                    break
                break;
+
             elif xmlnode.name == "check":
-               val = xmlnode.prop("test")
+               editor_name = "check"
                break;
             else:
                print "(editor): UNKNOWN item type = '%s'\n"%xmlnode.name
@@ -474,7 +492,7 @@ class guiTestSuitePlayer():
         self.edit_iter = iter
         # имитируем изменение в списке, чтобы нужный редактор повторно инициализировался
         # см. on_testlist_changed()
-        self.set_testlist_element(val)
+        self.set_testlist_element(editor_name)
         self.on_testlist_changed(tbox)
         res = self.dlg_editor.run()
         self.dlg_editor.hide()
@@ -500,9 +518,9 @@ class guiTestSuitePlayer():
               self.model.set_value(p_iter,fid.etype,tt.Action)
            elif self.editor.get_etype() == "check":
               self.model.set_value(p_iter,fid.etype,tt.Check)
-              if self.editor.field_val == "link":
+              if self.editor.get_etype() == "link":
                  self.model.set_value(p_iter,fid.etype,tt.Link)
-              elif self.editor.field_val == "outlink":
+              elif self.editor.get_etype() == "outlink":
                  self.model.set_value(p_iter,fid.etype,tt.Link)
  
            p_iter = model.convert_iter_to_child_iter(iter)

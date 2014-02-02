@@ -33,8 +33,6 @@ class SimpleValEditor(SimpleEditor):
            elif self.scenario_type == "modbus":
               save2xml_elements_value(self,self.mb_params,self.xmlnode)
 
-           self.xmlnode.setProp(self.field, self.field_val)
-
         return res
 
         

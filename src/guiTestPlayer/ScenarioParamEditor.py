@@ -2,7 +2,7 @@
 from gettext import gettext as _
 import gtk
 import gobject
-import uniset
+import uniset2
 from TestSuiteGlobal import *
 
 txtNEW = "NewName"

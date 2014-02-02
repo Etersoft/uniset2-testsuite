@@ -13,8 +13,6 @@ class Editor_MSLEEP(gtk.HBox):
         self.builder.add_from_file(datdir+"editor_MSLEEP.ui")
         main = self.builder.get_object("main")
         main.reparent(self)
-        self.field = "name"
-        self.field_val = "msleep"
         self.etype = "action"        
 
     def get_etype(self):
@@ -24,14 +22,14 @@ class Editor_MSLEEP(gtk.HBox):
         self.xmlnode = xmlnode
         if xmlnode:
            ent_val = self.builder.get_object("val")
-           ent_val.set_text( xmlnode.prop("msec") )
+           ent_val.set_text( xmlnode.prop("msleep") )
 
     def save(self):
         if not self.xmlnode:
            return False
 
         ent_val = self.builder.get_object("val")
-        self.xmlnode.setProp("msec",ent_val.get_text())
+        self.xmlnode.setProp("msleep",ent_val.get_text())
         return True
         
 

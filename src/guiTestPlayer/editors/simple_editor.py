@@ -52,9 +52,9 @@ class SimpleEditor(gtk.HBox):
             ["u_lblTest","lblTest",None],
             ["u_val_box","val_box",None],
             ["u_cbtn","cbtn",None],
-            ["u_val","val","val",False],
-            ["u_lbl","lblTest",None],
+            ["u_val","val",None],
             ["uniset_box","main",None],
+            ["u_testbox","testbox",None],
         ]
         self.uniset_ext_params = [
             ["tout","timeout","timeout",False],
@@ -63,7 +63,7 @@ class SimpleEditor(gtk.HBox):
         
         self.uniset_uifile = datdir+"uniset_box.ui"
         self.u_builder = gtk.Builder()
-        self.u_builder.add_objects_from_file(self.uniset_uifile,["main","liststore1","adjustment1","adjustment2"])
+        self.u_builder.add_objects_from_file(self.uniset_uifile,["main","liststore1","liststore2","adjustment1","adjustment2"])
         self.u_builder.connect_signals(self)
 
         init_builder_elements(self,self.uniset_params,self.u_builder)
@@ -72,13 +72,40 @@ class SimpleEditor(gtk.HBox):
         ubox = self.builder.get_object("uniset_box")
         ubox.add(self.uniset_box)
 
+        self.rcheck = re.compile(r"([\w@\ ]{1,})([!><]{0,}[=]{0,})([\d\ ]{1,})")
+
     def get_etype(self):
         return self.etype
 
     def set_lbl_text(self, txt):
-        self.u_lbl.set_text(txt)
+        self.set_u_test(txt)
         self.mb_lbl.set_text(txt)
 
+    def set_u_test(self,txt):
+        m = self.u_testbox.get_model()
+        if m == None:
+            return
+        
+        it = m.get_iter_first()
+        while it is not None:
+            if txt.upper() == str(m.get_value(it,0)).upper():
+                 self.u_testbox.set_active_iter(it)
+                 return
+            it = m.iter_next(it)
+        
+        self.u_testbox.set_active_iter(m.get_iter_first())
+   
+    def get_u_test(self):
+        it = self.u_testbox.get_active_iter()
+        if it == None:
+            return "="
+
+        m = self.u_testbox.get_model()
+        if m == None:
+            return "="
+        
+        return str(m.get_value(it,0))
+        
     def init( self, xmlnode, config, dlg_xlist, xml ):
         self.simple_init(xmlnode,config,dlg_xlist, xml)
         
@@ -110,7 +137,27 @@ class SimpleEditor(gtk.HBox):
            init_elements_value(self,self.uniset_params,xmlnode)
            create_nodes_box(self.u_node,config)
 
-           s_id,s_node_full = get_sinfo( xmlnode.prop("id") )
+           s_id = None
+           s_val = None
+           test = "??"
+           tname = xmlnode.prop("test")
+           if tname:
+                clist = self.rcheck.findall(tname)
+                if len(clist) >= 1:
+                    test = clist[0][1].upper()
+                    s_id = clist[0][0]
+                    s_val = to_int( clist[0][2] )
+#                elif len(clist) > 1:
+#                   test = 'MULTICHECK'
+           else:
+              test="set"
+              s_id=""
+              s_val=""
+                
+           self.set_lbl_text(test)
+
+           s_id,s_node_full = get_sinfo( s_id )
+
            s_name = s_id
            if xmlnode:
               if is_id(s_id):
@@ -129,6 +176,8 @@ class SimpleEditor(gtk.HBox):
                self.u_node.set_active_iter(self.u_node.get_model().get_iter_first())
 
            self.u_id.set_text( s_name )
+           self.u_val.set_text( to_str(s_val) )
+           self.set_u_test(test)
     
     def save(self):
         if self.xmlnode == None:
@@ -143,6 +192,10 @@ class SimpleEditor(gtk.HBox):
               txt = self.u_id.get_text()
            else:
               txt = "%s@%s"%(self.u_id.get_text(),s_node)
+        
+           op = self.get_u_test()
+           val = self.u_val.get_text()
+           txt = "%s%s%s"%(txt,op,val)
         else:
            if self.e_mbreg.get_text()!="" and self.e_mbfunc.get_active_iter() != None \
               and self.e_vtype.get_active_iter() != None:
@@ -159,8 +212,7 @@ class SimpleEditor(gtk.HBox):
         if txt == "":
            return False
 
-        self.xmlnode.setProp("id",txt)
-        self.xmlnode.setProp(self.field, self.field_val)
+        self.xmlnode.setProp("test",txt)
         self.xmlnode.setName(self.get_etype())
         
         if self.tout.get_visible() == True:

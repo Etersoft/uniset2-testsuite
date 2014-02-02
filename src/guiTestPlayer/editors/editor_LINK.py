@@ -25,9 +25,7 @@ class Editor_LINK(gtk.HBox):
         self.builder.connect_signals(self)
         self.config = None
         self.xmlnode = None
-        self.field = "test"
-        self.field_val = "link"
-        self.etype = "check"        
+        self.etype = "link"        
 
     def get_etype(self):
         return self.etype
@@ -57,7 +55,7 @@ class Editor_LINK(gtk.HBox):
         linkname = self.cbox.get_model().get_value(iter,0)
         # т.к. список строили по name, то сохраняем ссылку в виде name=XXX
         self.xmlnode.setProp("link", "name=%s"%linkname )
-        self.xmlnode.setProp(self.field, self.field_val)
+        self.xmlnode.setProp("test", "link")
         return True
 
 def create_module(datdir):

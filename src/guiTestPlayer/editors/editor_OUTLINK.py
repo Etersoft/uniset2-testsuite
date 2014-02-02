@@ -29,9 +29,7 @@ class Editor_OUTLINK(gtk.HBox):
         self.builder.connect_signals(self)
         self.config = None
         self.xmlnode = None
-        self.field = "test"
-        self.field_val = "outlink"
-        self.etype = "check"        
+        self.etype = "outlink"        
 
     def get_etype(self):
         return self.etype
@@ -92,7 +90,7 @@ class Editor_OUTLINK(gtk.HBox):
 
         self.xmlnode.setProp("file", self.fname.get_text() )
         self.xmlnode.setProp("replace", self.replist.get_text() )
-        self.xmlnode.setProp(self.field, self.field_val)
+        self.xmlnode.setProp("test", "outlink")
         return True
 
 def create_module(datdir):

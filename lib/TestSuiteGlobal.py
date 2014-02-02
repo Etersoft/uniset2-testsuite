@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import time
-from uniset import *
+
+from uniset2 import *
 
 # различные глобальные вспомогательные функции
 t_NONE=""

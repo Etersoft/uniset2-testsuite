@@ -6,9 +6,12 @@ import os
 import threading
 import datetime
 import copy
+import re
 
 from TestSuiteGlobal import *
-import uniset
+
+import uniset2 as uniset
+
 from ProcessMonitor import *
 import TestSuitePlayer
 
@@ -28,7 +31,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         
         # список мониторов (ключ в словаре - название xml-файла)
         self.pmonitor = dict()
-        
+    
+    	self.mcheck = re.compile(r"([\w@\ ]{1,})=([\d\ ]{1,})")
+    	self.rless  = re.compile(r"([\w@\ ]{1,})(<{1,})([\ =\d]{1,})")
+    	        
         # список запущенных reset-потоков
         self.reset_thread_event = threading.Event()
         self.reset_thread_dict = dict()
@@ -72,7 +78,16 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         try:
            xml = None
            if not xmlfile in self.xmllist:
-              xml = UniXML(xmlfile)
+              fdoc = open(xmlfile,'r')
+              txt = fdoc.read()
+              fdoc.close()
+              # Заменяем символы '<', для создания и загрузки корректного xml
+              txt = self.rless.sub(r'\1&lt;\3',txt)
+              xml = UniXML(txt,True)
+              # если UniXML создан из текста, а не файла (см. выше)
+              # тогда надо искуственно инициализировать fname, потому-что 
+              # он используется в качестве ключа..
+              xml.fname = xmlfile
               self.xmllist[xmlfile] = xml              
            else:
               xml = self.xmllist[xmlfile]
@@ -159,6 +174,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
 #             print "ADD list: %s"%(str(mp.plist))
              self.pmonitor[xml.getFileName()] = mp
+         
+         else:
+             self.pmonitor[xml.getFileName()] = self.null_pm
     
     def get_pmonitor(self,xml):
         
@@ -339,36 +357,53 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         return self.tsi.getValue(self.replace(node.prop("id")),ui)
         
     def check_item(self, node, xml):
-        test = to_str( self.replace(node.prop("test"))).upper()
+
+        tname = self.replace(node.prop('test'));
+
         cfig = self.get_config_name(node)
         ui = self.get_current_ui(cfig)
         if ui == None:
-           self.tsi.actlog( t_FAILED,test,"FAILED: Unknown CONFIG..", True )
+           self.tsi.actlog( t_FAILED,tname,"FAILED: Unknown CONFIG..", True )
            return t_FAILED
+
+        s_id = None     
+        s_val = None 
+
+        test=tname.upper()
+            
+        if test!='LINK' and test!='OUTLINK':
+            clist = self.tsi.rcheck.findall(tname)
+            if len(clist) == 0:
+                self.tsi.actlog( t_FAILED,tname,"FAILED: Unknown test='%s'.."%tname, True )
+                return t_FAILED
+      
+            if len(clist) == 1:
+                test = clist[0][1].upper()
+                s_id = self.replace( clist[0][0] )
+                s_val = to_int( self.replace(clist[0][2]) )
+            elif len(clist) > 1:
+                test = 'MULTICHECK'
 
         t_out = to_int(self.replace(node.prop("timeout")))
         t_check = to_int(self.replace(node.prop("check_pause")))
         if t_check <= 0:
            t_check = 500
 
-        if test == "FALSE":
-           return ( t_PASSED if self.tsi.isFalse(self.replace(node.prop("id")),t_out,t_check,ui) else t_FAILED )
+        if test == "=":
+           return ( t_PASSED if self.tsi.isEqual(s_id,s_val,t_out,t_check,ui) else t_FAILED )
+
+        if test == "!=":
+           return ( t_PASSED if self.tsi.isNotEqual(s_id,s_val,t_out,t_check,ui) else t_FAILED )
         
-        if test == "TRUE":
-           return ( t_PASSED if self.tsi.isTrue(self.replace(node.prop("id")),t_out,t_check,ui) else t_FAILED )
+        if test == ">=" or test == ">":
+           return ( t_PASSED if self.tsi.isGreat(s_id,s_val,t_out,t_check,ui,test) else t_FAILED )
         
-        if test == "EQUAL":
-           return ( t_PASSED if self.tsi.isEqual(self.replace(node.prop("id")),to_int(self.replace(node.prop("val"))),t_out,t_check,ui) else t_FAILED )
-        
-        if test == "GREAT":
-           return ( t_PASSED if self.tsi.isGreat(self.replace(node.prop("id")),to_int(self.replace(node.prop("val"))),t_out,t_check,ui) else t_FAILED )
-        
-        if test == "LESS":
-           return ( t_PASSED if self.tsi.isLess(self.replace(node.prop("id")),to_int(self.replace(node.prop("val"))),t_out,t_check,ui) else t_FAILED)
+        if test == "<=" or test == "<":
+           return ( t_PASSED if self.tsi.isLess(s_id,s_val,t_out,t_check,ui,test) else t_FAILED)
         
         if test == "MULTICHECK":
            self.tsi.log(" ", "MULTICHECK","...",False)
-           s_set = to_str(self.replace(node.prop("id")))
+           s_set = to_str(self.replace(node.prop("test")))
            if s_set == "":
               self.tsi.log(t_FAILED,"(TestSuiteXMLPlayer)","MULTICHECK: undefined ID list (id='...')",True)
               return t_FAILED
@@ -382,10 +417,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                res = self.tsi.isEqual(self.replace(s[0]), self.replace(s[1]), t_out, t_check, ui )
            return ( t_PASSED if res else t_FAILED )
   
-        if test == "EVENT":
-           s_val = to_int(self.replace(node.prop("val")))
-           return ( t_PASSED if self.tsi.isEvent(self.replace(node.prop("id")),s_val,t_out,t_check,ui) else t_FAILED )
-        
         if test == "LINK":
            t_name, t_field = self.get_link_param(node)
 
@@ -523,21 +554,44 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         return to_str( self.replace(node.prop("config")))
         
     def action_item(self, node):
-        act = self.replace(node.prop("name")).upper()
+        act = 'SET'
+        #act = self.replace(node.prop("name")).upper()
+        if to_str(node.prop("msleep")) != '':
+            act='MSLEEP';
+        elif to_str(node.prop("script")) != '':
+            act='SCRIPT';
+        
         cfig = self.get_config_name(node)
         ui = self.get_current_ui(cfig)        
         if ui == None:
            self.tsi.actlog( t_FAILED,act,"FAILED: Unknown CONFIG..", True )
            return t_FAILED
+
+        s_id = None     
+        s_val = None 
            
+        if act == 'SET':
+           tname = to_str(self.replace(node.prop("set")))
+           clist = self.tsi.rcheck.findall(tname)
+           if len(clist) == 0:
+              self.tsi.actlog( t_FAILED,tname,"FAILED: Unknown set='%s'.."%tname, True )
+              return t_FAILED
+      
+           if len(clist) == 1:
+              s_id = self.replace( clist[0][0] )
+              s_val = to_int( self.replace(clist[0][2]) )
+           elif len(clist) > 1:
+              act = 'MULTISET'
+
         if act == "SET":
            reset_msec = to_int(self.replace(node.prop("reset_time")))
-           s_id = self.replace(node.prop("id"))
-           if reset_msec <= 0:
-              return ( t_PASSED if self.tsi.setValue(s_id,to_int(self.replace(node.prop("val"))), ui) else t_FAILED )
-           s_v2 = to_int( self.replace(node.prop("val2")) )
            
-           res = self.tsi.setValue( s_id, to_int(self.replace(node.prop("val"))), ui )
+           if reset_msec <= 0:
+              return ( t_PASSED if self.tsi.setValue(s_id,s_val, ui) else t_FAILED )
+           
+           s_v2 = to_int( self.replace(node.prop("rval")) )
+           
+           res = self.tsi.setValue( s_id,s_val, ui )
            self.tsi.actlog(" "," ","set reset time %d msec for id=%s" % (reset_msec,s_id),False)
            t = threading.Timer( (reset_msec/1000.), self.on_reset_timer, [s_id,s_v2,reset_msec,ui])
            self.add_reset_thread(t.getName(),t)
@@ -556,7 +610,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
            return t_PASSED
         
         if act == "MSLEEP":
-           self.tsi.msleep( to_int(self.replace(node.prop("msec"))) )
+           self.tsi.msleep( to_int(self.replace(node.prop("msleep"))) )
            return t_PASSED
 
         if act == "SCRIPT":

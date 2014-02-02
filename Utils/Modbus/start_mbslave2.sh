@@ -1,3 +1,3 @@
 #!/bin/sh
 
-uniset-mbtcpserver-echo -i localhost -p 2049 -a 0x02
+uniset2-mbtcpserver-echo -i localhost -p 2049 -a 0x02

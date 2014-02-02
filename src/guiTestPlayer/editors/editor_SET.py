@@ -10,13 +10,11 @@ class Editor_SET(SimpleValEditor):
 
     def __init__(self,datdir):
         SimpleValEditor.__init__(self,datdir,"editor_SET.ui")
-        self.field = "name"
-        self.field_val = "set"
         self.etype = "action"
         self.set_lbl_text("=")
 
         self.ext_params = [
-            ["val2","val2","val2",False],
+            ["rval","rval","rval",False],
             ["rtime","reset_time","reset_time",False]
         ]
         init_builder_elements(self,self.ext_params,self.builder)
@@ -27,10 +25,8 @@ class Editor_SET(SimpleValEditor):
 
     def save(self):
         res = self.simple_val_editor_save()
-
         if res == True:
            save2xml_elements_value(self,self.ext_params,self.xmlnode)
-           self.xmlnode.setProp(self.field, self.field_val)
 
         return res
 

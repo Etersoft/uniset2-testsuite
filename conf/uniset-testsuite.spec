@@ -1,8 +1,8 @@
 %def_enable doc
 
-Name: uniset-testsuite
-Version: 1.3
-Release: eter3
+Name: uniset2-testsuite
+Version: 2.0
+Release: eter0.1
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -12,9 +12,6 @@ Source: %name-%version.tar
 # optimized out: pkg-config python-base python-devel python-modules
 BuildRequires: python-module-distribute
 
-BuildRequires: python-module-uniset >= 1.6-alt17.Build2
-
-
 %if_enabled doc
 BuildRequires: doxygen
 %endif
@@ -23,21 +20,21 @@ BuildRequires: doxygen
 %summary
 
 %package gui
-Summary: GUI interface of uniset-testsuite
+Summary: GUI interface of uniset2-testsuite
 Group: Development/Python
 Requires: %name = %version-%release 
 Requires: python-module-pygtk
 AutoReq: no
 %description gui
-GUI (gtk) interface of uniset-testsuite
+GUI (gtk) interface of uniset2-testsuite
 
 %package doc
-Summary: docs for uniset-testsuite
+Summary: docs for uniset2-testsuite
 Group: Development/Python
 BuildArch: noarch
 Requires: %name = %version-%release 
 %description doc
-Documentation for uniset-testsuite
+Documentation for uniset2-testsuite
 
 %prep
 %setup
@@ -60,8 +57,9 @@ mkdir -p %buildroot%python_sitelibdir/%name
 mv -f %buildroot%python_sitelibdir/*.py %buildroot%python_sitelibdir/%name/
 
 mkdir -p %buildroot/%_bindir/
-ln -s %python_sitelibdir/%name/TestSuiteXMLPlayer.py %buildroot/%_bindir/uniset-testsuite-xmlplayer
-ln -s %python_sitelibdir/%name/guiTestSuitePlayer-gtk.py %buildroot/%_bindir/uniset-testsuite-gtkplayer
+ln -s %python_sitelibdir/%name/TestSuiteXMLPlayer.py %buildroot/%_bindir/uniset2-testsuite-xmlplayer
+ln -s %python_sitelibdir/%name/guiTestSuitePlayer-gtk.py %buildroot/%_bindir/uniset2-testsuite-gtkplayer
+ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsuite-conv
 
 #%if_enabled doc
 #  mkdir -p %buildroot/%_docdir/%name
@@ -72,7 +70,8 @@ ln -s %python_sitelibdir/%name/guiTestSuitePlayer-gtk.py %buildroot/%_bindir/uni
 %files
 %dir %python_sitelibdir/%name
 %python_sitelibdir/*
-%_bindir/uniset-testsuite-xmlplayer
+%_bindir/uniset2-testsuite-xmlplayer
+%_bindir/uniset2-testsuite-conv
 %python_sitelibdir/%name/*
 %exclude %python_sitelibdir/%name/gui*Player*
 %exclude %python_sitelibdir/%name/Gtk*
@@ -80,7 +79,7 @@ ln -s %python_sitelibdir/%name/guiTestSuitePlayer-gtk.py %buildroot/%_bindir/uni
 %files gui
 %python_sitelibdir/%name/guiTestSuitePlayer-gtk.py
 %python_sitelibdir/%name/GtkProcessMonitor.py
-%_bindir/uniset-testsuite-gtkplayer
+%_bindir/uniset2-testsuite-gtkplayer
 %dir %_datadir/%name/player/
 %dir %_datadir/%name/player/editors
 %_datadir/%name/player/*.ui
@@ -94,6 +93,9 @@ ln -s %python_sitelibdir/%name/guiTestSuitePlayer-gtk.py %buildroot/%_bindir/uni
 %endif
 
 %changelog
+* Sun Feb 02 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-eter0.1
+- modify for uniset2 (uniset-2.0)
+
 * Wed May 15 2013 Pavel Vainerman <pv@altlinux.ru> 1.3-eter2
 - add new action 'script'
 

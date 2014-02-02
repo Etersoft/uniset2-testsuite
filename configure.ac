@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset-testsuite], [1.3])
+AC_INIT([uniset2-testsuite], [2.0])
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
 #AM_GNU_GETTEXT([external])
@@ -50,6 +50,7 @@ AC_CONFIG_FILES([Makefile
 				docs/dox.cfg
 				lib/Makefile
 				src/Makefile
+				src/Utils/Makefile
 				src/guiTestPlayer/Makefile
 				src/guiTestPlayer/editors/Makefile
 				src/guiTestPlayer/images/Makefile])

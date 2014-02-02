@@ -1,2 +1,2 @@
-tar: . name=uniset-testsuite-@version@
-spec: conf/uniset-testsuite.spec
+tar: . name=uniset2-testsuite-@version@
+spec: conf/uniset2-testsuite.spec

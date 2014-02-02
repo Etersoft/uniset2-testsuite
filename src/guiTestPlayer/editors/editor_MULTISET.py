@@ -9,8 +9,6 @@ class Editor_MULTISET(MultipleValEditor):
 
     def __init__(self,datdir):
         MultipleValEditor.__init__(self,datdir)
-        self.field = "name"
-        self.field_val = "multiset"
         self.etype = "action"
     
     def init(self, xmlnode, config, dlg_xlist, xml ):

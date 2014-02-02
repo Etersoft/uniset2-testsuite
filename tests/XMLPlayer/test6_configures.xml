@@ -8,10 +8,10 @@
 	</Config>
 	<TestList logfile="result.test6.txt" logfile_trunc="1">
 		<test config="c2" ignore_failed="1" name="Test N61" num="1">
-			<action id="101 " name="set" val="0"/>
-			<check id="101" test="false"/>
-			<action config="c1" id="101" name="set" val="1"/>
-			<check config="c1" id="101" test="true"/>
+			<action set="101 =0" />
+			<check test="101=0"/>
+			<action config="c1" set="101=1" />
+			<check config="c1" test="101!=0"/>
 		</test>
 	</TestList>
 </TestScenario>

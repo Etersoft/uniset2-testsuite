@@ -1,0 +1,1 @@
+pyexec_SCRIPTS = *.py
