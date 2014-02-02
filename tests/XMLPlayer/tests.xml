@@ -22,7 +22,7 @@
 		<test ignore_failed="1" name="Test outlink:ALL (replace)" replace="MyTestVar:102">
 			<check file="test5_replace.xml" link="num=52" replace="MyName:104,MyVal:10,LNK:num=51" test="outlink"/>
 		</test>
-		<test ignore_failed="1" name="Test N1">
+		<test ignore_failed="1" name="Test N1" num="0">
 			<action set="101@LocalhostNode=0" />
 			<check check_pause="500" test="101=0" timeout="15000" />
 			<check test="101@LocalhostNode=0"/>

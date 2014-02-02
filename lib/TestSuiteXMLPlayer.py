@@ -882,8 +882,8 @@ if __name__ == "__main__":
             print "--show-test-log           - Show test log"
             print "--show-action-log         - Show actions log"
             print "--show-result-report      - Show result report "
-            print "--test-name TestName      - Run only 'TestName' test"
-            print "--test-name-prop propname - Name of property for search test by name (for --test-name only)"
+            print "--test-name TestName      - Run only 'TestName' test. 'TestName' can be specified as a 'prop=name'."
+            print "                            By default, the search goes on name='TestName'"
             print "--ignore-run-list         - Ignore <RunList>"
             print "--no-timestamp            - Does not display the time"
             print "--ignore-nodes            - Do not use '@node'"
@@ -900,7 +900,13 @@ if __name__ == "__main__":
         show_actlog = ts.checkArgParam("--show-action-log",False)
         show_result = ts.checkArgParam("--show-result-report",False)
         testname = ts.getArgParam("--test-name","")
-        testname_prop = ts.getArgParam("--test-name-prop","name")
+        testname_prop = ""
+        
+        p = testname.strip().split('=')
+        if len(p) > 1:
+           testname=p[1]
+           testname_prop=p[0]
+        
         ignore_runlist = ts.checkArgParam("--ignore-run-list",False)
         notimestamp = ts.checkArgParam("--no-timestamp",False)
         ignore_nodes = ts.checkArgParam("--ignore-nodes",False)
