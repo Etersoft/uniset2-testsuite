@@ -1,18 +1,19 @@
 <?xml version = '1.0' encoding = 'utf-8'?>
 <TestScenario>
-<RunList after_run_pause="6000">
-   <item script="./start_test_bg_proc.sh" args="" silent_mode="1" chdir="." ignore_terminated="0" ignore_run_failed="0" name="BGProc1"/>
-</RunList>
-<TestList logfile="result.txt" logfile_trunc="1">
-	<test name="Test N1">
-    	<check test="outlink" file="tests.runlist2.xml" link="ALL"/> 
-    	<check test="outlink" file="tests.runlist2.xml" link="ALL" ignore_runlist="1"/> 
-    	<check test="event" id="101" val="2" timeout="15000" check_pause="500"/> 
-		<action name="msleep" msec="10000"/>
-		<action name="set" id="101@LocalhostNode" val="0"/>
-		<check test="false" id="101@LocalhostNode" />
-		<action name="set" id="101@3001" val="1"/>
-		<check test="true" id="101@3001" />
-	</test>
-</TestList>
+    <RunList after_run_pause="6000">
+        <item script="./start_test_bg_proc.sh" args="" silent_mode="1" chdir="." ignore_terminated="0"
+              ignore_run_failed="0" name="BGProc1"/>
+    </RunList>
+    <TestList logfile="result.txt" logfile_trunc="1">
+        <test name="Test N1">
+            <check test="outlink" file="tests.runlist2.xml" link="ALL"/>
+            <check test="outlink" file="tests.runlist2.xml" link="ALL" ignore_runlist="1"/>
+            <check test="event" id="101" val="2" timeout="15000" check_pause="500"/>
+            <action name="msleep" msec="10000"/>
+            <action name="set" id="101@LocalhostNode" val="0"/>
+            <check test="false" id="101@LocalhostNode"/>
+            <action name="set" id="101@3001" val="1"/>
+            <check test="true" id="101@3001"/>
+        </test>
+    </TestList>
 </TestScenario>

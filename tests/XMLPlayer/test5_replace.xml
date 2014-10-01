@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
-	<TestList logfile="" logfile_trunc="1">
-		<test name="Test replace" num="51">
-			<action set="MyName=MyVal" />
-			<check test="MyName=MyVal" />
-		</test>
-		<test name="link test" num="52">
-			<check link="LNK" test="link"/>
-		</test>
-	</TestList>
+    <TestList logfile="" logfile_trunc="1">
+        <test name="Test replace" num="51">
+            <action set="MyName=MyVal"/>
+            <check test="MyName=MyVal"/>
+        </test>
+        <test name="link test" num="52">
+            <check link="LNK" test="link"/>
+        </test>
+    </TestList>
 </TestScenario>

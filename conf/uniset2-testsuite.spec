@@ -2,15 +2,19 @@
 
 Name: uniset2-testsuite
 Version: 2.0
-Release: eter0.1
+Release: eter0.2
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
 Url: http://wiki.office.etersoft.ru/asu/
 Source: %name-%version.tar
-# Automatically added by buildreq on Tue Mar 05 2013
+# Automatically added by buildreq on Thu Oct 02 2014
 # optimized out: pkg-config python-base python-devel python-modules
 BuildRequires: python-module-distribute
+
+BuildRequires: python-module-uniset2 >= 2.0-alt7.Build1
+
+Requires: python-module-uniset2 >= 2.0-alt7.Build1
 
 %if_enabled doc
 BuildRequires: doxygen
@@ -93,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Thu Oct 02 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-eter0.2
+- add require to python-module-uniset2
+
 * Sun Feb 02 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-eter0.1
 - modify for uniset2 (uniset-2.0)
 

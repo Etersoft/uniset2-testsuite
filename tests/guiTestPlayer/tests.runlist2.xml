@@ -1,11 +1,12 @@
 <?xml version = '1.0' encoding = 'utf-8'?>
 <TestScenario>
-<RunList after_run_pause="5000">
-   <item script="./start_test_bg_proc2.sh" args="" silent_mode="1" chdir="." ignore_terminated="0" ignore_run_failed="0" name="BGProc1"/>
-</RunList>
-<TestList logfile="result.txt" logfile_trunc="1">
-	<test name="Test N1">
-		<action name="msleep" msec="3000"/>
-	</test>
-</TestList>
+    <RunList after_run_pause="5000">
+        <item script="./start_test_bg_proc2.sh" args="" silent_mode="1" chdir="." ignore_terminated="0"
+              ignore_run_failed="0" name="BGProc1"/>
+    </RunList>
+    <TestList logfile="result.txt" logfile_trunc="1">
+        <test name="Test N1">
+            <action name="msleep" msec="3000"/>
+        </test>
+    </TestList>
 </TestScenario>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
-	<TestList>
-		<test name="Test run script">
-			<action name="script" script="exit 1"/>
-		</test>
-		<test name="Test run script 2">
-			<action name="script" script="echo 'sdfsdfsdfs'; touch /tmp/tt" show_output="0"/>
-		</test>
-	</TestList>
+    <TestList>
+        <test name="Test run script">
+            <action name="script" script="exit 1"/>
+        </test>
+        <test name="Test run script 2">
+            <action name="script" script="echo 'sdfsdfsdfs'; touch /tmp/tt" show_output="0"/>
+        </test>
+    </TestList>
 </TestScenario>

@@ -1,86 +1,88 @@
 <?xml version = '1.0' encoding = 'utf-8'?>
 <TestScenario>
-<RunList>
-   <item script="./start_fg.sh" args="arg1 arg2" chdir="../../Utils/SharedMemory/" ignore_terminated="0" ignore_run_failed="0" name="SharedMemory"/>
-   <item script="./script1.sh" args="arg1 arg2 arg3" chdir="./" ignore_terminated="0" ignore_run_failed="0"/>
-   <item script="./script2.sh" args="arg1 arg2" ignore_terminated="1" ignore_run_failed="0" name="myscript"/>
-</RunList>
-<TestList logfile="result.txt" logfile_trunc="1" replace="MyGlobalVar:101">
-	<test name="ignore test" ignore="1">	
-		<check test="outlink" file="test3.xml" link="ALL"/>
-	</test>
-	<test name="Test outlink:ALL (replace)" ignore_failed="1" replace="MyTestVar:102">
-		<check test="outlink" file="test5_replace.xml" link="num=52" replace="MyName:104,MyVal:10,LNK:num=51"/>
-	</test>	
-	<test name="Test N1" ignore_failed="1">
-	 	<action name="set" id="101@LocalhostNode" val="0"/>
-		<check test="false" id="101@LocalhostNode" />
-		<action name="set" id="101@3001" val="1"/>
-		<check test="true" id="101@3001" />
-		<check test="event" id="101" val="1" timeout="1000" check_pause="100"/>
-		<check test="event" id="101" val="5" timeout="1000" check_pause="100"/>
-		<check test="true" id="Test_DI" />
-		<action name="set" id="101" val="0"/>
-		<check test="false" id="Test_DI" />
-		<check test="link" link="name=Test N3"/>
-	 	<action name="set" id="101 " val="0"/>
-		<check test="false" id="101" />
-		<action name="set" id="101" val="1"/>
-		<check test="true" id="101" />		
-		<check test="outlink" file="test2.xml" link="num=1"/>
-		<check test="false" id="101" />
-		<action name="set" id="101" val="1"/>		
-	</test>
-	<test name="link ignore test">	
-		<check test="outlink" file="test3.xml" link="num=3"/>
-	</test>	
-	<test name="Test outlink:ALL" ignore_failed="1">	
-		<check test="outlink" file="test3.xml" link="ALL"/>
-	</test>
-	<test name="Test outlink:ALL (replace)" ignore_failed="1" replace="MyTestVar:102">
-		<check test="outlink" file="test4_replace.xml" link="ALL" replace="MyName1:101,MyName2:101,ACT:set,TEST:false,REPLACE_NAME:test,RESFILE:replace.txt"/>
-		<check test="outlink" file="test5_replace.xml" link="num=52" replace="MyName:104,MyVal:10,LNK:num=51"/>
-	</test>
-	<test name="Other configures test" num="6">
-		<check test="outlink" file="test6_configures.xml" link="ALL"/>
-	</test>		
-	<test name="Test 'great'" ignore_failed="1">
-		<action name="set" id="109" val="10"/>
-		<check test="great" id="109" val="5" />
-		<check test="great" id="109" val="10" />
-	</test>
-	<test name="Test 'less'" ignore_failed="1">
-		<action name="set" id="109" val="10"/>
-		<check test="less" id="109" val="11" />
-		<check test="less" id="109" val="10" />
-	</test>
-	<test name="Test fail 'less' and 'great'" ignore_failed="1">
-		<action name="set" id="109" val="10"/>
-		<check test="great" id="109" val="110" />
-		<check test="less" id="109" val="4" />
-	</test>
-	<test name="Test N2" ignore_failed="1">	
-		<check test="multicheck" check="101=0,100=1,109=10" />
-		<action name="set" id="100" val="0" reset_time="300" val2="1"/>
-		<action name="msleep" msec="1000" />
-		<check test="equal" id="101" val="1"/>
-		<action name="set" id="101" val="0"/>
-		<check test="equal" id="109" val="10"/>
-		<action name="set" id="101" val="0" reset_time="300" val2="1"/>
-		<action name="msleep" msec="1000" />
-		<action name="multiset" set="101=1,102=0,103=12"/>
-	</test>
-	<test name="Test N3" logfile="test2_result.txt" logfile_trunc="1" ignore_failed="1">
-		<check test="false" id="101" />
-		<check test="true" id="101" />
-		<action name="msleep" msec="1000" />
-		<check test="equal" id="101" val="0"/>
-    </test>
-	<test name="Test N4">
-		<check test="false" id="101" />
-		<check test="true" id="101" />
-		<action name="msleep" msec="1000" />
-		<check test="equal" id="101" val="0"/>
-    </test>
-</TestList>
+    <RunList>
+        <item script="./start_fg.sh" args="arg1 arg2" chdir="../../Utils/SharedMemory/" ignore_terminated="0"
+              ignore_run_failed="0" name="SharedMemory"/>
+        <item script="./script1.sh" args="arg1 arg2 arg3" chdir="./" ignore_terminated="0" ignore_run_failed="0"/>
+        <item script="./script2.sh" args="arg1 arg2" ignore_terminated="1" ignore_run_failed="0" name="myscript"/>
+    </RunList>
+    <TestList logfile="result.txt" logfile_trunc="1" replace="MyGlobalVar:101">
+        <test name="ignore test" ignore="1">
+            <check test="outlink" file="test3.xml" link="ALL"/>
+        </test>
+        <test name="Test outlink:ALL (replace)" ignore_failed="1" replace="MyTestVar:102">
+            <check test="outlink" file="test5_replace.xml" link="num=52" replace="MyName:104,MyVal:10,LNK:num=51"/>
+        </test>
+        <test name="Test N1" ignore_failed="1">
+            <action name="set" id="101@LocalhostNode" val="0"/>
+            <check test="false" id="101@LocalhostNode"/>
+            <action name="set" id="101@3001" val="1"/>
+            <check test="true" id="101@3001"/>
+            <check test="event" id="101" val="1" timeout="1000" check_pause="100"/>
+            <check test="event" id="101" val="5" timeout="1000" check_pause="100"/>
+            <check test="true" id="Test_DI"/>
+            <action name="set" id="101" val="0"/>
+            <check test="false" id="Test_DI"/>
+            <check test="link" link="name=Test N3"/>
+            <action name="set" id="101 " val="0"/>
+            <check test="false" id="101"/>
+            <action name="set" id="101" val="1"/>
+            <check test="true" id="101"/>
+            <check test="outlink" file="test2.xml" link="num=1"/>
+            <check test="false" id="101"/>
+            <action name="set" id="101" val="1"/>
+        </test>
+        <test name="link ignore test">
+            <check test="outlink" file="test3.xml" link="num=3"/>
+        </test>
+        <test name="Test outlink:ALL" ignore_failed="1">
+            <check test="outlink" file="test3.xml" link="ALL"/>
+        </test>
+        <test name="Test outlink:ALL (replace)" ignore_failed="1" replace="MyTestVar:102">
+            <check test="outlink" file="test4_replace.xml" link="ALL"
+                   replace="MyName1:101,MyName2:101,ACT:set,TEST:false,REPLACE_NAME:test,RESFILE:replace.txt"/>
+            <check test="outlink" file="test5_replace.xml" link="num=52" replace="MyName:104,MyVal:10,LNK:num=51"/>
+        </test>
+        <test name="Other configures test" num="6">
+            <check test="outlink" file="test6_configures.xml" link="ALL"/>
+        </test>
+        <test name="Test 'great'" ignore_failed="1">
+            <action name="set" id="109" val="10"/>
+            <check test="great" id="109" val="5"/>
+            <check test="great" id="109" val="10"/>
+        </test>
+        <test name="Test 'less'" ignore_failed="1">
+            <action name="set" id="109" val="10"/>
+            <check test="less" id="109" val="11"/>
+            <check test="less" id="109" val="10"/>
+        </test>
+        <test name="Test fail 'less' and 'great'" ignore_failed="1">
+            <action name="set" id="109" val="10"/>
+            <check test="great" id="109" val="110"/>
+            <check test="less" id="109" val="4"/>
+        </test>
+        <test name="Test N2" ignore_failed="1">
+            <check test="multicheck" check="101=0,100=1,109=10"/>
+            <action name="set" id="100" val="0" reset_time="300" val2="1"/>
+            <action name="msleep" msec="1000"/>
+            <check test="equal" id="101" val="1"/>
+            <action name="set" id="101" val="0"/>
+            <check test="equal" id="109" val="10"/>
+            <action name="set" id="101" val="0" reset_time="300" val2="1"/>
+            <action name="msleep" msec="1000"/>
+            <action name="multiset" set="101=1,102=0,103=12"/>
+        </test>
+        <test name="Test N3" logfile="test2_result.txt" logfile_trunc="1" ignore_failed="1">
+            <check test="false" id="101"/>
+            <check test="true" id="101"/>
+            <action name="msleep" msec="1000"/>
+            <check test="equal" id="101" val="0"/>
+        </test>
+        <test name="Test N4">
+            <check test="false" id="101"/>
+            <check test="true" id="101"/>
+            <action name="msleep" msec="1000"/>
+            <check test="equal" id="101" val="0"/>
+        </test>
+    </TestList>
 </TestScenario>

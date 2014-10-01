@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 
 import pygtk
-#pygtk.require("2.0")
+# pygtk.require("2.0")
 
 import gtk
 
 PADDING = 8
+
 
 class mytest:
     """
     """
 
     def __init__(self):
-
         self.w = gtk.Window()
 
         self.b = gtk.Button('dummy button')
@@ -56,7 +56,6 @@ class mytest:
 
 
     def popolate_list_store(self):
-
         self.combols.append(('1', 'uno'))
         self.combols.append(('2', 'due'))
 
@@ -69,10 +68,10 @@ class mytest:
 
 
 def main():
-  gtk.main()
-  return 0
+    gtk.main()
+    return 0
 
 
 if __name__ == "__main__":
-  app = mytest()
-  main()
+    app = mytest()
+    main()
