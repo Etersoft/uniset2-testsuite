@@ -12,9 +12,9 @@ Source: %name-%version.tar
 # optimized out: pkg-config python-base python-devel python-modules
 BuildRequires: python-module-distribute
 
-BuildRequires: python-module-uniset2 >= 2.0-alt7.Build1
+BuildRequires: python-module-uniset2 >= 2.0-alt6.M70P.7.Build1
 
-Requires: python-module-uniset2 >= 2.0-alt7.Build1
+Requires: python-module-uniset2 >= 2.0-alt6.M70P.7.Build1
 
 %if_enabled doc
 BuildRequires: doxygen
