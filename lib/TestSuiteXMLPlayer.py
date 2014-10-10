@@ -906,6 +906,9 @@ if __name__ == "__main__":
     import tty
     import fcntl
     import os 
+    import termios 
+    
+    old_settings = termios.tcgetattr(sys.stdin)
 
     ts = TestSuiteInterface()
     try:
@@ -984,5 +987,8 @@ if __name__ == "__main__":
         print "(TestSuiteXMLPlayer): catch exception: " + str(e.getError())
     except KeyboardInterrupt:
         print "(TestSuiteXMLPlayer): catch keyboard interrupt.. "
+
+    finally:
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
     exit(1)
