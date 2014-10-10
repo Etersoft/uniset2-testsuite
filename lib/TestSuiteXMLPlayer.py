@@ -14,6 +14,9 @@ from TestSuiteGlobal import *
 from ProcessMonitor import *
 import TestSuitePlayer
 
+class keys():
+   pause = ' ' # break
+   step = 's' # on 'step by step' mode
 
 class tt():  # test type
     Unknwn = 0
@@ -65,6 +68,14 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.initConfig(self.xml)
         self.initTestList(self.xml)
         self.initProcessMonitor(self.xml)
+        self.keyb_inttr_callback = None
+
+    def set_keyboard_interrupt(self, callback):
+    	self.keyb_inttr_callback = callback
+
+    def check_keyboard_interrupt(self):
+    	if self.keyb_inttr_callback != None:
+           self.keyb_inttr_callback()
 
     def get_begin_test_node(self, xml):
         return xml.begnode
@@ -776,6 +787,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             pmonitor.stop()
 
     def play_item(self, inode, xml):
+        self.check_keyboard_interrupt()
         if inode.name == "action":
             return self.action_item(inode)
         elif inode.name == "check":
@@ -873,10 +885,27 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         # print "cumulative: RES=%s (f_res=%d p_res=%d i_res=%d w_res=%d unknown=%d) for %s"%(c_res,f_res,p_res,i_res,w_res,u_res,str(results))
         return c_res
 
+    def on_key_press(self, c):
+        # k = ord(c)
+        if c == keys.pause:
+           print "** PAUSE *** [..press again for continue..]\n"
+           while True:
+
+                try:
+                   if sys.stdin.read(1) == keys.pause:
+                      break;
+                except:
+                   pass
+                    
+                time.sleep(0.5)
 
 if __name__ == "__main__":
 
     from TestSuiteInterface import *
+    import select
+    import tty
+    import fcntl
+    import os 
 
     ts = TestSuiteInterface()
     try:
@@ -926,6 +955,22 @@ if __name__ == "__main__":
         player = TestSuiteXMLPlayer(ts, testfile, ignore_runlist)
         player.show_result_report = show_result
 
+        poller = select.poll()
+        poller.register(sys.stdin, select.POLLIN)
+        tty.setcbreak(sys.stdin)
+        fcntl.fcntl(sys.stdin.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
+
+        def check_key_press():
+            global player;
+            try:
+                events = poller.poll(30)
+                if events:
+                   for c in sys.stdin.read(1):
+                       player.on_key_press(c)
+            except:
+                pass
+
+        player.set_keyboard_interrupt( check_key_press )
         if testname != "":
             player.play_by_name(player.xml, testname, testname_prop)
         else:
