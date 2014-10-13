@@ -160,7 +160,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if xml.begnode != None:
             trunc = to_int(self.replace(xml.begnode.prop("logfile_trunc")))
             self.tsi.set_logfile(self.replace(xml.begnode.prop("logfile")), trunc)
-            self.tsi.set_notimestamp(to_int(self.replace(xml.begnode.prop("notimestamp"))))
+
+            if xml.begnode.prop("notimestamp") != None:
+               self.tsi.set_notimestamp(to_int(self.replace(xml.begnode.prop("notimestamp"))))
+
             self.add_to_global_replace(get_replace_list(to_str(self.replace(xml.begnode.prop("replace")))))
             self.global_conf = self.replace(xml.begnode.prop("config"))
             xml.begnode = xml.begnode.children
@@ -690,7 +693,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             td = datetime.timedelta(0, ttime)
             ts = str(td).split('.')[0]
-            print "--------------\nTotal time: %s\n" % ts
+            print "--------------\nTotal time: %s\n" % self.tsi.elapsed_time_str()
 
     def play_all(self, xml=None):
         if xml == None:
@@ -925,7 +928,7 @@ if __name__ == "__main__":
             print "--test-name TestName      - Run only 'TestName' test. 'TestName' can be specified as a 'prop=name'."
             print "                            By default, the search goes on name='TestName'"
             print "--ignore-run-list         - Ignore <RunList>"
-            print "--no-timestamp            - Does not display the time"
+            print "--show-timestamp          - Display the time"
             print "--ignore-nodes            - Do not use '@node'"
             exit(0)
 
@@ -947,12 +950,12 @@ if __name__ == "__main__":
             testname_prop = p[0]
 
         ignore_runlist = ts.checkArgParam("--ignore-run-list", False)
-        notimestamp = ts.checkArgParam("--no-timestamp", False)
+        showtimestamp = ts.checkArgParam("--show-timestamp", False)
         ignore_nodes = ts.checkArgParam("--ignore-nodes", False)
 
         cf = conflist.split(',')
         ts.init_testsuite(cf, show_log, show_actlog)
-        ts.set_notimestamp(notimestamp)
+        ts.set_notimestamp( showtimestamp == False )
         ts.set_ignore_nodes(ignore_nodes)
 
         player = TestSuiteXMLPlayer(ts, testfile, ignore_runlist)

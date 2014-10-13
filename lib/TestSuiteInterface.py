@@ -29,6 +29,8 @@ class TestSuiteInterface():
         self.log_show_numstr = False
         self.ignore_nodes = False
         self.rcheck = re.compile(r"([\w@\ ]{1,})([!><]{0,}[=]{0,})([\d\ ]{1,})")
+        self.beg_time = time.time()
+        self.notime = False
 
     def get_aliasname(self, cname):
         v = cname.strip().split('@')
@@ -208,6 +210,12 @@ class TestSuiteInterface():
     def get_ignorefailed(self):
         return self.ignorefailed
 
+    def start_time(self):
+        self.beg_time = time.time()
+
+    def set_notime(self, state):
+        self.notime = state
+        
     def write_logfile(self, txt):
         if self.logfilename == "" or self.logfilename == None:
             return
@@ -219,6 +227,21 @@ class TestSuiteInterface():
         except IOError:
             pass
 
+    def elapsed_time(self, t=None):
+    	if t == None:
+    	   t = time.time() - self.beg_time
+    	   
+        h = int(t / 3600.0)
+        t = t - 3600*h;
+        m = int(t / 60)
+        s = int(t - m*60)
+        t = t - s
+        return [h,m,s,t]
+
+    def elapsed_time_str(self, t=None):
+        h,m,s,t = self.elapsed_time(t)
+    	return "%02d:%02d:%02d [%.3f]"%(h,m,s,t)
+
     def print_log(self, txt):
 
         self.log_numstr += 1
@@ -227,6 +250,9 @@ class TestSuiteInterface():
             t_tm = str(time.strftime("%Y-%m-%d %H:%M:%S"))
             txt = "%s %s%s" % (t_tm, self.colsep, txt)
 
+        if self.notime == False:
+           txt = "%s %s %s"%(self.elapsed_time_str(),self.colsep,txt)
+           
         if self.show_test_type:
             txt = "%6s %s %s" % ("CHECK", self.colsep, txt)
 
@@ -247,6 +273,9 @@ class TestSuiteInterface():
         if self.notimestamp == False:
             t_tm = str(time.strftime("%Y-%m-%d %H:%M:%S"))
             txt = "%s %s%s" % (t_tm, self.colsep, txt)
+
+        if self.notime == False:
+           txt = "%s %s %s"%(self.elapsed_time_str(),self.colsep,txt)
 
         if self.show_test_type:
             txt = "%6s %s %s" % ("ACTION", self.colsep, txt)
