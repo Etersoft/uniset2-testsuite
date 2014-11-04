@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.0
-Release: eter1
+Release: eter2
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Tue Nov 04 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-eter2
+- add show test filename in 'result report'
+
 * Fri Oct 10 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-eter1
 - added key press event processing
 

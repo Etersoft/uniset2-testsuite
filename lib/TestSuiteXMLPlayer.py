@@ -59,6 +59,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.null_pm = ProcessMonitor([])
 
         self.xml = self.loadXML(xmlfile)
+        self.filename = xmlfile
 
         # воспользуемся свойством питон и добавим к классу нужное нам поле
         self.xml.begnode = None
@@ -681,7 +682,14 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def print_result_report(self, results):
         if self.show_result_report == True:
-            print "RESULT REPORT:\n**************"
+            head ="\nRESULT REPORT: '%s'"%(self.filename)
+            head2=""
+            foot2=""
+            for i in range(0,len(head)):
+                head2+='*'
+                foot2+="-"
+           
+            print "%s\n%s"%(head,head2)
             i = 1
             ttime = 0
             for res in results:
@@ -693,7 +701,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             td = datetime.timedelta(0, ttime)
             ts = str(td).split('.')[0]
-            print "--------------\nTotal time: %s\n" % self.tsi.elapsed_time_str()
+            print foot2
+            print "Total time: %s\n" % self.tsi.elapsed_time_str()
 
     def play_all(self, xml=None):
         if xml == None:
