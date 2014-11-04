@@ -934,6 +934,7 @@ if __name__ == "__main__":
             print "--show-test-log           - Show test log"
             print "--show-action-log         - Show actions log"
             print "--show-result-report      - Show result report "
+            print "--show-result-only        - Show only result report (ignore --show-action-log, --show-test-log)"
             print "--test-name TestName      - Run only 'TestName' test. 'TestName' can be specified as a 'prop=name'."
             print "                            By default, the search goes on name='TestName'"
             print "--ignore-run-list         - Ignore <RunList>"
@@ -950,6 +951,11 @@ if __name__ == "__main__":
         show_log = ts.checkArgParam("--show-test-log", False)
         show_actlog = ts.checkArgParam("--show-action-log", False)
         show_result = ts.checkArgParam("--show-result-report", False)
+        show_result_only = ts.checkArgParam("--show-result-only", False)
+        if show_result_only == True:
+           show_actlog = False
+           show_log = False
+      
         testname = ts.getArgParam("--test-name", "")
         testname_prop = ""
 

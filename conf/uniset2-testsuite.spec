@@ -99,6 +99,7 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %changelog
 * Tue Nov 04 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-eter2
 - add show test filename in 'result report'
+- add --show-result-only
 
 * Fri Oct 10 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-eter1
 - added key press event processing
