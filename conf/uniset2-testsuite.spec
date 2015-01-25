@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.0
-Release: eter2
+Release: eter3
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Sun Jan 25 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter3
+- add --default-timeout and --default-check-pause parameters
+
 * Tue Nov 04 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-eter2
 - add show test filename in 'result report'
 - add --show-result-only

@@ -157,7 +157,7 @@ class TestSuiteInterface():
         for i in range(0, len(sys.argv)):
             if sys.argv[i] == param:
                 if i + 1 < len(sys.argv):
-                    return to_int(strsys.argv[i + 1])
+                    return to_int(sys.argv[i + 1])
                 else:
                     break;
 

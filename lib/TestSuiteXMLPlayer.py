@@ -70,6 +70,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.initTestList(self.xml)
         self.initProcessMonitor(self.xml)
         self.keyb_inttr_callback = None
+        
+        self.default_timeout = 5000
+        self.default_check_pause = 300
 
     def set_keyboard_interrupt(self, callback):
     	self.keyb_inttr_callback = callback
@@ -403,9 +406,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 test = 'MULTICHECK'
 
         t_out = to_int(self.replace(node.prop("timeout")))
+        if t_out <= 0:
+           t_out = self.default_timeout
+           
         t_check = to_int(self.replace(node.prop("check_pause")))
         if t_check <= 0:
-            t_check = 500
+            t_check = self.default_check_pause
 
         if test == "=":
             return ( t_PASSED if self.tsi.isEqual(s_id, s_val, t_out, t_check, ui) else t_FAILED )
@@ -940,6 +946,8 @@ if __name__ == "__main__":
             print "--ignore-run-list         - Ignore <RunList>"
             print "--show-timestamp          - Display the time"
             print "--ignore-nodes            - Do not use '@node'"
+            print "--default-timeout msec        - Default <check timeout='..' ../>.'"
+            print "--default-check-pause msec    - Default <check check_pause='..' ../>.'"
             exit(0)
 
         testfile = ts.getArgParam("--testfile", "")
@@ -967,6 +975,9 @@ if __name__ == "__main__":
         ignore_runlist = ts.checkArgParam("--ignore-run-list", False)
         showtimestamp = ts.checkArgParam("--show-timestamp", False)
         ignore_nodes = ts.checkArgParam("--ignore-nodes", False)
+        tout = ts.getArgInt("--default-timeout", 5000)
+        check_pause = ts.getArgInt("--default-check-pause", 500)
+
 
         cf = conflist.split(',')
         ts.init_testsuite(cf, show_log, show_actlog)
@@ -975,6 +986,8 @@ if __name__ == "__main__":
 
         player = TestSuiteXMLPlayer(ts, testfile, ignore_runlist)
         player.show_result_report = show_result
+        player.default_timeout = tout
+        player.default_check_pause = check_pause
 
         poller = select.poll()
         poller.register(sys.stdin, select.POLLIN)
@@ -997,6 +1010,7 @@ if __name__ == "__main__":
         else:
             player.play_all()
 
+
         exit(0)
 
     except TestSuiteException, e:
@@ -1007,6 +1021,10 @@ if __name__ == "__main__":
         print "(TestSuiteXMLPlayer): catch keyboard interrupt.. "
 
     finally:
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+#         sys.stdin = sys.__stdin__
+		  pass
+
+    if sys.stdin.closed == False:
+       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
     exit(1)
