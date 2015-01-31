@@ -3,7 +3,7 @@ from gettext import gettext as _
 
 import gtk
 import gobject
-import uniset
+import uniset2
 
 from edit_global_functions import *
 from dlg_xlist import fid as xlist_fid

@@ -8,7 +8,7 @@ import datetime
 import copy
 import re
 
-import uniset2 as uniset
+import uniset2
 
 from TestSuiteGlobal import *
 from ProcessMonitor import *

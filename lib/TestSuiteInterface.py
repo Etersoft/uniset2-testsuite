@@ -4,6 +4,7 @@
 import sys
 import time
 import subprocess
+import re
 
 import uniset2.UInterface
 
@@ -28,7 +29,7 @@ class TestSuiteInterface():
         self.log_numstr = 0
         self.log_show_numstr = False
         self.ignore_nodes = False
-        self.rcheck = re.compile(r"([\w@\ ]{1,})([!><]{0,}[=]{0,})([\d\ ]{1,})")
+        self.rcheck = re.compile(r"([\w@\ :]{1,})([!><]{0,}[=]{1,})([\d\ ]{1,})")
         self.beg_time = time.time()
         self.notime = False
 

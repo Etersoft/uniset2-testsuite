@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.0
-Release: eter3
+Release: eter4
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,10 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Sun Feb 01 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter4
+- fixed bug in TestSuiteInterface (error in regular expression)
+- fixed bug: import uniset (remove require uniset) (must be uniset2)
+
 * Sun Jan 25 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter3
 - add --default-timeout and --default-check-pause parameters
 

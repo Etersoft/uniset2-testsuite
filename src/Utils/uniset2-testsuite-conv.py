@@ -5,7 +5,7 @@ import os
 import sys
 import re
 
-import uniset
+import uniset2
 
 
 # ([\w@]{1,})([!><]{0,}[=]{0,})(\d{1,})")

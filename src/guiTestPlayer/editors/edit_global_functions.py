@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import uniset
+import uniset2
 
 from TestSuiteGlobal import *
 

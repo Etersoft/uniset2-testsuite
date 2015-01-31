@@ -8,7 +8,7 @@ import signal
 import threading
 from subprocess import Popen
 
-import uniset2 as uniset
+import uniset2
 
 from TestSuiteGlobal import *
 

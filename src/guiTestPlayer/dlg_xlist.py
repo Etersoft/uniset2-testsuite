@@ -3,7 +3,7 @@ from gettext import gettext as _
 
 import gtk
 import gobject
-import uniset
+import uniset2
 
 
 def get_str_val(str_val):

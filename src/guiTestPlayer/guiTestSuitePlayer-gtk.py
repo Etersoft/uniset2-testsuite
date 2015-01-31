@@ -93,7 +93,7 @@ class guiTestSuitePlayer():
         cf = conflist.split(',')
 
         is_system_run_flag = sys.argv[0].startswith("./")
-        self.datdir = ( "/usr/share/uniset-testsuite/player/" if not is_system_run_flag else "./" )
+        self.datdir = ( "/usr/share/uniset2-testsuite/player/" if not is_system_run_flag else "./" )
         self.imgdir = self.datdir + "images/"
         self.moddir = self.datdir + "editors/"
 

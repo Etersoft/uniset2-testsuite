@@ -4,7 +4,7 @@ import re
 
 import gtk
 import gobject
-import uniset
+import uniset2
 
 from simple_val_editor import *
 

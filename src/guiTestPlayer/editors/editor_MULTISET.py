@@ -3,7 +3,7 @@ from gettext import gettext as _
 
 import gtk
 import gobject
-import uniset
+import uniset2
 
 from multiple_val_editor import *
 
