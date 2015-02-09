@@ -1,0 +1,59 @@
+/*! \page pgTstMake Описание упрощённого текстового формата
+
+   - \ref uts_Common
+
+	\section tst_Common Общая часть
+     Данный формат является попыткой облегчить написание простых сценариев. Он позволяет записывать тесты в виде коротких "команд".
+     Для получение полноценного xml-сценария, необходимо воспользоваться утилитой \b uniset2-testsuite-tst-make.
+     
+    \section tst_Format Формат (пример записи)
+\code
+# comment comment
+t: test 1
+s: 123=34,345=456
+c: 123>34
+c:      55<=45
+m:4000
+
+t: test 23;num="1"
+s: rlk@fsdf=3
+c: wrf@tte>5
+l: num=12
+o: num=1; test.xml
+o: num=23
+
+#comment
+\endcode
+
+Где:
+- \b t - test (через ';' можно указать дополнительные параметры)
+- \b s - action set=""
+- \b c - check  test=""
+- \b m - msleep
+- \b l - link
+- \b o - outlink (через ';' обязательно требуется указывать файл)
+
+Указанный сценарий после команды \b uniset2-testsuite-tst-make \b file.tst  преобразуется к виду
+\code
+<?xml version="1.0" encoding="utf-8"?>
+<testsuite>
+<TestList>
+<!--  comment comment -->
+  <test name="test 1" >
+    <action set="123=34,345=456"/>
+    <check test="123>34"/>
+    <check test="55<=45"/>
+    <action msleep="4000"/>
+  </test>
+  <test name="test 23" num="1">
+    <action set="rlk@fsdf=3"/>
+    <check test="wrf@tte>5"/>
+    <check test="link" link="num=12"/>
+    <check test="outlink" link="num=1" file="test.xml"/>
+    <check test="outlink" link="num=23" file="UNKNOWN"/>
+<!-- comment -->
+  </test>
+</TestList>
+</testsuite>
+\endcode
+*/
