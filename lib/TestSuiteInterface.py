@@ -50,6 +50,11 @@ class TestSuiteInterface():
         for i in range(0, len(sys.argv)):
             if i >= Params.max:
                 break;
+
+            # confist передан отдельно
+            if sys.argv[i] == "--confile" or ( i!=0 and sys.argv[i-1] == "--confile" ):
+               continue
+               
             self.params.add(sys.argv[i])
 
         try:
