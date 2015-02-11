@@ -981,17 +981,16 @@ if __name__ == "__main__":
     import select
     import tty
     import fcntl
-    import os 
-    import termios 
+#    import os 
+#    import termios 
     
-    old_settings = termios.tcgetattr(sys.stdin)
+#    old_settings = termios.tcgetattr(sys.stdin)
 
     ts = TestSuiteInterface()
     try:
 
         if ts.checkArgParam("--help", False) == True or ts.checkArgParam("-h", False) == True:
-            print "Usage: %s [--confile [configure.xml|alias@conf1.xml,alias2@conf2.xml,..]  --testfile scenarion.xml" % \
-                  sys.argv[0]
+            print "Usage: %s [--confile [configure.xml|alias@conf1.xml,alias2@conf2.xml,..]  --testfile scenario.xml" % sys.argv[0]
             print "\n"
             print "--confile [conf.xml,alias1@conf.xml,..]  - Configuration file."
             print "--testfile tests.xml      - Test scenarion file."
@@ -1050,22 +1049,22 @@ if __name__ == "__main__":
         player.default_check_pause = check_pause
         player.junit = junit
 
-        poller = select.poll()
-        poller.register(sys.stdin, select.POLLIN)
-        tty.setcbreak(sys.stdin)
-        fcntl.fcntl(sys.stdin.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
+ #       poller = select.poll()
+ #       poller.register(sys.stdin, select.POLLIN)
+ #       tty.setcbreak(sys.stdin)
+ #       fcntl.fcntl(sys.stdin.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
 
-        def check_key_press():
-            global player;
-            try:
-                events = poller.poll(30)
-                if events:
-                   for c in sys.stdin.read(1):
-                       player.on_key_press(c)
-            except:
-                pass
+ #       def check_key_press():
+ #           global player;
+ #           try:
+ #               events = poller.poll(30)
+ #               if events:
+ #                  for c in sys.stdin.read(1):
+ #                      player.on_key_press(c)
+ #           except:
+ #               pass
 
-        player.set_keyboard_interrupt( check_key_press )
+ #       player.set_keyboard_interrupt( check_key_press )
         if testname != "":
             player.play_by_name(player.xml, testname, testname_prop)
         else:
@@ -1085,7 +1084,7 @@ if __name__ == "__main__":
 #         sys.stdin = sys.__stdin__
 		  pass
 
-    if sys.stdin.closed == False:
-       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+#    if sys.stdin.closed == False:
+#       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
     exit(1)

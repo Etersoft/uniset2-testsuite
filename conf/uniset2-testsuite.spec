@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.0
-Release: eter5
+Release: eter6
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Wed Feb 11 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter6
+- disable 'press key event' processing
+
 * Tue Feb 10 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter5
 - experimental: add "text testsuite format"
 - experimental: new command line argument: --junit report.xml 
