@@ -87,9 +87,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.default_check_pause = 300
         self.junit = ""
 
-        # стэк вызовов каждой проверки с резултатами..
-        self.result_stack = []
-
     def add_result(self, res):
         pass
 
@@ -708,7 +705,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def print_result_report(self, results):
     
         if self.junit != "":
-           self.print_result_report_junit(self.result_stack,self.junit)
+           self.print_result_report_junit(self.junit)
            
         if self.show_result_report == True:
            head ="\nRESULT REPORT: '%s'"%(self.filename)
@@ -732,29 +729,69 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
            print foot2
            print "Total time: %s\n" % self.tsi.elapsed_time_str()
 
-    def print_result_report_junit(self, results, repfilename):
+    def print_result_report_junit(self,repfilename):
         try:
-        
+
+           beg = False
+           t_stack = []
+           testlist = []
+           t_name = "";
+           for l in self.tsi.log_list:
+               i = self.tsi.re_log.findall(l)
+               
+               if len(i[0]) < logid.Num:
+                  print "UNKNOWN LOG FORMAT: %s"%str(i)
+                  continue
+
+               r = i[0]   
+               if r[logid.TestType] == 'BEGIN':
+                  beg = True
+                  t_name = r[logid.Txt]
+                  t_stack = []
+               elif r[logid.TestType] == 'FINISH' and beg == True:
+
+                  t_info = self.tsi.re_tinfo.findall( r[logid.Txt] )
+                  t_r = t_info[0]
+                  t_sec = int(t_r[1])*60*60 + int(t_r[1])*60 + int(t_r[3]);
+                  t_time = "%d.%s"%(t_sec,t_r[4])
+
+                  testlist.append([t_name,r[logid.Result],t_time,r[logid.Txt],t_stack,l])
+                  beg = False
+                  t_stack = []
+               elif beg == True:
+                  t_stack.append([r,l])
+               
            repfile = open(repfilename, "w")
            repfile.writelines("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-           repfile.writelines("<testsuite name=\"%s\" tests=\"%d\">\n"%(self.filename,len(results)))
-           i = 1
-           for r in results:
-               if r[res.Result] == t_PASSED:
-                   repfile.writelines("  <testcase name=\"%s\" time=\"%s\" id=\"%d\"/>\n"%(r[res.Name],r[res.Time],i))
+           repfile.writelines("<testsuite name=\"%s\" tests=\"%d\">\n"%(self.filename,len(testlist)))
+               
+           tnum = 1
+           for r in testlist:
+               if r[1] == t_PASSED:
+                   repfile.writelines("  <testcase name=\"%s\" time=\"%s\" id=\"%d\"/>\n"%(r[0],r[2],tnum))
                else:
-                   repfile.writelines("  <testcase name=\"%s\" time=\"%s\" id=\"%d\">\n"%(r[res.Name],r[res.Time],i))
-                   if r[res.Result] == t_IGNORE:
+                   repfile.writelines("  <testcase name=\"%s\" time=\"%s\" id=\"%d\">\n"%(r[0],r[2],tnum))
+                   if r[1] == t_IGNORE:
                       repfile.writelines("    </skipped>\n")
-                   elif r[res.Result] != t_PASSED:
-                      repfile.writelines("    <failure>%s: %s</failure>\n"%(r[res.File],r[res.Error]))
-                   repfile.writelines("  </testcase>\n")
+                   elif r[1] != t_PASSED:
+                      repfile.writelines("    <failure>%s</failure>\n"%(r[3]))
+                      repfile.writelines("    <system-err>\n")
+                      for l in r[4]:
+                          if l[0][logid.Result] == "FAILED":
+                             repfile.writelines("%s\n"%str(l[1]))
+                      repfile.writelines("    </system-err>\n")
 
-               i = i + 1
+                      repfile.writelines("    <system-out>\n")
+                      for l in r[4]:
+                          repfile.writelines("%s\n"%str(l[1]))
+                      repfile.writelines("    </system-out>\n")
+
+                   repfile.writelines("  </testcase>\n")
+                
+               tnum += 1
 
            repfile.writelines("</testsuite>\n")
            repfile.close()
-           
         except IOError:
            pass
 
@@ -868,7 +905,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if t_ignore:
             self.tsi.log(t_IGNORE, t_IGNORE, "'%s'" % t_name, False)
             ret = [t_IGNORE, t_name, 0, "", xml.getFileName()]
-            self.result_stack.append(ret)
             return ret
 
         curnode = self.begin(testnode)
@@ -901,7 +937,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             i_res.append(t_FAILED)
             tm_finish = e.getFinishTime()
             ttime = tm_finish - tm_start
-            self.result_stack.append([t_FAILED, t_name, ttime, e.getError(), xml.getFileName()])
             raise e
         else:
             tm_finish = time.time()
@@ -914,7 +949,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             td = datetime.timedelta(0, ttime)
             self.tsi.log(tres[res.Result], "FINISH", "'%s' /%s/" % (t_name, td), False)
 
-        self.result_stack.append([tres[res.Result],t_name,ttime,tres[res.Error],xml.getFileName()])
         return [tres[res.Result], t_name, ttime,tres[res.Error],xml.getFileName()]
 
     def get_cumulative_result(self, results):
@@ -1036,7 +1070,6 @@ if __name__ == "__main__":
         tout = ts.getArgInt("--default-timeout", 5000)
         check_pause = ts.getArgInt("--default-check-pause", 500)
         junit = ts.getArgParam("--junit", "")
-
 
         cf = conflist.split(',')
         ts.init_testsuite(cf, show_log, show_actlog)

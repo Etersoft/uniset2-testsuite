@@ -11,6 +11,16 @@ import uniset2.UInterface
 from TestSuiteGlobal import *
 
 
+class logid():
+    Type = 0  
+    Time = 1
+    msec = 2
+    DateTime = 3
+    Result = 4 
+    TestType = 5
+    Txt  = 6
+    Num = 7
+
 class TestSuiteInterface():
     def __init__(self):
 
@@ -32,6 +42,12 @@ class TestSuiteInterface():
         self.rcheck = re.compile(r"([\w@\ :]{1,})([!><]{0,}[=]{1,})([\d\ ]{1,})")
         self.beg_time = time.time()
         self.notime = False
+        self.log_list = []
+
+        # "CHECK : 00:00:05 [  0.016] : 2015-03-14 02:46:06 :[ PASSED] :  FINISH: 'Global replace' /0:00:00.000837/"
+        self.re_log = re.compile(r"([\w]{1,})[^:]{0,}:[ ]{0,}(\d{2}:\d{2}:\d{2}) \[[ ]{0,}([\d.]{1,})\] : (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) :\[[ ]{0,}([\w]{0,})\][ ]{0,}:[ ]{0,}([^:]{1,}):[  ]{0,}(.*)$")
+        # "'simple test' /0:00:00.001361/"
+        self.re_tinfo = re.compile(r"(.*)[ ]{0,}/(\d{1,}):(\d{1,2}):(\d{1,2}).(\d{1,})/$")
 
     def get_aliasname(self, cname):
         v = cname.strip().split('@')
@@ -246,19 +262,23 @@ class TestSuiteInterface():
 
     def elapsed_time_str(self, t=None):
         h,m,s,t = self.elapsed_time(t)
-    	return "%02d:%02d:%02d [%.3f]"%(h,m,s,t)
+    	return "%02d:%02d:%02d [%7.3f]"%(h,m,s,t)
 
     def print_log(self, txt):
 
         self.log_numstr += 1
 
+        t_tm = str(time.strftime("%Y-%m-%d %H:%M:%S"))
+        llog = "%s %s%s" % (t_tm, self.colsep, txt)
         if self.notimestamp == False:
-            t_tm = str(time.strftime("%Y-%m-%d %H:%M:%S"))
             txt = "%s %s%s" % (t_tm, self.colsep, txt)
 
+        etm = self.elapsed_time_str()
+        llog = "%s %s %s"%(etm,self.colsep,llog)
         if self.notime == False:
-           txt = "%s %s %s"%(self.elapsed_time_str(),self.colsep,txt)
+           txt = "%s %s %s"%(etm,self.colsep,txt)
            
+        llog = "%6s %s %s" % ("CHECK", self.colsep, llog)
         if self.show_test_type:
             txt = "%6s %s %s" % ("CHECK", self.colsep, txt)
 
@@ -266,6 +286,7 @@ class TestSuiteInterface():
             txt = "%4s %s %s" % (self.log_numstr, self.colsep, txt)
 
         self.write_logfile(txt)
+        self.log_list.append(llog)
 
         if self.printlog == True:
             print txt
@@ -276,13 +297,18 @@ class TestSuiteInterface():
 
         self.log_numstr += 1
 
+        t_tm = str(time.strftime("%Y-%m-%d %H:%M:%S"))
+        llog = "%s %s%s" % (t_tm, self.colsep, txt)
+
         if self.notimestamp == False:
-            t_tm = str(time.strftime("%Y-%m-%d %H:%M:%S"))
             txt = "%s %s%s" % (t_tm, self.colsep, txt)
 
+        etm = self.elapsed_time_str()
+        llog = "%s %s %s"%(etm,self.colsep,llog)
         if self.notime == False:
-           txt = "%s %s %s"%(self.elapsed_time_str(),self.colsep,txt)
+           txt = "%s %s %s"%(etm,self.colsep,txt)
 
+        llog = "%6s %s %s" % ("ACTION", self.colsep, llog)
         if self.show_test_type:
             txt = "%6s %s %s" % ("ACTION", self.colsep, txt)
 
@@ -290,6 +316,7 @@ class TestSuiteInterface():
             txt = "%4s %s %s" % (self.log_numstr, self.colsep, txt)
 
         self.write_logfile(txt)
+        self.log_list.append(llog)
 
         if self.printactlog == True:
             print txt
