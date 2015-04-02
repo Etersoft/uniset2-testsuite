@@ -58,10 +58,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         # для реализации механизма ссылок на внешние файлы
         self.xmllist = dict()
 
-        # словарь замен (для реализации шаблонов)
-        self.replace_global_dict = dict()
-        self.replace_test_dict = dict()
-        self.replace_dict = dict()
+        # списки пар ["что заменить","на что заменить"] замен (для реализации шаблонов)
+        self.replace_global_dict = []
+        self.replace_test_dict = []
+        self.replace_dict = []
 
         # загружаем основной файл
         self.global_ignore_runlist = ignore_runlist
@@ -251,7 +251,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         try:
             for v in lst:
                 if v[0] != '' and v[0] != v[1]:
-                    self.replace_global_dict[v[0]] = v[1]
+                    self.replace_global_dict.append([v[0],v[1]])
         except KeyError, ValueError:
             pass
 
@@ -263,7 +263,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         try:
             for v in lst:
                 if v[0] != '' and v[0] != v[1]:
-                    self.replace_test_dict[v[0]] = v[1]
+                    self.replace_test_dict.append([v[0],v[1]])
         except KeyError, ValueError:
             pass
 
@@ -275,7 +275,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         try:
             for v in lst:
                 if v[0] != '':
-                    self.replace_test_dict.pop(v[0])
+                   self.replace_delete_key(self.replace_test_dict,v[0])
         except KeyError, ValueError:
             pass
 
@@ -288,7 +288,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         try:
             for v in lst:
                 if v[0] != '':
-                    self.replace_dict[v[0]] = v[1]
+                    self.replace_dict.append([v[0],v[1]])
         except KeyError, ValueError:
             pass
             # print "GLOBAL REPLACE: " + str(self.replace_global_dict)
@@ -304,7 +304,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         try:
             for v in lst:
                 if v[0] != '':
-                    self.replace_dict.pop(v[0])
+                    self.replace_delete_key(self.replace_dict,v[0])
         except KeyError, ValueError:
             pass
 
@@ -328,10 +328,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         ''' преобразование, если есть в словаре замена.. '''
         if name == None or name == "" or name.__class__.__name__ == "int":
             return name
-        # print "** replace **"
-        #print "GLOBAL REPLACE: " + str(self.replace_global_dict)
-        #print "TEST REPLACE: " + str(self.replace_test_dict)
-        #print "ITEM REPLACE: " + str(self.replace_dict)
+#        print "** replace **"
+#        print "GLOBAL REPLACE: " + str(self.replace_global_dict)
+#        print "TEST REPLACE: " + str(self.replace_test_dict)
+#        print "ITEM REPLACE: " + str(self.replace_dict)
 
         name = self.replace_in(name, self.replace_dict)
         name = self.replace_in(name, self.replace_test_dict)
@@ -341,9 +341,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def replace_in(self, name, r_dict):
         try:
-            for k, v in r_dict.items():
-                # print "(repl): name=%s k=%s  v=%s"%(name,k,v)
+            for k,v in r_dict:
+#               print "(repl): name='%s' k='%s'  v='%s'"%(name,k,v)
                 name = name.replace(k, v)
+                
+#                print "(repl):Rname='%s'"%name
 
             return name
 
@@ -351,6 +353,16 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             pass
 
         return None
+
+    def replace_delete_key(self, r_dict, key):
+        try:
+            for e in r_dict:
+                if e[0] == key:
+                   r_dict.remove(e)
+                   return
+
+        except KeyError, ValueError:
+            pass
 
     def get_current_ui(self, alias):
         ui = self.tsi.get_ui(alias)

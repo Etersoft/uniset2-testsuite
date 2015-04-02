@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.0
-Release: eter7
+Release: eter8
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Thu Apr 02 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter8
+- modify replace 'mechanism'..
+
 * Mon Mar 16 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter7
 - modify junit report generator
 
