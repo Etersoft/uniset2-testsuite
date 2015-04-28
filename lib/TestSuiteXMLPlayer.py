@@ -7,6 +7,7 @@ import threading
 import datetime
 import copy
 import re
+import string
 
 import uniset2
 
@@ -732,7 +733,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
            ttime = 0
            for r in results:
                td = datetime.timedelta(0, r[res.Time])
-               print "%3d. [%6s] - %s /%s/" % (i, r[res.Result], r[res.Name], td)
+               print "%s. [%7s] - %s /%s/" % (string.rjust(str(i),3), r[res.Result], r[res.Name], td)
                i = i + 1
                ttime = ttime + r[res.Time]
 
