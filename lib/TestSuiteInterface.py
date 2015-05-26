@@ -43,6 +43,8 @@ class TestSuiteInterface():
         self.beg_time = time.time()
         self.notime = False
         self.log_list = []
+        self.nrecur = 0
+        self.ntab = False
 
         # "CHECK : 00:00:05 [  0.016] : 2015-03-14 02:46:06 :[ PASSED] :  FINISH: 'Global replace' /0:00:00.000837/"
         self.re_log = re.compile(r"([\w]{1,})[^:]{0,}:[ ]{0,}(\d{2}:\d{2}:\d{2}) \[[ ]{0,}([\d.]{1,})\] : (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) :\[[ ]{0,}([\w*]{0,})\][ ]{0,}:[ ]{0,}([^:]{1,}):[  ]{0,}(.*)$")
@@ -265,6 +267,19 @@ class TestSuiteInterface():
         h,m,s,t = self.elapsed_time(t)
     	return "%02d:%02d:%02d [%7.3f]"%(h,m,s,t)
 
+    def set_tab_space(self,txt):
+        # сдвиг "уровня" в зависимости от рекурсии
+        #s_tab = ""
+        #if self.nrecur > 0:
+        #   for i in range(0, self.nrecur):
+        #       s_tab="%s     "%s_tab
+        #txt="%s%s"%(s_tab,txt)
+        
+        if self.ntab == True:
+           txt="     %s"%(txt)
+        
+        return txt
+
     def print_log(self, txt):
 
         self.log_numstr += 1
@@ -288,6 +303,7 @@ class TestSuiteInterface():
 
         self.write_logfile(txt)
         self.log_list.append(llog)
+
 
         if self.printlog == True:
             print txt
@@ -325,7 +341,9 @@ class TestSuiteInterface():
                 sys.stdout.flush()
 
     def log(self, t_result, t_test, txt, throw=False):
-        txt1 = str("[%7s] %s%8s%s %s" % (t_result, self.colsep, t_test, self.colsep, txt))
+
+        txt2 = self.set_tab_space(txt)
+        txt1 = str("[%7s] %s%8s%s %s" % (t_result, self.colsep, t_test, self.colsep, txt2))
 
         self.print_log(txt1)
         if self.log_callback:
@@ -335,7 +353,8 @@ class TestSuiteInterface():
             raise TestSuiteException(txt1)
 
     def actlog(self, t_result, t_act, txt, throw=False):
-        txt1 = str("[%7s] %s%8s%s %s" % (t_result, self.colsep, t_act, self.colsep, txt))
+        txt2 = self.set_tab_space(txt)
+        txt1 = str("[%7s] %s%8s%s %s" % (t_result, self.colsep, t_act, self.colsep, txt2))
         self.print_actlog(txt1)
         if self.actlog_callback:
             self.actlog_callback(t_result, t_test, txt, throw)
@@ -387,7 +406,7 @@ class TestSuiteInterface():
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_FAILED, "TRUE", "%s != true timeout=%d msec" % (s_id, t_out), True)
+            self.log(t_FAILED, "TRUE", "%s!=true timeout=%d msec" % (s_id, t_out), True)
 
         except UException, e:
             self.log(t_FAILED, "TRUE", "(%s=true) error: %s" % (s_id, e.getError()), True)
@@ -413,13 +432,13 @@ class TestSuiteInterface():
                 sys.stdout.flush()
             while t_tick >= 0:
                 if ui.getValue(s_id) == False:
-                    self.log(t_PASSED, "FALSE", "%s = false" % s_id, False)
+                    self.log(t_PASSED, "FALSE", "%s=false" % s_id, False)
                     return True
 
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_FAILED, "FALSE", "%s != false timeout=%d msec" % (s_id, t_out), True)
+            self.log(t_FAILED, "FALSE", "%s!=false timeout=%d msec" % (s_id, t_out), True)
 
         except UException, e:
             self.log(t_FAILED, "FALSE", "(%s=false) error: %s" % (s_id, e.getError()), True)
@@ -448,7 +467,7 @@ class TestSuiteInterface():
             while t_tick >= 0:
                 v = ui.getValue(s_id)
                 if v == val:
-                    self.log(t_PASSED, "EQUAL", "%s = %d" % (s_id, val), False)
+                    self.log(t_PASSED, "EQUAL", "%s=%d" % (s_id, val), False)
                     return True
 
                 time.sleep(t_sleep)
@@ -483,7 +502,7 @@ class TestSuiteInterface():
             while t_tick >= 0:
                 v = ui.getValue(s_id)
                 if v != val:
-                    self.log(t_PASSED, "NOTEQUAL", "%s = %d" % (s_id, val), False)
+                    self.log(t_PASSED, "NOTEQUAL", "%s=%d" % (s_id, val), False)
                     return True
 
                 time.sleep(t_sleep)
@@ -516,7 +535,7 @@ class TestSuiteInterface():
             while t_tick >= 0:
                 v = ui.getValue(s_id)
                 if ( cond == '>=' and v >= val ) or ( cond == '>' and v > val ):
-                    self.log(t_PASSED, "GREAT", "%s %s %d" % (s_id, cond, val), False)
+                    self.log(t_PASSED, "GREAT", "%s%s%d" % (s_id, cond, val), False)
                     return True
 
                 time.sleep(t_sleep)
@@ -525,7 +544,7 @@ class TestSuiteInterface():
             self.log(t_FAILED, "GREAT", "%s=%d not %s %d timeout=%d msec" % (s_id, v, cond, val, t_out), True)
 
         except UException, e:
-            self.log(t_FAILED, "GREAT", "(%s %s %d) error: %s" % (s_id, cond, val, e.getError()), True)
+            self.log(t_FAILED, "GREAT", "(%s%s%d) error: %s" % (s_id, cond, val, e.getError()), True)
 
         return False
 
@@ -549,7 +568,7 @@ class TestSuiteInterface():
             while t_tick >= 0:
                 v = ui.getValue(s_id)
                 if ( cond == '<=' and v <= val ) or ( cond == '<' and v < val ):
-                    self.log(t_PASSED, "LESS", "%s %s %d" % (s_id, cond, val), False)
+                    self.log(t_PASSED, "LESS", "%s%s%d" % (s_id, cond, val), False)
                     return True
 
                 time.sleep(t_sleep)
@@ -558,14 +577,14 @@ class TestSuiteInterface():
             self.log(t_FAILED, "LESS", "%s=%d not %s %d timeout=%d msec" % (s_id, v, cond, val, t_out), True)
 
         except UException, e:
-            self.log(t_FAILED, "LESS", "(%s %s %d) error: %s" % (s_id, cond, val, e.getError()), True)
+            self.log(t_FAILED, "LESS", "(%s%s%d) error: %s" % (s_id, cond, val, e.getError()), True)
 
         return False
 
     def msleep(self, msec):
         if self.log_flush:
             sys.stdout.flush()
-        self.actlog(" ", " ", "sleep %d msec" % msec, False)
+        self.actlog(" ", "SLEEP", "sleep %d msec" % msec, False)
         time.sleep((msec / 1000.))
 
     def setValue(self, s_id, s_val, ui=None):

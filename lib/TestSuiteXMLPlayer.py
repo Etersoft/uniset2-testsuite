@@ -481,7 +481,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if t_node != None:
                 logfile = self.tsi.get_logfile()
                 self.tsi.log(" ", "LINK", "go to %s='%s'" % (t_field, t_name), False)
+                ntab = self.tsi.ntab
+                self.tsi.ntab = False
                 res = self.play_test(xml, t_node, logfile);
+                self.tsi.ntab = ntab
                 self.del_from_replace(r_list)
                 return res[0]
 
@@ -491,6 +494,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         if test == "OUTLINK":
 
+            self.tsi.ntab = False
             t_file = self.get_outlink_filename(node)
             if t_file == "":
                 self.tsi.log(t_FAILED, "OUTLINK", "Unknown file. Use file=''", True)
@@ -515,8 +519,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             t_link = to_str(self.replace(node.prop("link")))
 
             if t_link == "ALL":
+                self.tsi.ntab = True;
                 self.tsi.log(" ", "OUTLINK", "go to file='%s' play ALL" % (t_file), False)
+                self.tsi.nrecur+=1
+                self.tsi.ntab = False;
                 res = self.play_xml(t_xml)
+                self.tsi.nrecur-=1
                 # возващаем обобщённый результат
                 # см. play_xml
                 self.del_from_replace(r_list)
@@ -527,14 +535,18 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 t_node = self.find_test(t_xml, t_name, t_field)
                 if t_node != None:
                     logfile = self.tsi.get_logfile()
+                    self.tsi.ntab = True;
                     self.tsi.log(" ", "OUTLINK", "go to file='%s' %s='%s'" % (t_file, t_field, t_name), False)
+                    self.tsi.nrecur+=1
+                    self.tsi.ntab = False;
                     res = self.play_test(t_xml, t_node, logfile);
+                    self.tsi.ntab = False;
+                    self.tsi.nrecur-=1
                     self.del_from_replace(r_list)
                     return res[0]
                 else:
                     self.del_from_replace(r_list)
-                    self.tsi.log(t_FAILED, "OUTLINK",
-                                 "Not found in file='%s' test (%s='%s')" % (t_file, t_field, t_name), True)
+                    self.tsi.log(t_FAILED, "OUTLINK","Not found in file='%s' test (%s='%s')" % (t_file, t_field, t_name), True)
                     return t_FAILED
 
         self.tsi.log(t_FAILED, "TestSuiteXMLPlayer", "(check_item): Unknown item type='%s'" % test, True)
@@ -647,7 +659,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             s_v2 = to_int(self.replace(node.prop("rval")))
 
             res = self.tsi.setValue(s_id, s_val, ui)
-            self.tsi.actlog(" ", " ", "set reset time %d msec for id=%s" % (reset_msec, s_id), False)
+            self.tsi.actlog(" ", "RESET", "set reset time %d msec for id=%s" % (reset_msec, s_id), False)
             t = threading.Timer((reset_msec / 1000.), self.on_reset_timer, [s_id, s_v2, reset_msec, ui])
             self.add_reset_thread(t.getName(), t)
             t.start()
@@ -940,6 +952,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
            print "---------------------------------------------------------------------------------------------------------------------"
            
         self.tsi.log("", "BEGIN", "'%s'" % t_name, False)
+        self.tsi.ntab = True
         i_res = []
         tm_start = time.time()
         tm_finish = tm_start;
@@ -963,6 +976,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             tres = self.get_cumulative_result(i_res)
             ttime = tm_finish - tm_start
             td = datetime.timedelta(0, ttime)
+            self.tsi.ntab = False
             self.tsi.log(tres[res.Result], "FINISH", "'%s' /%s/" % (t_name, td), False)
 
         return [tres[res.Result], t_name, ttime,tres[res.Error],xml.getFileName()]
