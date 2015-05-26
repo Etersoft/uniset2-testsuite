@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.0
-Release: eter9
+Release: eter10
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Tue May 26 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter10
+- add test separator (--------)
+
 * Tue Apr 28 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter9
 - minor fixes.. (result print format)
 

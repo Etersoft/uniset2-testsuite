@@ -752,8 +752,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
            for l in self.tsi.log_list:
                i = self.tsi.re_log.findall(l)
                
-               if len(i[0]) < logid.Num:
-                  print "UNKNOWN LOG FORMAT: %s"%str(i)
+               if len(i)==0 or len(i[0]) < logid.Num:
+                  print "UNKNOWN LOG FORMAT: %s"%str(l)
                   continue
 
                r = i[0]   
@@ -762,7 +762,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                   t_name = r[logid.Txt]
                   t_stack = []
                elif r[logid.TestType] == 'FINISH' and beg == True:
-
                   t_info = self.tsi.re_tinfo.findall( r[logid.Txt] )
                   t_r = t_info[0]
                   t_sec = int(t_r[1])*60*60 + int(t_r[1])*60 + int(t_r[3]);
@@ -936,6 +935,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.tsi.set_ignorefailed(to_int(self.replace(testnode.prop("ignore_failed"))))
         self.test_conf = self.replace(testnode.prop("config"))
 
+        # чисто визуальное отделение нового теста 
+        if self.tsi.printlog == True:
+           print "---------------------------------------------------------------------------------------------------------------------"
+           
         self.tsi.log("", "BEGIN", "'%s'" % t_name, False)
         i_res = []
         tm_start = time.time()
