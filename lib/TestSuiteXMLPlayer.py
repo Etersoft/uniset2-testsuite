@@ -115,7 +115,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 fdoc.close()
                 # Заменяем символы '<', для создания и загрузки корректного xml
                 txt = self.rless.sub(r'\1&lt;\3', txt)
-                print txt
                 xml = UniXML(txt, True)
                 # если UniXML создан из текста, а не файла (см. выше)
                 # тогда надо искуственно инициализировать fname, потому-что
