@@ -115,6 +115,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 fdoc.close()
                 # Заменяем символы '<', для создания и загрузки корректного xml
                 txt = self.rless.sub(r'\1&lt;\3', txt)
+                print txt
                 xml = UniXML(txt, True)
                 # если UniXML создан из текста, а не файла (см. выше)
                 # тогда надо искуственно инициализировать fname, потому-что
@@ -442,17 +443,31 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if t_check <= 0:
             t_check = self.default_check_pause
 
+        t_hold = to_int(self.replace(node.prop("holdtime")))
+
         if test == "=":
-            return ( t_PASSED if self.tsi.isEqual(s_id, s_val, t_out, t_check, ui) else t_FAILED )
+            if t_hold > 0:
+               return ( t_PASSED if self.tsi.holdEqual(s_id, s_val, t_hold, t_check, ui) else t_FAILED )
+            else:
+               return ( t_PASSED if self.tsi.isEqual(s_id, s_val, t_out, t_check, ui) else t_FAILED )
 
         if test == "!=":
-            return ( t_PASSED if self.tsi.isNotEqual(s_id, s_val, t_out, t_check, ui) else t_FAILED )
+            if t_hold > 0:
+               return ( t_PASSED if self.tsi.holdNotEqual(s_id, s_val, t_hold, t_check, ui) else t_FAILED )
+            else:
+               return ( t_PASSED if self.tsi.isNotEqual(s_id, s_val, t_out, t_check, ui) else t_FAILED )
 
         if test == ">=" or test == ">":
-            return ( t_PASSED if self.tsi.isGreat(s_id, s_val, t_out, t_check, ui, test) else t_FAILED )
+            if t_hold > 0:
+               return ( t_PASSED if self.tsi.holdGreat(s_id, s_val, t_hold, t_check, ui, test) else t_FAILED )
+            else:
+               return ( t_PASSED if self.tsi.isGreat(s_id, s_val, t_out, t_check, ui, test) else t_FAILED )
 
         if test == "<=" or test == "<":
-            return ( t_PASSED if self.tsi.isLess(s_id, s_val, t_out, t_check, ui, test) else t_FAILED)
+            if t_hold > 0:
+               return ( t_PASSED if self.tsi.holdLess(s_id, s_val, t_hold, t_check, ui, test) else t_FAILED)
+            else:
+               return ( t_PASSED if self.tsi.isLess(s_id, s_val, t_out, t_check, ui, test) else t_FAILED)
 
         if test == "MULTICHECK":
             self.tsi.log(" ", "MULTICHECK", "...", False)
@@ -467,7 +482,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             slist = self.str_to_idlist(s_set, ui)
             res = True
             for s in slist:
-                res = self.tsi.isEqual(self.replace(s[0]), self.replace(s[1]), t_out, t_check, ui)
+                if t_hold > 0:
+                   res = self.tsi.holdEqual(self.replace(s[0]), self.replace(s[1]), t_hold, t_check, ui)
+                else:
+                   res = self.tsi.isEqual(self.replace(s[0]), self.replace(s[1]), t_out, t_check, ui)
             return ( t_PASSED if res else t_FAILED )
 
         if test == "LINK":
