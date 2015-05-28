@@ -43,6 +43,16 @@
             <check test="101=0"/>
             <action set="101=1"/>
         </test>
+        <test ignore_failed="1" name="HOLD test">
+            <action set="104=20"/>
+            <check check_pause="500" test="104=20" holdtime="4000"/>
+            <check check_pause="500" test="104<=20" holdtime="4000"/>
+            <check check_pause="500" test="104>=20" holdtime="4000"/>
+            <check check_pause="500" test="104>20" holdtime="4000"/>
+            <check check_pause="500" test="104<20" holdtime="4000"/>
+            <check check_pause="500" test="104!=20" holdtime="4000"/>
+        </test>
+ 
         <test name="link ignore test">
             <check file="test3.xml" link="num=3" test="outlink"/>
         </test>

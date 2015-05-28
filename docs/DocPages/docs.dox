@@ -20,6 +20,7 @@
 		- \ref uts_Check_MULTICHECK
 		- \ref uts_Check_LINK
 		- \ref uts_Check_OUTLINK
+		- \ref uts_Check_HOLD
    - \ref uts_TestParams
    - \ref uts_Templates
    - \ref uts_Nodes
@@ -263,14 +264,17 @@
   - 6. multicheck
   - 7. link
   - 8. outlink
-
+  - 9. "проверка постоянства" (проверка выполнения заданного условия в течение времени)
+  
  \note Для всех видов тестов (кроме link,outlink) разрешено использование полей \b timeout и \b check_pause.
-   - \b  timeout - задаёт время ожидания в мсек.
+   - \b timeout - задаёт время ожидания в мсек (не действует если указано поле holdtime!)
    - \b check_pause - задаёт паузу между проверками значения.
 
  \note Если \a timeout > 0, то провека будет повторяться каждые \a check_pause миллисекунд, пока не будет успешна, или
 пока не истечёт время ожидания (\a timeout).
-  
+
+ \note Если \a holdtime > 0, то провека будет повторяться каждые \a check_pause миллисекунд, пока она успешна в течение указанного времени
+
   \subsection uts_Check_FALSE 1. 'FALSE'. Проверка ложности значения.
 \code
   <check test="101=0" />
@@ -338,6 +342,19 @@
 
 	\b ignore_run_list - [0,1] игнорировать (или нет) список запускаемых процессов (\<RunList>)
    
+\subsection uts_Check_HOLD 9. \a HOLD.. Проверка постоянства условия в течение заданного времени
+
+Если в <check> указано поле \b holdtime="..msec.." то этот тест превращается в проверку \b постоянства выполнения заданного условия
+в течение указанного времени. Поддерживаются все предыдущие "условия".
+\code
+   <check test="101>20" holdtime="5000/>
+   <check test="101!=21" holdtime="5000/>
+   <check test="101>=24" holdtime="5000/>
+   <check test="101=30" holdtime="5000/>
+   <check test="101<=100" holdtime="1000/>
+\endcode
+\warning Если указаны поля timeout=".." и holdtime=".." то (действует) имеет больший приоритет \b holdtime.
+
    
    \section uts_TestParams Параметры тестов
    
