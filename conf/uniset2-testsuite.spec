@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.0
-Release: eter11
+Release: eter12
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Thu May 28 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter12
+- improve the output format
+
 * Thu May 28 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter11
 - add new check 'holdtime=..'
 - minor fixes

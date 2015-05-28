@@ -269,14 +269,14 @@ class TestSuiteInterface():
 
     def set_tab_space(self,txt):
         # сдвиг "уровня" в зависимости от рекурсии
-        #s_tab = ""
-        #if self.nrecur > 0:
-        #   for i in range(0, self.nrecur):
-        #       s_tab="%s     "%s_tab
-        #txt="%s%s"%(s_tab,txt)
+        s_tab = ""
+        if self.nrecur > 0:
+           for i in range(0, self.nrecur):
+               s_tab="%s.   "%s_tab
+        txt="%s%s"%(s_tab,txt)
         
         if self.ntab == True:
-           txt="     %s"%(txt)
+           txt=".   %s"%(txt)
         
         return txt
 

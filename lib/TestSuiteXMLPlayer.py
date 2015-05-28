@@ -956,8 +956,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.test_conf = self.replace(testnode.prop("config"))
 
         # чисто визуальное отделение нового теста 
-        if self.tsi.printlog == True:
-           print "---------------------------------------------------------------------------------------------------------------------"
+#        if self.tsi.printlog == True and self.tsi.nrecur<=0:
+#           print "---------------------------------------------------------------------------------------------------------------------"
            
         self.tsi.ntab = False
         self.tsi.log("", "BEGIN", "'%s'" % t_name, False)
@@ -988,7 +988,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.tsi.ntab = False
             self.tsi.log(tres[res.Result], "FINISH", "'%s' /%s/" % (t_name, td), False)
             # чисто визуальное отделение нового теста 
-            if self.tsi.printlog == True:
+            if self.tsi.printlog == True and self.tsi.nrecur<=0:
                print "---------------------------------------------------------------------------------------------------------------------"
 
         return [tres[res.Result], t_name, ttime,tres[res.Error],xml.getFileName()]
