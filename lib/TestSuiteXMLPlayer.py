@@ -396,7 +396,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if t_field == None or t_field == "":
             t_field = "name"
             t_name = l[0]
-        elif len(t_link) > 1:
+        elif len(l) > 1:
             t_name = l[1]
 
         return (t_name, t_field)
@@ -513,6 +513,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 self.tsi.log(t_FAILED, "OUTLINK", "Unknown file. Use file=''", True)
                 return t_FAILED
 
+            t_link = to_str(self.replace(node.prop("link")))
+            t_name, t_field = self.get_link_param(node)
+
+            # replace должен действовать только после "получения" t_link
             r_list = get_replace_list(to_str(self.replace(node.prop("replace"))))
             r_list = self.replace_list(r_list)
             self.add_to_replace(r_list)
@@ -529,7 +533,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     return t_FAILED
 
             self.set_ignore_runlist(t_xml, t_ignore_runlist)
-            t_link = to_str(self.replace(node.prop("link")))
 
             if t_link == "ALL":
                 self.tsi.log(" ", "OUTLINK", "go to file='%s' play ALL" % (t_file), False)
@@ -542,7 +545,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 return res[0]
 
             else:
-                t_name, t_field = self.get_link_param(node)
                 t_node = self.find_test(t_xml, t_name, t_field)
                 if t_node != None:
                     logfile = self.tsi.get_logfile()
