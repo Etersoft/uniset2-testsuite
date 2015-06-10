@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.0
-Release: eter13
+Release: eter14
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Wed Jun 10 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter14
+- added support spec symbol '#','$','%' for replace
+
 * Mon Jun 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter13
 - fixed bug in replace mechanism..(link='..')
 
