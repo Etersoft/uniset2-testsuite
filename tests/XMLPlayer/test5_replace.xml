@@ -15,6 +15,7 @@
         <test name="spec symbol test" num="SpecTest">
             <check test="#N=$Val"/>
             <check test="%N=$Val"/>
+            <check test="[N]={Val}"/>
         </test>
     </TestList>
 </TestScenario>
