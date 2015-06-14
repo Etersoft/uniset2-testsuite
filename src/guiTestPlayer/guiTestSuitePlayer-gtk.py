@@ -1837,8 +1837,8 @@ if __name__ == "__main__":
         exit(0)
 
     except TestSuiteException, e:
-        print "(guiTestSuiteXMLPlayer): catch exception: " + str(e.getError())
+        print "(guiTestSuiteXMLPlayer): catch exception: " + str(e.getError)
     except UException, e:
-        print "(guiTestSuiteXMLPlayer): catch exception: " + str(e.getError())
+        print "(guiTestSuiteXMLPlayer): catch exception: " + str(e.getError)
 
     exit(1)

@@ -1,25 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import time
 import subprocess
-import re
-
-import uniset2.UInterface
 
 from TestSuiteGlobal import *
 
 
 class logid():
-    Type = 0  
+    Type = 0
     Time = 1
     msec = 2
     DateTime = 3
-    Result = 4 
+    Result = 4
     TestType = 5
-    Txt  = 6
+    Txt = 6
     Num = 7
+
 
 class TestSuiteInterface():
     def __init__(self):
@@ -47,12 +43,14 @@ class TestSuiteInterface():
         self.ntab = False
 
         # "CHECK : 00:00:05 [  0.016] : 2015-03-14 02:46:06 :[ PASSED] :  FINISH: 'Global replace' /0:00:00.000837/"
-        self.re_log = re.compile(r"([\w]{1,})[^:]{0,}:[ ]{0,}(\d{2}:\d{2}:\d{2}) \[[ ]{0,}([\d.]{1,})\] : (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) :\[[ ]{0,}([\w*]{0,})\][ ]{0,}:[ ]{0,}([^:]{1,}):[  ]{0,}(.*)$")
+        self.re_log = re.compile(
+            r"([\w]{1,})[^:]{0,}:[ ]{0,}(\d{2}:\d{2}:\d{2}) \[[ ]{0,}([\d.]{1,})\] : (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) :\[[ ]{0,}([\w*]{0,})\][ ]{0,}:[ ]{0,}([^:]{1,}):[  ]{0,}(.*)$")
         # "'simple test' /0:00:00.001361/"
-#        self.re_tinfo = re.compile(r"(.*)[ ]{0,}(/(\d{1,}):(\d{1,2}):(\d{1,2}).(\d{1,})/){0,}$")
+        #        self.re_tinfo = re.compile(r"(.*)[ ]{0,}(/(\d{1,}):(\d{1,2}):(\d{1,2}).(\d{1,})/){0,}$")
         self.re_tinfo = re.compile(r"[^/]{0,}(/(\d{1,}):(\d{1,2}):(\d{1,2})([.](\d{0,})){0,}/){0,}$")
 
-    def get_aliasname(self, cname):
+    @staticmethod
+    def get_aliasname(cname):
         v = cname.strip().split('@')
         if len(v) > 1:
             return [v[0], v[1]]
@@ -68,12 +66,12 @@ class TestSuiteInterface():
 
         for i in range(0, len(sys.argv)):
             if i >= Params.max:
-                break;
+                break
 
             # confist передан отдельно
-            if sys.argv[i] == "--confile" or ( i!=0 and sys.argv[i-1] == "--confile" ):
-               continue
-               
+            if sys.argv[i] == '--confile' or (i != 0 and sys.argv[i - 1] == '--confile'):
+                continue
+
             self.params.add(sys.argv[i])
 
         try:
@@ -97,7 +95,7 @@ class TestSuiteInterface():
                     self.add_uniset_config(s[1], s[0])
 
         except UException, e:
-            self.log(t_FAILED, "(init_testsuite): " + str(e.getError()), True)
+            self.log(t_FAILED, '(init_testsuite): ' + str(e.getError()), True)
             raise e
 
     def get_config_list(self):
@@ -116,7 +114,7 @@ class TestSuiteInterface():
         if alias in self.ui_list:
             if already_ignore == False:
                 self.log(t_FAILED,
-                         "(add_uniset_config): %s already added..(Ignore add '%s@%s')" % (alias, alias, xmlfile), True)
+                         '(add_uniset_config): %s already added..(Ignore add \'%s@%s\')' % (alias, alias, xmlfile), True)
                 return None
             return self.ui_list[alias]
 
@@ -131,13 +129,13 @@ class TestSuiteInterface():
         if alias in self.ui_list:
             if already_ignore == False:
                 self.log(t_FAILED,
-                         "(add_modbus_config): %s already added..(Ignore add '%s@%s')" % (alias, alias, xmlfile), True)
+                         '(add_modbus_config): %s already added..(Ignore add \'%s@%s\')' % (alias, alias, mbslave), True)
                 return None
             return self.ui_list[alias]
 
         ip, port = get_mbslave_param(mbslave)
-        if ip == None:
-            self.log(t_FAILED, "(add_modbus_config): Failed get ip:port!  mbslave='%s'" % (mbslave), True)
+        if ip is None:
+            self.log(t_FAILED, '(add_modbus_config): Failed get ip:port!  mbslave=\'%s\'' % (mbslave), True)
             return None
 
         ui = UInterface()
@@ -152,15 +150,15 @@ class TestSuiteInterface():
 
     def set_default_config(self, xmlfile, already_ignore=True):
         if xmlfile in self.ui_list:
-            if already_ignore == False:
+            if not already_ignore:
                 self.log(t_FAILED,
-                         "(set_default_config): %s already added..(Ignore add '%s@%s')" % (alias, alias, xmlfile), True)
+                         '(set_default_config): %s already added..(Ignore add..)' % (xmlfile), True)
                 return False
 
             ui = UInterface()
             ui.create_uniset_interface(xmlfile, self.params)
             self.default_ui = ui
-            self.conf_list["default"] = xmlfile
+            self.conf_list['default'] = xmlfile
 
     def get_default_ui(self):
         return self.default_ui
@@ -174,7 +172,7 @@ class TestSuiteInterface():
                 if i + 1 < len(sys.argv):
                     return sys.argv[i + 1]
                 else:
-                    break;
+                    break
 
         return defval
 
@@ -184,7 +182,7 @@ class TestSuiteInterface():
                 if i + 1 < len(sys.argv):
                     return to_int(sys.argv[i + 1])
                 else:
-                    break;
+                    break
 
         return defval
 
@@ -215,7 +213,7 @@ class TestSuiteInterface():
         if self.logfilename == "" or self.logfilename == None:
             return
         if trunc == True:
-            logfile = open(self.logfilename, "w")
+            logfile = open(self.logfilename, 'w')
             logfile.close()
 
     def get_logfile(self):
@@ -240,12 +238,12 @@ class TestSuiteInterface():
 
     def set_notime(self, state):
         self.notime = state
-        
+
     def write_logfile(self, txt):
         if self.logfilename == "" or self.logfilename == None:
             return
         try:
-            logfile = open(self.logfilename, "a")
+            logfile = open(self.logfilename, 'a')
             logfile.writelines(txt)
             logfile.writelines('\n')
             logfile.close()
@@ -253,59 +251,58 @@ class TestSuiteInterface():
             pass
 
     def elapsed_time(self, t=None):
-    	if t == None:
-    	   t = time.time() - self.beg_time
-    	   
+        if t is None:
+            t = time.time() - self.beg_time
+
         h = int(t / 3600.0)
-        t = t - 3600*h;
+        t = t - 3600 * h
         m = int(t / 60)
-        s = int(t - m*60)
+        s = int(t - m * 60)
         t = t - s
-        return [h,m,s,t]
+        return [h, m, s, t]
 
     def elapsed_time_str(self, t=None):
-        h,m,s,t = self.elapsed_time(t)
-    	return "%02d:%02d:%02d [%7.3f]"%(h,m,s,t)
+        h, m, s, t = self.elapsed_time(t)
+        return '%02d:%02d:%02d [%7.3f]' % (h, m, s, t)
 
-    def set_tab_space(self,txt):
+    def set_tab_space(self, txt):
         # сдвиг "уровня" в зависимости от рекурсии
         s_tab = ""
         if self.nrecur > 0:
-           for i in range(0, self.nrecur):
-               s_tab="%s.   "%s_tab
-        txt="%s%s"%(s_tab,txt)
-        
-        if self.ntab == True:
-           txt=".   %s"%(txt)
-        
+            for i in range(0, self.nrecur):
+                s_tab = '%s.   ' % s_tab
+        txt = '%s%s' % (s_tab, txt)
+
+        if self.ntab:
+            txt = '.   %s' % (txt)
+
         return txt
 
     def print_log(self, txt):
 
         self.log_numstr += 1
 
-        t_tm = str(time.strftime("%Y-%m-%d %H:%M:%S"))
-        llog = "%s %s%s" % (t_tm, self.colsep, txt)
-        if self.notimestamp == False:
+        t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
+        llog = '%s %s%s' % (t_tm, self.colsep, txt)
+        if not self.notimestamp:
             txt = "%s %s%s" % (t_tm, self.colsep, txt)
 
         etm = self.elapsed_time_str()
-        llog = "%s %s %s"%(etm,self.colsep,llog)
-        if self.notime == False:
-           txt = "%s %s %s"%(etm,self.colsep,txt)
-           
-        llog = "%6s %s %s" % ("CHECK", self.colsep, llog)
+        llog = '%s %s %s' % (etm, self.colsep, llog)
+        if not self.notime:
+            txt = '%s %s %s' % (etm, self.colsep, txt)
+
+        llog = '%6s %s %s' % ("CHECK", self.colsep, llog)
         if self.show_test_type:
-            txt = "%6s %s %s" % ("CHECK", self.colsep, txt)
+            txt = '%6s %s %s' % ("CHECK", self.colsep, txt)
 
         if self.log_show_numstr:
-            txt = "%4s %s %s" % (self.log_numstr, self.colsep, txt)
+            txt = '%4s %s %s' % (self.log_numstr, self.colsep, txt)
 
         self.write_logfile(txt)
         self.log_list.append(llog)
 
-
-        if self.printlog == True:
+        if self.printlog:
             print txt
             if self.log_flush:
                 sys.stdout.flush()
@@ -314,28 +311,28 @@ class TestSuiteInterface():
 
         self.log_numstr += 1
 
-        t_tm = str(time.strftime("%Y-%m-%d %H:%M:%S"))
-        llog = "%s %s%s" % (t_tm, self.colsep, txt)
+        t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
+        llog = '%s %s%s' % (t_tm, self.colsep, txt)
 
-        if self.notimestamp == False:
-            txt = "%s %s%s" % (t_tm, self.colsep, txt)
+        if not self.notimestamp:
+            txt = '%s %s%s' % (t_tm, self.colsep, txt)
 
         etm = self.elapsed_time_str()
-        llog = "%s %s %s"%(etm,self.colsep,llog)
-        if self.notime == False:
-           txt = "%s %s %s"%(etm,self.colsep,txt)
+        llog = '%s %s %s' % (etm, self.colsep, llog)
+        if not self.notime:
+            txt = '%s %s %s' % (etm, self.colsep, txt)
 
-        llog = "%6s %s %s" % ("ACTION", self.colsep, llog)
+        llog = '%6s %s %s' % ('ACTION', self.colsep, llog)
         if self.show_test_type:
-            txt = "%6s %s %s" % ("ACTION", self.colsep, txt)
+            txt = '%6s %s %s' % ('ACTION', self.colsep, txt)
 
         if self.log_show_numstr:
-            txt = "%4s %s %s" % (self.log_numstr, self.colsep, txt)
+            txt = '%4s %s %s' % (self.log_numstr, self.colsep, txt)
 
         self.write_logfile(txt)
         self.log_list.append(llog)
 
-        if self.printactlog == True:
+        if self.printactlog:
             print txt
             if self.log_flush:
                 sys.stdout.flush()
@@ -343,45 +340,45 @@ class TestSuiteInterface():
     def log(self, t_result, t_test, txt, throw=False):
 
         txt2 = self.set_tab_space(txt)
-        txt1 = str("[%7s] %s%8s%s %s" % (t_result, self.colsep, t_test, self.colsep, txt2))
+        txt1 = str('[%7s] %s%8s%s %s' % (t_result, self.colsep, t_test, self.colsep, txt2))
 
         self.print_log(txt1)
         if self.log_callback:
             self.log_callback(t_result, t_test, txt, throw)
 
-        if self.ignorefailed == False and throw == True:
+        if False == self.ignorefailed and True == throw:
             raise TestSuiteException(txt1)
 
     def actlog(self, t_result, t_act, txt, throw=False):
         txt2 = self.set_tab_space(txt)
-        txt1 = str("[%7s] %s%8s%s %s" % (t_result, self.colsep, t_act, self.colsep, txt2))
+        txt1 = str('[%7s] %s%8s%s %s' % (t_result, self.colsep, t_act, self.colsep, txt2))
         self.print_actlog(txt1)
         if self.actlog_callback:
-            self.actlog_callback(t_result, t_test, txt, throw)
+            self.actlog_callback(t_result, t_act, txt, throw)
 
-        if self.ignorefailed == False and throw == True:
+        if False == self.ignorefailed and True == throw:
             raise TestSuiteException(txt1)
 
     def get_ui(self, cf):
         try:
-            if cf == "" or cf == None:
+            if cf == "" or cf is None:
                 return None
 
             return self.ui_list[cf]
 
         except KeyError, ValueError:
-            self.log(t_FAILED, "(get_ui): Unknown cf='%s'" % cf, True)
+            self.log(t_FAILED, '(get_ui): Unknown cf=\'%s\'' % cf, True)
 
         return None
 
     def getValue(self, s_id, ui=None):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         return ui.getValue(s_id)
 
     def isTrue(self, s_id, t_out, t_check, ui=None):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         t_tick = round(t_out / t_check)
@@ -400,21 +397,21 @@ class TestSuiteInterface():
                 sys.stdout.flush()
             while t_tick >= 0:
                 if ui.getValue(s_id) == True:
-                      self.log(t_PASSED, "TRUE", "%s=true" % s_id, False)
-                      return True
-                
+                    self.log(t_PASSED, 'TRUE', '%s=true' % s_id, False)
+                    return True
+
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_FAILED, "TRUE", "%s!=true timeout=%d msec" % (s_id, t_out), True)
+            self.log(t_FAILED, 'TRUE', '%s!=true timeout=%d msec' % (s_id, t_out), True)
 
         except UException, e:
-            self.log(t_FAILED, "TRUE", "(%s=true) error: %s" % (s_id, e.getError()), True)
+            self.log(t_FAILED, 'TRUE', '(%s=true) error: %s' % (s_id, e.getError()), True)
 
         return False
 
     def holdTrue(self, s_id, t_out, t_check, ui=None):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         t_tick = round(t_out / t_check)
@@ -433,22 +430,22 @@ class TestSuiteInterface():
                 sys.stdout.flush()
             while t_tick >= 0:
                 if ui.getValue(s_id) == False:
-                   self.log(t_FAILED, "TRUE", "HOLD %s=true holdtime=%d msec" % (s_id, t_out), True)
-                   return False
+                    self.log(t_FAILED, 'TRUE', 'HOLD %s=true holdtime=%d msec' % (s_id, t_out), True)
+                    return False
 
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_PASSED, "TRUE", "HOLD %s=true holdtime=%d" % (s_id,t_out), False)
+            self.log(t_PASSED, 'TRUE', 'HOLD %s=true holdtime=%d' % (s_id, t_out), False)
             return True
 
         except UException, e:
-            self.log(t_FAILED, "TRUE", "HOLD (%s=true) error: %s" % (s_id, e.getError()), True)
+            self.log(t_FAILED, 'TRUE', 'HOLD (%s=true) error: %s' % (s_id, e.getError()), True)
 
         return False
 
     def isFalse(self, s_id, t_out, t_check, ui=None):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         t_tick = round(t_out / t_check)
@@ -467,21 +464,21 @@ class TestSuiteInterface():
             while t_tick >= 0:
 
                 if ui.getValue(s_id) == False:
-                   self.log(t_PASSED, "FALSE", "%s=false" % s_id, False)
-                   return True
+                    self.log(t_PASSED, 'FALSE', '%s=false' % s_id, False)
+                    return True
 
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_FAILED, "FALSE", "%s!=false timeout=%d msec" % (s_id, t_out), True)
+            self.log(t_FAILED, 'FALSE', '%s!=false timeout=%d msec' % (s_id, t_out), True)
 
         except UException, e:
-            self.log(t_FAILED, "FALSE", "(%s=false) error: %s" % (s_id, e.getError()), True)
+            self.log(t_FAILED, 'FALSE', '(%s=false) error: %s' % (s_id, e.getError()), True)
 
         return False
 
     def holdFalse(self, s_id, t_out, t_check, ui=None):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         t_tick = round(t_out / t_check)
@@ -500,22 +497,22 @@ class TestSuiteInterface():
             while t_tick >= 0:
 
                 if ui.getValue(s_id) == True:
-                   self.log(t_FAILED, "FALSE", "HOLD %s!=false holdtime=%d msec" % (s_id, t_out), True)
-                   return False
+                    self.log(t_FAILED, 'FALSE', 'HOLD %s!=false holdtime=%d msec' % (s_id, t_out), True)
+                    return False
 
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_PASSED, "FALSE", "HOLD %s=false holdtime=%d msec" % s_id, False)
+            self.log(t_PASSED, 'FALSE', 'HOLD %s=false holdtime=%d msec' % s_id, False)
             return True
 
         except UException, e:
-            self.log(t_FAILED, "FALSE", "HOLD (%s=false) error: %s" % (s_id, e.getError()), True)
+            self.log(t_FAILED, 'FALSE', 'HOLD (%s=false) error: %s' % (s_id, e.getError()), True)
 
         return False
 
     def isEqual(self, s_id, val, t_out, t_check, ui=None):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         t_tick = round(t_out / t_check)
@@ -536,21 +533,21 @@ class TestSuiteInterface():
             while t_tick >= 0:
                 v = ui.getValue(s_id)
                 if v == val:
-                    self.log(t_PASSED, "EQUAL", "%s=%d" % (s_id, val), False)
+                    self.log(t_PASSED, 'EQUAL', '%s=%d' % (s_id, val), False)
                     return True
 
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_FAILED, "EQUAL", "%s=%d != %d timeout=%d msec" % (s_id, v, val, t_out), True)
+            self.log(t_FAILED, 'EQUAL', '%s=%d != %d timeout=%d msec' % (s_id, v, val, t_out), True)
 
         except UException, e:
-            self.log(t_FAILED, "EQUAL", "(%s=%d) error: %s" % (s_id, val, e.getError()), True)
+            self.log(t_FAILED, 'EQUAL', '(%s=%d) error: %s' % (s_id, val, e.getError()), True)
 
         return False
-  
+
     def holdEqual(self, s_id, val, t_out, t_check, ui=None):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         t_tick = round(t_out / t_check)
@@ -571,22 +568,22 @@ class TestSuiteInterface():
             while t_tick >= 0:
                 v = ui.getValue(s_id)
                 if v != val:
-                    self.log(t_FAILED, "EQUAL", "HOLD %s=%d != %d holdtime=%d msec" % (s_id, v, val, t_out), True)
+                    self.log(t_FAILED, 'EQUAL', 'HOLD %s=%d != %d holdtime=%d msec' % (s_id, v, val, t_out), True)
                     return False
 
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_PASSED, "EQUAL", "HOLD %s=%d  holdtime=%d" % (s_id, val, t_out), False)
+            self.log(t_PASSED, 'EQUAL', 'HOLD %s=%d  holdtime=%d' % (s_id, val, t_out), False)
             return True
 
         except UException, e:
-            self.log(t_FAILED, "EQUAL", "HOLD (%s=%d) error: %s" % (s_id, val, e.getError()), True)
+            self.log(t_FAILED, 'EQUAL', 'HOLD (%s=%d) error: %s' % (s_id, val, e.getError()), True)
 
         return False
 
     def isNotEqual(self, s_id, val, t_out, t_check, ui=None):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         t_tick = round(t_out / t_check)
@@ -606,23 +603,23 @@ class TestSuiteInterface():
             v = 0  # ui.getValue(s_id)
             while t_tick >= 0:
                 v = ui.getValue(s_id)
-                
+
                 if v != val:
-                    self.log(t_PASSED, "NOTEQUAL", "%s!=%d" % (s_id, val), False)
+                    self.log(t_PASSED, 'NOTEQUAL', '%s!=%d' % (s_id, val), False)
                     return True
 
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_FAILED, "NOTEQUAL", "%s=%d != %d timeout=%d msec" % (s_id, v, val, t_out), True)
+            self.log(t_FAILED, 'NOTEQUAL', '%s=%d != %d timeout=%d msec' % (s_id, v, val, t_out), True)
 
         except UException, e:
-            self.log(t_FAILED, "NOTEQUAL", "(%s=%d) error: %s" % (s_id, val, e.getError()), True)
+            self.log(t_FAILED, 'NOTEQUAL', '(%s=%d) error: %s' % (s_id, val, e.getError()), True)
 
         return False
-  
+
     def holdNotEqual(self, s_id, val, t_out, t_check, ui=None):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         t_tick = round(t_out / t_check)
@@ -643,22 +640,22 @@ class TestSuiteInterface():
             while t_tick >= 0:
                 v = ui.getValue(s_id)
                 if v == val:
-                    self.log(t_FAILED, "NOTEQUAL", "HOLD %s=%d != %d holdtime=%d msec" % (s_id, v, val, t_out), True)
+                    self.log(t_FAILED, 'NOTEQUAL', 'HOLD %s=%d != %d holdtime=%d msec' % (s_id, v, val, t_out), True)
                     return False
 
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_PASSED, "NOTEQUAL", "HOLD %s!=%d holdtime=%d" % (s_id, val, t_out), False)
+            self.log(t_PASSED, 'NOTEQUAL', 'HOLD %s!=%d holdtime=%d' % (s_id, val, t_out), False)
             return True
 
         except UException, e:
-            self.log(t_FAILED, "NOTEQUAL", "(%s=%d) error: %s" % (s_id, val, e.getError()), True)
+            self.log(t_FAILED, 'NOTEQUAL', '(%s=%d) error: %s' % (s_id, val, e.getError()), True)
 
         return False
 
     def isGreat(self, s_id, val, t_out, t_check, ui=None, cond='>='):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         t_tick = round(t_out / t_check)
@@ -671,27 +668,28 @@ class TestSuiteInterface():
         if t_out > 0:
             t_tick = t_tick - 1
 
+        v = 0
         try:
             if self.log_flush:
                 sys.stdout.flush()
             while t_tick >= 0:
                 v = ui.getValue(s_id)
-                if ( cond == '>=' and v >= val ) or ( cond == '>' and v > val ):
-                    self.log(t_PASSED, "GREAT", "%s%s%d" % (s_id, cond, val), False)
+                if (cond == '>=' and v >= val) or (cond == '>' and v > val):
+                    self.log(t_PASSED, 'GREAT', '%s%s%d' % (s_id, cond, val), False)
                     return True
 
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_FAILED, "GREAT", "%s=%d not %s %d timeout=%d msec" % (s_id, v, cond, val, t_out), True)
+            self.log(t_FAILED, 'GREAT', '%s=%d not %s %d timeout=%d msec' % (s_id, v, cond, val, t_out), True)
 
         except UException, e:
-            self.log(t_FAILED, "GREAT", "(%s%s%d) error: %s" % (s_id, cond, val, e.getError()), True)
+            self.log(t_FAILED, 'GREAT', '(%s%s%d) error: %s' % (s_id, cond, val, e.getError()), True)
 
         return False
 
     def holdGreat(self, s_id, val, t_out, t_check, ui=None, cond='>='):
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         t_tick = round(t_out / t_check)
@@ -709,104 +707,106 @@ class TestSuiteInterface():
                 sys.stdout.flush()
             while t_tick >= 0:
                 v = ui.getValue(s_id)
-                if ( cond == '>=' and v < val ) or ( cond == '>' and v <= val ):
-                   self.log(t_FAILED, "GREAT", "HOLD %s=%d not %s %d holdtime=%d msec" % (s_id, v, cond, val, t_out), True)
-                   return False
-
-                time.sleep(t_sleep)
-                t_tick = t_tick - 1
-
-            self.log(t_PASSED, "GREAT", "HOLD %s%s%d" % (s_id, cond, val), False)
-            return True
-
-        except UException, e:
-            self.log(t_FAILED, "GREAT", "(%s%s%d) error: %s" % (s_id, cond, val, e.getError()), True)
-
-        return False
-
-    def isLess(self, s_id, val, t_out, t_check, ui=None, cond='<='):
-        if ui == None:
-            ui = self.default_ui
-
-        t_tick = round(t_out / t_check)
-        t_sleep = (t_check / 1000.)
-        # т.к. пришлось сделать
-        # while t_tick >= 0
-        # чтобы хоть раз тест проходил
-        # то... надо делать -1, чтобы было правильное количество tick-ов
-        # (т.к. ноль включается в цикл)
-        if t_out > 0:
-            t_tick = t_tick - 1
-
-        try:
-            if self.log_flush:
-                sys.stdout.flush()
-            while t_tick >= 0:
-                v = ui.getValue(s_id)
-                if ( cond == '<=' and v <= val ) or ( cond == '<' and v < val ):
-                    self.log(t_PASSED, "LESS", "%s%s%d" % (s_id, cond, val), False)
-                    return True
-
-                time.sleep(t_sleep)
-                t_tick = t_tick - 1
-
-            self.log(t_FAILED, "LESS", "%s=%d not %s %d timeout=%d msec" % (s_id, v, cond, val, t_out), True)
-
-        except UException, e:
-            self.log(t_FAILED, "LESS", "(%s%s%d) error: %s" % (s_id, cond, val, e.getError()), True)
-
-        return False
-
-    def holdLess(self, s_id, val, t_out, t_check, ui=None, cond='<='):
-        if ui == None:
-            ui = self.default_ui
-
-        t_tick = round(t_out / t_check)
-        t_sleep = (t_check / 1000.)
-        # т.к. пришлось сделать
-        # while t_tick >= 0
-        # чтобы хоть раз тест проходил
-        # то... надо делать -1, чтобы было правильное количество tick-ов
-        # (т.к. ноль включается в цикл)
-        if t_out > 0:
-            t_tick = t_tick - 1
-
-        try:
-            if self.log_flush:
-                sys.stdout.flush()
-            while t_tick >= 0:
-                v = ui.getValue(s_id)
-                if ( cond == '<=' and v > val ) or ( cond == '<' and v >= val ):
-                    self.log(t_FAILED, "LESS", "%s=%d not %s %d holdtime=%d msec" % (s_id, v, cond, val, t_out), True)
+                if (cond == '>=' and v < val) or (cond == '>' and v <= val):
+                    self.log(t_FAILED, 'GREAT', 'HOLD %s=%d not %s %d holdtime=%d msec' % (s_id, v, cond, val, t_out),
+                             True)
                     return False
 
                 time.sleep(t_sleep)
                 t_tick = t_tick - 1
 
-            self.log(t_PASSED, "LESS", "HOLD %s%s%d" % (s_id, cond, val), False)
+            self.log(t_PASSED, 'GREAT', 'HOLD %s%s%d' % (s_id, cond, val), False)
             return True
 
         except UException, e:
-            self.log(t_FAILED, "LESS", "HOLD (%s%s%d) error: %s" % (s_id, cond, val, e.getError()), True)
+            self.log(t_FAILED, 'GREAT', '(%s%s%d) error: %s' % (s_id, cond, val, e.getError()), True)
+
+        return False
+
+    def isLess(self, s_id, val, t_out, t_check, ui=None, cond='<='):
+        if ui is None:
+            ui = self.default_ui
+
+        t_tick = round(t_out / t_check)
+        t_sleep = (t_check / 1000.)
+        # т.к. пришлось сделать
+        # while t_tick >= 0
+        # чтобы хоть раз тест проходил
+        # то... надо делать -1, чтобы было правильное количество tick-ов
+        # (т.к. ноль включается в цикл)
+        if t_out > 0:
+            t_tick -= 1
+
+        v = 0
+        try:
+            if self.log_flush:
+                sys.stdout.flush()
+            while t_tick >= 0:
+                v = ui.getValue(s_id)
+                if (cond == '<=' and v <= val) or (cond == '<' and v < val):
+                    self.log(t_PASSED, 'LESS', '%s%s%d' % (s_id, cond, val), False)
+                    return True
+
+                time.sleep(t_sleep)
+                t_tick -= 1
+
+            self.log(t_FAILED, 'LESS', '%s=%d not %s %d timeout=%d msec' % (s_id, v, cond, val, t_out), True)
+
+        except UException, e:
+            self.log(t_FAILED, 'LESS', '(%s%s%d) error: %s' % (s_id, cond, val, e.getError()), True)
+
+        return False
+
+    def holdLess(self, s_id, val, t_out, t_check, ui=None, cond='<='):
+        if ui is None:
+            ui = self.default_ui
+
+        t_tick = round(t_out / t_check)
+        t_sleep = (t_check / 1000.)
+        # т.к. пришлось сделать
+        # while t_tick >= 0
+        # чтобы хоть раз тест проходил
+        # то... надо делать -1, чтобы было правильное количество tick-ов
+        # (т.к. ноль включается в цикл)
+        if t_out > 0:
+            t_tick -= 1
+
+        try:
+            if self.log_flush:
+                sys.stdout.flush()
+            while t_tick >= 0:
+                v = ui.getValue(s_id)
+                if (cond == '<=' and v > val) or (cond == '<' and v >= val):
+                    self.log(t_FAILED, 'LESS', '%s=%d not %s %d holdtime=%d msec' % (s_id, v, cond, val, t_out), True)
+                    return False
+
+                time.sleep(t_sleep)
+                t_tick = t_tick - 1
+
+            self.log(t_PASSED, 'LESS', 'HOLD %s%s%d' % (s_id, cond, val), False)
+            return True
+
+        except UException, e:
+            self.log(t_FAILED, 'LESS', 'HOLD (%s%s%d) error: %s' % (s_id, cond, val, e.getError()), True)
 
         return False
 
     def msleep(self, msec):
         if self.log_flush:
             sys.stdout.flush()
-        self.actlog(" ", "SLEEP", "sleep %d msec" % msec, False)
+        self.actlog(" ", 'SLEEP', 'sleep %d msec' % msec, False)
         time.sleep((msec / 1000.))
 
     def setValue(self, s_id, s_val, ui=None):
         try:
-            if ui == None:
+            if ui is None:
                 ui = self.default_ui
 
             ui.setValue(s_id, s_val)
-            self.actlog(t_PASSED, "SETVALUE", "%s=%d" % (s_id, s_val), False)
+            self.actlog(t_PASSED, 'SETVALUE', '%s=%d' % (s_id, s_val), False)
             return True
         except UException, e:
-            self.actlog(t_FAILED, "SETVALUE", "(%s=%s) error: %s" % (s_id, s_val, e.getError()), True)
+            self.actlog(t_FAILED, 'SETVALUE', '(%s=%s) error: %s' % (s_id, s_val, e.getError()), True)
         return False
 
     def runscript(self, script_name, silent=True):
@@ -817,28 +817,28 @@ class TestSuiteInterface():
 
             sout = None
             serr = None
-            if silent == True:
+            if silent:
                 nul_f = open(os.devnull, 'w')
                 sout = nul_f
                 serr = nul_f
 
             ret = subprocess.call(script_name, shell=True, stdin=None, stdout=sout, stderr=serr)
             if ret:
-                self.actlog(t_FAILED, "SCRIPT", "%s" % script_name, False)
+                self.actlog(t_FAILED, 'SCRIPT', '%s' % script_name, False)
                 return False
 
-            self.actlog(t_PASSED, "SCRIPT", "%s" % script_name, False)
+            self.actlog(t_PASSED, 'SCRIPT', '%s' % script_name, False)
             return True
 
         except UException, e:
-            self.actlog(t_FAILED, "SCRIPT", "(%s=%s) error: %s" % (s_id, s_val, e.getError()), True)
+            self.actlog(t_FAILED, 'SCRIPT', '\'%s\' error: %s' % (script_name, e.getError()), True)
         return False
 
     def get_check_info(self, node, ui=None):
-        if node == None:
-            return "Unknown node"
+        if node is None:
+            return 'Unknown node'
 
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
 
         res = ""
@@ -875,23 +875,23 @@ class TestSuiteInterface():
         return res
 
     def get_action_info(self, node, ui=None):
-        if node == None:
-            return "Unknown node"
+        if node is None:
+            return 'Unknown node'
 
-        if ui == None:
+        if ui is None:
             ui = self.default_ui
         res = ""
         tname = 'SET'
-        if to_str(node.prop("msleep")) != '':
+        if to_str(node.prop('msleep')) != '':
             tname = 'MSLEEP'
-        elif to_str(node.prop("script")) != '':
+        elif to_str(node.prop('script')) != '':
             tname = 'SCRIPT'
 
         if tname == 'SET':
-            res = "(%5s): %s" % (tname.lower(), node.prop("set"))
+            res = '({0:>5s}): {1:s}'.format(tname.lower(), node.prop("set"))
         elif tname == 'MSLEEP':
-            res = "(%5s): %s msec" % (tname.lower(), node.prop("msleep"))
+            res = '(%5s): %s msec' % (tname.lower(), node.prop('msleep'))
         elif tname == 'SCRIPT':
-            res = "(%5s): script='%s'" % (tname.lower(), node.prop("script"))
+            res = '(%5s): script=\'%s\'' % (tname.lower(), node.prop('script'))
 
         return res

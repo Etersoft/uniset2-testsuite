@@ -20,7 +20,7 @@ if __name__ == "__main__":
         player.play_all()
 
     except TestSuiteException, e:
-        print "(testXMLPLayer): catch exception: " + str(e.getError())
+        print "(testXMLPLayer): catch exception: " + str(e.getError)
     except UException, e:
-        print "(testXMLPlayer): catch exception: " + str(e.getError())
+        print "(testXMLPlayer): catch exception: " + str(e.getError)
 	

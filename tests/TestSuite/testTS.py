@@ -30,7 +30,7 @@ if __name__ == "__main__":
     # ts.set_notimestamp(True)
 
     except TestSuiteException, e:
-        print "(testTS): catch exception: " + str(e.getError())
+        print "(testTS): catch exception: " + str(e.getError)
     except UException, e:
         print "(testTS): catch exception: " + str(e.getError())
 	

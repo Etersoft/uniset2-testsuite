@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-
 import gobject
 
-from TestSuiteInterface import *
-
-
 class TestSuitePlayer(gobject.GObject):
-    def __init__(self, testsuiteinterface=None):
+    def __init__(self, testsuiteinterface=None, *args, **kwargs):
+        super(TestSuitePlayer, self).__init__(*args, **kwargs)
         self.tsi = testsuiteinterface
        

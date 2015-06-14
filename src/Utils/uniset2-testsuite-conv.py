@@ -5,8 +5,6 @@ import os
 import sys
 import re
 
-import uniset2
-
 
 # ([\w@]{1,})([!><]{0,}[=]{0,})(\d{1,})")
 r_id = re.compile(r'(id=["\']+([\w@:\ ]{1,})["\']+)')

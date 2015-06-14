@@ -38,7 +38,7 @@ if __name__ == "__main__":
     except OSError, e:
         print("Execution failed...")
     except TestSuiteException, e:
-        print e.getError()
+        print e.getError
 
     finally:
         mp.finish()

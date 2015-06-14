@@ -5,8 +5,6 @@ import os
 import sys
 import re
 
-import uniset2
-
 r_test = re.compile(r"^[tT]{1}:[\t\ ]{0,}(.*)$")
 r_comment = re.compile(r'^[#]{1,}(.*)$')
 r_check = re.compile(r"^[cC]{1}:[\t\ ]{0,}(.*)$")
@@ -20,7 +18,7 @@ isProcTest = False
 def proc_comment(f, l):
     e = r_comment.findall(l)
     if len(e) > 0:
-        l_out = "<!-- %s -->\n"%e[0]
+        l_out = '<!-- %s -->\n' %e[0]
         f.write(l_out)
         return True
 
@@ -29,7 +27,7 @@ def proc_comment(f, l):
 def proc_check(f, l):
     e = r_check.findall(l)
     if len(e) > 0:
-        l_out = "    <check test=\"%s\"/>\n"%e[0].strip()
+        l_out = '    <check test="%s"/>\n' %e[0].strip()
         f.write(l_out)
         return True
 
@@ -38,7 +36,7 @@ def proc_check(f, l):
 def proc_set(f, l):
     e = r_set.findall(l)
     if len(e) > 0:
-        l_out = "    <action set=\"%s\"/>\n"%e[0].strip()
+        l_out = "    <action set=\"%s\"/>\n" %e[0].strip()
         f.write(l_out)
         return True
 
@@ -48,12 +46,12 @@ def proc_outlink(f, l):
     e = r_outlink.findall(l)
     if len(e) > 0:
 
-        p = e[0].split(';');
+        p = e[0].split(';')
         if len(p)<=1:
-            print "(oulink): Unknown outlink file. (%s)"%l
-            l_out = "    <check test=\"outlink\" link=\"%s\" file=\"UNKNOWN\"/>\n"%(p[0].strip())
+            print '(oulink): Unknown outlink file. (%s)' %l
+            l_out = "    <check test=\"outlink\" link=\"%s\" file=\"UNKNOWN\"/>\n" %(p[0].strip())
         else:
-            l_out = "    <check test=\"outlink\" link=\"%s\" file=\"%s\"/>\n"%(p[0].strip(),p[1].strip())
+            l_out = '    <check test="outlink" link="%s" file="%s"/>\n' %(p[0].strip(),p[1].strip())
 
         f.write(l_out)
         return True
@@ -63,7 +61,7 @@ def proc_outlink(f, l):
 def proc_link(f, l):
     e = r_link.findall(l)
     if len(e) > 0:
-        l_out = "    <check test=\"link\" link=\"%s\"/>\n"%e[0].strip()
+        l_out = '    <check test="link" link="%s"/>\n' %e[0].strip()
         f.write(l_out)
         return True
 
@@ -72,7 +70,7 @@ def proc_link(f, l):
 def proc_msleep(f, l):
     e = r_msleep.findall(l)
     if len(e) > 0:
-        l_out = "    <action msleep=\"%s\"/>\n"%e[0].strip()
+        l_out = '    <action msleep="%s"/>\n' %e[0].strip()
         f.write(l_out)
         return True
 
@@ -84,14 +82,14 @@ def proc_test(f, l):
     e = r_test.findall(l)
     if len(e) > 0:
         if isProcTest:
-            f.write("  </test>\n")
+            f.write('  </test>\n')
             isProcTest = False
 
-        p = e[0].split(';');
+        p = e[0].split(';')
         ext = ""
         if len(p)>1:
             ext = p[1]
-        l_out = "  <test name=\"%s\" %s>\n"%(p[0].strip(),ext.strip())
+        l_out = '  <test name="%s" %s>\n' %(p[0].strip(),ext.strip())
         f.write(l_out)
         isProcTest = True
         return True
@@ -102,8 +100,8 @@ def proc_file(fname):
 
     global isProcTest
 
-    outfilename = os.path.basename(fname) + ".xml"
-    bak = str(outfilename + ".bak")
+    outfilename = os.path.basename(fname) + '.xml'
+    bak = str(outfilename + '.bak')
     if os.path.isfile(bak) == False:
         # чтобы "ссылки" не бились, делаем копирование не через rename
         #os.rename(self.fname,str(self.fname+".bak"))
@@ -122,9 +120,9 @@ def proc_file(fname):
 
     f = open(outfilename, 'w')
 
-    f.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
-    f.write("<testsuite>\n")
-    f.write("<TestList>\n")
+    f.write('<?xml version="1.0" encoding="utf-8"?>\n')
+    f.write('<testsuite>\n')
+    f.write('<TestList>\n')
 
     for l in doc:
 
@@ -174,10 +172,10 @@ def proc_file(fname):
     f.close()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print "Usage: %s file1.tst file2.tst..." % sys.argv[0]
+        print 'Usage: %s file1.tst file2.tst...' % sys.argv[0]
         exit(1)
 
     argc = len(sys.argv)

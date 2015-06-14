@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-import time
 import signal
 import threading
 from subprocess import Popen
-
-import uniset2
 
 from TestSuiteGlobal import *
 
@@ -18,19 +13,19 @@ class ChildProcess():
 
         self.xmlnode = xmlnode
         self.cmd = []
-        self.cmd.append(to_str(xmlnode.prop("script")))
-        self.cmd = self.cmd + to_str(xmlnode.prop("args")).split(" ")
-        self.ignore_terminated = to_int(xmlnode.prop("ignore_terminated"))
-        self.ignore_run_failed = to_int(xmlnode.prop("ignore_run_failed"))
-        self.after_run_pause = to_int(xmlnode.prop("after_run_pause")) / 1000.0
-        self.silent_mode = to_int(xmlnode.prop("silent_mode"))
+        self.cmd.append(to_str(xmlnode.prop('script')))
+        self.cmd = self.cmd + to_str(xmlnode.prop('args')).split(" ")
+        self.ignore_terminated = to_int(xmlnode.prop('ignore_terminated'))
+        self.ignore_run_failed = to_int(xmlnode.prop('ignore_run_failed'))
+        self.after_run_pause = to_int(xmlnode.prop('after_run_pause')) / 1000.0
+        self.silent_mode = to_int(xmlnode.prop('silent_mode'))
         self.popen = None
-        self.name = to_str(xmlnode.prop("name"))
+        self.name = to_str(xmlnode.prop('name'))
         if self.name == "":
             scriptname = to_str(xmlnode.prop("script"))
             self.name = os.path.basename(scriptname)
 
-        self.chdir = xmlnode.prop("chdir")
+        self.chdir = xmlnode.prop('chdir')
         self.runing = False
 
     def run(self):
@@ -38,7 +33,7 @@ class ChildProcess():
         #        print "*************** cmd: " + str(self.cmd)
         sout = None
         serr = None
-        if self.silent_mode == True:
+        if self.silent_mode:
             nul_f = open(os.devnull, 'w')
             sout = nul_f
             serr = nul_f
@@ -74,7 +69,7 @@ def waitncpid(w_pid, timeout_sec=-1):
             time.sleep(1)
             if timeout_sec > 0:
                 if tick <= 0:
-                    break;
+                    break
                 tick = tick - 1
 
         except OSError, KeyboardInterrupt:
@@ -92,7 +87,7 @@ def wait_childs(timeout_sec=-1):
             time.sleep(1)
             if timeout_sec > 0:
                 if tick <= 0:
-                    break;
+                    break
                 tick = tick - 1
         except OSError, KeyboardInterrupt:
             break
@@ -101,10 +96,10 @@ def wait_childs(timeout_sec=-1):
 
 # ---------------------------------------------------------
 class MonitorThread(threading.Thread):
-    def __init__(self, plist=[], check_msec=2000):
+    def __init__(self, plist_=[], check_msec=2000):
 
         threading.Thread.__init__(self)
-        self.plist = plist
+        self.plist = plist_
         self.check_sec = check_msec / 1000.0
         self.active = False
         self.term_flag = False
@@ -122,11 +117,11 @@ class MonitorThread(threading.Thread):
                 p.run()
                 clist.append(p.popen)
             except (OSError, KeyboardInterrupt), e:
-                err = "[FAILED]: (ProcessMonitor): run '%s' failed.(cmd='%s' error: (%d)%s)." % (
+                err = '[FAILED]: (ProcessMonitor): run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (
                 p.name, p.cmd, e.errno, e.strerror)
                 if p.ignore_run_failed == False and self.term_flag == False:
                     print err
-                    print "(ProcessMonitor): ..terminate all.."
+                    print '(ProcessMonitor): ..terminate all..'
                     for p in self.plist:
                         if p.popen:
                             p_pid = p.popen.pid
@@ -142,14 +137,14 @@ class MonitorThread(threading.Thread):
         # print "Run monitor process..."
         while self.active:
             for p in self.plist:
-                if p.runing and p.popen.poll() != None:
+                if p.runing and p.popen.poll() is not None:
                     p.runing = False
                     if p.ignore_terminated == False and self.term_flag == False:
-                        err = "[FAILED]:(ProcessMonitor):  Process '%s' terminated..(retcode=%d)" % (
+                        err = '[FAILED]:(ProcessMonitor):  Process \'%s\' terminated..(retcode=%d)' % (
                         p.name, p.popen.poll())
                         print err
                         #raise TestSuiteException(err)
-                        print "(ProcessMonitor): ..terminate all.."
+                        print '(ProcessMonitor): ..terminate all..'
                         for p in self.plist:
                             if p.popen:
                                 p_pid = p.popen.pid
@@ -175,7 +170,7 @@ class MonitorThread(threading.Thread):
         self.run_event.wait()
 
     def m_stop(self):
-        if self.active == False:
+        if not self.active:
             return
         # print "****************** m_stop"
         self.term_flag = True
@@ -187,24 +182,24 @@ class MonitorThread(threading.Thread):
                     p.stop()
                     waitncpid(p_pid)
             except (OSError, KeyboardInterrupt), e:
-                print "terminate failed: (%d)%s" % (e.errno, e.strerror)
+                print 'terminate failed: (%d)%s' % (e.errno, e.strerror)
 
         self.active = False
         self.join()
 
     def m_finish(self):
-        if self.active == False:
+        if not self.active:
             return
         self.term_flag = True
         for p in self.plist:
             try:
                 if p.popen:
-                    print "terminate '%s'  pid=%d" % (str(p.cmd), p.popen.pid)
+                    print 'terminate \'%s\'  pid=%d' % (str(p.cmd), p.popen.pid)
                     p_pid = p.popen.pid
                     p.stop()
                     waitncpid(p_pid)
             except (OSError, KeyboardInterrupt), e:
-                print "terminate failed: (%d)%s" % (e.errno, e.strerror)
+                print 'terminate failed: (%d)%s' % (e.errno, e.strerror)
 
         self.active = False
         self.join()
@@ -212,9 +207,9 @@ class MonitorThread(threading.Thread):
 
 # ---------------------------------------------------------
 class ProcessMonitor():
-    def __init__(self, plist=[], check_msec=2000, after_run_pause=0):
+    def __init__(self, plist_=[], check_msec=2000, after_run_pause=0):
 
-        self.plist = plist
+        self.plist = plist_
         self.check_msec = check_msec
         self.active = False
         self.thr = None
@@ -229,7 +224,7 @@ class ProcessMonitor():
         if len(self.plist) <= 0:
             return
 
-        if self.active == False:
+        if not self.active:
             self.thr = MonitorThread(self.plist, self.check_msec)
             self.thr.m_start(os.getpid())  # запуск с ожиданием запуска всех
             self.active = True
@@ -240,14 +235,14 @@ class ProcessMonitor():
                 time.sleep(1)
 
     def stop(self):
-        if self.active == False:
+        if not self.active:
             return
         self.active = False
         self.thr.m_stop()
         self.thr = None
 
     def finish(self):
-        if self.active == False:
+        if not self.active:
             return
 
         self.active = False
