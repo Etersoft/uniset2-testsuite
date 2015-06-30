@@ -33,6 +33,9 @@
             <check check_pause="100" test="101=5" timeout="1000"/>
             <check test="Test_DI!=0"/>
             <action set="101=0"/>
+            <check test="control_reg_status_cold_air_case1_gen1=0"/>
+            <action set="control_reg_status_cold_air_case1_gen1=-1"/>
+            <check test="control_reg_status_cold_air_case1_gen1=-1"/>
             <check test="Test_DI=0"/>
             <check link="name=Test N3" test="link"/>
             <action set="101 =0"/>
