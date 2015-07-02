@@ -41,8 +41,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         # список мониторов (ключ в словаре - название xml-файла)
         self.pmonitor = dict()
 
-        self.mcheck = re.compile(r"([\w@\ #$%\]\[\{\}]{1,})=([\d\ ]{1,})")
-        self.rless = re.compile(r"([\w@\ #$%\]\[\{\}]{1,})(<{1,})([\ =\d]{1,})")
+        self.mcheck = re.compile(r"([\w@\ #$%\]\[\{\}]{1,})=([-\d\ ]{1,})")
+        self.rless = re.compile(r"([\w@\ #$%\]\[\{\}]{1,})(<{1,})([-\ =\d]{1,})")
 
         # список запущенных reset-потоков
         self.reset_thread_event = threading.Event()

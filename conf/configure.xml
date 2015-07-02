@@ -59,6 +59,8 @@
             <item id="105" name="TSCPU_Confirm_S" iotype="DI" textname="Квитирование ЦПУ"/>
             <item id="106" name="pulsar" textname="xxpulsar" iotype="DI"/>
             <item id="109" name="TSCPU_Confirm_VeryLongName_S" iotype="AI" textname="test long name"/>
+            <item id="110" name="control_reg_status_cold_air_case1_gen1" iotype="AI" textname="test name with number"/>
+            
         </sensors>
 
 

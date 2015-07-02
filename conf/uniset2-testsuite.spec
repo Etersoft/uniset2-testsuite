@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.0
-Release: eter15
+Release: eter16
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Tue Jun 30 2015 Pavel Vainerman <pv@server> 2.0-eter16
+- add support '-' for value
+
 * Wed Jun 10 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter15
 - added support spec symbol '[',']','{','}' for replace 
 
