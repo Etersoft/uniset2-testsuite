@@ -60,6 +60,10 @@ class ChildProcess():
 
 # ---------------------------------------------------------
 def waitncpid(w_pid, timeout_sec=-1):
+    """
+
+    :rtype :
+    """
     tick = timeout_sec
     while True:
         try:
@@ -96,8 +100,10 @@ def wait_childs(timeout_sec=-1):
 
 # ---------------------------------------------------------
 class MonitorThread(threading.Thread):
-    def __init__(self, plist_=[], check_msec=2000):
+    def __init__(self, plist_=None, check_msec=2000):
 
+        if not plist_:
+            plist_ = []
         threading.Thread.__init__(self)
         self.plist = plist_
         self.check_sec = check_msec / 1000.0
@@ -105,6 +111,7 @@ class MonitorThread(threading.Thread):
         self.term_flag = False
         self.run_event = threading.Event()
         self.parent_pid = None
+        self.pid = None
 
     def run(self):
         self.run_event.clear()
@@ -117,15 +124,14 @@ class MonitorThread(threading.Thread):
                 p.run()
                 clist.append(p.popen)
             except (OSError, KeyboardInterrupt), e:
-                err = '[FAILED]: (ProcessMonitor): run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (
-                p.name, p.cmd, e.errno, e.strerror)
+                err = '[FAILED]: (ProcessMonitor): run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (p.name, p.cmd, e.errno, e.strerror)
                 if p.ignore_run_failed == False and self.term_flag == False:
                     print err
                     print '(ProcessMonitor): ..terminate all..'
-                    for p in self.plist:
-                        if p.popen:
-                            p_pid = p.popen.pid
-                            p.stop()
+                    for pp in self.plist:
+                        if pp.popen:
+                            p_pid = pp.popen.pid
+                            pp.stop()
                             waitncpid(p_pid)
 
                     self.active = False
@@ -145,10 +151,10 @@ class MonitorThread(threading.Thread):
                         print err
                         #raise TestSuiteException(err)
                         print '(ProcessMonitor): ..terminate all..'
-                        for p in self.plist:
-                            if p.popen:
-                                p_pid = p.popen.pid
-                                p.stop()
+                        for pp in self.plist:
+                            if pp.popen:
+                                p_pid = pp.popen.pid
+                                pp.stop()
                                 waitncpid(p_pid)
 
                         self.active = False
@@ -207,8 +213,14 @@ class MonitorThread(threading.Thread):
 
 # ---------------------------------------------------------
 class ProcessMonitor():
-    def __init__(self, plist_=[], check_msec=2000, after_run_pause=0):
+    def __init__(self, plist_=None, check_msec=2000, after_run_pause=0):
 
+        """
+
+        :type check_msec: value of miliseconds
+        """
+        if not plist_:
+            plist_ = []
         self.plist = plist_
         self.check_msec = check_msec
         self.active = False

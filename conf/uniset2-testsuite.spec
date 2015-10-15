@@ -1,8 +1,8 @@
 %def_enable doc
 
 Name: uniset2-testsuite
-Version: 2.0
-Release: eter16
+Version: 2.1
+Release: eter1
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,14 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Fri Oct 16 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-eter1
+- refactoring
+- modify help
+- add --show-comments
+- add --show-test-type
+- add --hide-time
+- add --show-numline
+
 * Tue Jun 30 2015 Pavel Vainerman <pv@server> 2.0-eter16
 - add support '-' for value
 

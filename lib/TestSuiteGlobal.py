@@ -13,6 +13,7 @@ t_PAUSE = 'PAUSE'
 t_WARNING = 'WARNING'
 t_UNKNOWN = 'UNKNOWN'
 
+
 # Получение списка пар [key,val] из строки "key1=val1,key2=val2,.."
 def get_replace_list(raw_str):
     if raw_str is None or raw_str == '':
