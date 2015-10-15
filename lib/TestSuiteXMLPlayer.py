@@ -405,8 +405,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def check_item(self, node, xml):
 
-        tname = self.replace(node.prop('test'));
-        t_comment = self.replace(node.prop('comment'));
+        tname = self.replace(node.prop('test'))
+        t_comment = self.replace(node.prop('comment'))
 
         cfig = self.get_config_name(node)
         ui = self.get_current_ui(cfig)
@@ -496,7 +496,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if t_node != None:
                 logfile = self.tsi.get_logfile()
                 self.tsi.log(" ", "LINK", "go to %s='%s'" % (t_field, t_name), t_comment, False)
-                res = self.play_test(xml, t_node, logfile);
+                res = self.play_test(xml, t_node, logfile)
                 self.del_from_replace(r_list)
                 return res[0]
 
@@ -544,11 +544,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             else:
                 t_node = self.find_test(t_xml, t_name, t_field)
-                if t_node != None:
+                if t_node is not None:
                     logfile = self.tsi.get_logfile()
                     self.tsi.log(" ", "OUTLINK", "go to file='%s' %s='%s'" % (t_file, t_field, t_name), t_comment, False)
                     self.tsi.nrecur += 1
-                    res = self.play_test(t_xml, t_node, logfile);
+                    res = self.play_test(t_xml, t_node, logfile)
                     self.tsi.nrecur -= 1
                     self.del_from_replace(r_list)
                     return res[0]
@@ -561,7 +561,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.tsi.log(t_FAILED, "TestSuiteXMLPlayer", "(check_item): Unknown item type='%s'" % test, t_comment, True)
         return t_FAILED
 
-    def check_thread_event(self, event):
+    @staticmethod
+    def check_thread_event(event):
         if sys.version_info[1] == 5:
             return event.isSet()
 
@@ -682,8 +683,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             # собираем обратно, и уже разбираем как полагается (с разбивкой на id и val)
             slist = self.str_to_idlist(to_str(self.replace(node.prop("set"))), ui)
             for s in slist:
-                if self.tsi.setValue(self.replace(s[0]), self.replace(s[1]),t_comment,
-                                     ui) == False and self.tsi.ignorefailed == False:
+                if self.tsi.setValue(self.replace(s[0]), self.replace(s[1]),t_comment,ui) == False and self.tsi.ignorefailed == False:
                     return t_FAILED
             return t_PASSED
 
@@ -728,7 +728,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def begin_tests(self, xml):
         testnode = xml.findNode(xml.begnode, "test")[0]
-        if testnode != None:
+        if testnode is not None:
             testnode = xml.firstNode(testnode)
             firstnode = testnode.children
             return [testnode, firstnode]
@@ -912,11 +912,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             pmonitor.start()
             results.append(self.play_test(xml, tnode, logfile))
             pmonitor.stop()
-        except TestSuiteException, e:
-            ttime = e.getFinishTime - tm_start
+        except TestSuiteException, ex:
+            ttime = ex.getFinishTime - tm_start
             results.append(
-                [t_FAILED, to_str(self.replace(testnode.prop('name'))), ttime, e.getError, xml.getFileName()])
-            raise e
+                [t_FAILED, to_str(self.replace(testnode.prop('name'))), ttime, ex.getError, xml.getFileName()])
+            raise ex
 
         finally:
             self.print_result_report(results)
@@ -1074,13 +1074,20 @@ if __name__ == "__main__":
             print '--testfile tests.xml      - Test scenarion file.'
             print '--show-test-log           - Show test log'
             print '--show-action-log         - Show actions log'
-            print '--show-' \
-                  'result-report      - Show result report '
+            print '--show-result-report      - Show result report '
             print '--show-result-only        - Show only result report (ignore --show-action-log, --show-test-log)'
+            print ''
+            print '--show-commets            - Display test comments (comment="..")'
+            print '--show-numline            - Display line numbers'
+            print '--show-timestamp          - Display the time'
+            print '--show-test-type          - Display the test type'
+            print '--hide-time               - Hide elasped time'
+            print ''
+            print '--col-comment-width val   - Width for column "comment"'
+            print ''
             print '--test-name TestName      - Run only \'TestName\' test. \'TestName\' can be specified as a \'prop=name\'.'
             print '                            By default, the search goes on name=\'TestName\''
             print '--ignore-run-list         - Ignore <RunList>'
-            print '--show-timestamp          - Display the time'
             print '--ignore-nodes            - Do not use \'@node\''
             print '--default-timeout msec        - Default <check timeout=\'..\' ../>.\''
             print '--default-check-pause msec    - Default <check check_pause=\'..\' ../>.\''
@@ -1097,6 +1104,9 @@ if __name__ == "__main__":
         show_actlog = ts.checkArgParam('--show-action-log', False)
         show_result = ts.checkArgParam('--show-result-report', False)
         show_comments = ts.checkArgParam('--show-comments', False)
+        show_numstr = ts.checkArgParam('--show-numline', False)
+        hide_time = ts.checkArgParam('--hide-time', False)
+        show_test_type = ts.checkArgParam('--show-test-type', False)
         show_result_only = ts.checkArgParam('--show-result-only', False)
         if show_result_only == True:
             show_actlog = False
@@ -1115,6 +1125,7 @@ if __name__ == "__main__":
         ignore_nodes = ts.checkArgParam("--ignore-nodes", False)
         tout = ts.getArgInt("--default-timeout", 5000)
         check_pause = ts.getArgInt("--default-check-pause", 500)
+        col_comment_width = ts.getArgInt("--col-comment-width", 50)
         junit = ts.getArgParam("--junit", "")
 
         cf = conflist.split(',')
@@ -1122,6 +1133,10 @@ if __name__ == "__main__":
         ts.set_notimestamp(showtimestamp == False)
         ts.set_ignore_nodes(ignore_nodes)
         ts.set_show_comments(show_comments)
+        ts.set_show_numline(show_numstr)
+        ts.set_hide_time(hide_time)
+        ts.set_show_test_type(show_test_type)
+        ts.set_col_comment_width(col_comment_width)
 
         player = TestSuiteXMLPlayer(ts, testfile, ignore_runlist)
         player.show_result_report = show_result
