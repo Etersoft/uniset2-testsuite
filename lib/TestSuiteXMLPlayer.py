@@ -400,8 +400,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         return self.tsi.getValue(self.replace(node.prop("id")), ui)
 
     def check_item(self, node, xml):
-
         tname = self.replace(node.prop('test'));
+        
+        if tname == None:
+           self.tsi.actlog(t_FAILED, "<check..>", "FAILED: BAD STRUCTUTE! NOT FOUND test=''..", True)
+           return t_FAILED
 
         cfig = self.get_config_name(node)
         ui = self.get_current_ui(cfig)
