@@ -128,13 +128,13 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         except UniXMLException, e:
             self.tsi.log(t_FAILED, "(TestSuiteXMLPlayer:loadXML)",
-                         "FAILED load xmlfile=%s err='%s'" % (xmlfile, e.getError()), False)
+                         "FAILED load xmlfile=%s err='%s'" % (xmlfile, e.getError()), "", False)
             raise TestSuiteException(e.getError())
 
     def initConfig(self, xml):
         rnode = xml.findNode(xml.getDoc(), "TestList")[0]
         if rnode == None:
-            self.tsi.log(t_FAILED, "(TestSuiteXMLPlayer)", "<TestList> not found?!", True)
+            self.tsi.log(t_FAILED, "(TestSuiteXMLPlayer)", "<TestList> not found?!", "", True)
             raise TestSuiteException("<TestList> not found?!")
 
         scenario_type = to_str(rnode.prop("type"))
@@ -166,7 +166,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     self.tsi.set_default_ui(ui)
             else:
                 self.tsi.log(t_FAILED, "(TestSuiteXMLPlayer:initConfig)",
-                             "Unknown scenario type='%s' Must be 'uniset' or 'modbus'" % c_type, True)
+                             "Unknown scenario type='%s' Must be 'uniset' or 'modbus'" % c_type, "", True)
                 raise TestSuiteException(
                     "(TestSuiteXMLPlayer:initConfig): Unknown scenario type='%s' Must be 'uniset' or 'modbus'" % c_type)
 
@@ -187,7 +187,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             xml.begnode = xml.begnode.children
             self.begin_tests(xml)
         else:
-            self.tsi.log(t_FAILED, "(TestSuiteXMLPlayer)", "Can`t find begin node <TestList>", True)
+            self.tsi.log(t_FAILED, "(TestSuiteXMLPlayer)", "Can`t find begin node <TestList>", "", True)
 
     def initProcessMonitor(self, xml):
 
