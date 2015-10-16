@@ -306,8 +306,12 @@ class TestSuiteInterface():
         if self.log_show_comments:
             if not t_comment:
                 t_comment = ""
-            t_comment = unicode(t_comment, "UTF-8").ljust(self.col_comment_width)
-            txt = '%s %s %s' % (t_comment, self.colsep, txt)
+            try:
+                t_comment = unicode(t_comment,"UTF-8",errors='replace')
+            except UnicodeDecodeError, e:
+                pass
+
+            txt = '%s %s %s' % (t_comment.ljust(self.col_comment_width)[0:self.col_comment_width], self.colsep, txt)
 
         etm = self.elapsed_time_str()
         llog = '%s %s %s' % (etm, self.colsep, llog)
@@ -347,8 +351,12 @@ class TestSuiteInterface():
         if self.log_show_comments:
             if not t_comment:
                 t_comment = ""
-            t_comment = unicode(t_comment, "UTF-8").ljust(self.col_comment_width)
-            txt = '%s %s %s' % (t_comment, self.colsep, txt)
+            try:
+                t_comment = unicode(t_comment,"UTF-8",errors='replace')
+            except UnicodeDecodeError, e:
+                pass
+
+            txt = '%s %s %s' % (t_comment.ljust(self.col_comment_width)[0:self.col_comment_width], self.colsep, txt)
 
         etm = self.elapsed_time_str()
         llog = '%s %s %s' % (etm, self.colsep, llog)
