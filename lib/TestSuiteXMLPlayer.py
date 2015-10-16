@@ -1081,9 +1081,10 @@ if __name__ == "__main__":
             print '--show-result-report      - Show result report '
             print '--show-result-only        - Show only result report (ignore --show-action-log, --show-test-log)'
             print ''
-            print '--show-commets            - Display test comments (comment="..")'
+            print '--show-commets            - Display all comments (test,check,action)'
             print '--show-numline            - Display line numbers'
             print '--show-timestamp          - Display the time'
+            print '--show-test-comment       - Display test comment'
             print '--show-test-type          - Display the test type'
             print '--hide-time               - Hide elasped time'
             print ''
@@ -1111,6 +1112,7 @@ if __name__ == "__main__":
         show_numstr = ts.checkArgParam('--show-numline', False)
         hide_time = ts.checkArgParam('--hide-time', False)
         show_test_type = ts.checkArgParam('--show-test-type', False)
+        show_test_comment = ts.checkArgParam('--show-test-comment', False)
         show_result_only = ts.checkArgParam('--show-result-only', False)
         if show_result_only == True:
             show_actlog = False
@@ -1141,6 +1143,7 @@ if __name__ == "__main__":
         ts.set_hide_time(hide_time)
         ts.set_show_test_type(show_test_type)
         ts.set_col_comment_width(col_comment_width)
+        ts.set_show_test_comment(show_test_comment)
 
         player = TestSuiteXMLPlayer(ts, testfile, ignore_runlist)
         player.show_result_report = show_result

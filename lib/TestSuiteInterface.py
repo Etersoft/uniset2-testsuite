@@ -26,6 +26,7 @@ class TestSuiteInterface():
         self.actlog_callback = None
         self.show_test_type = False
         self.log_show_comments = False
+        self.log_show_test_comment = False
         self.col_comment_width = 50
         self.log_flush = False
         self.logfilename = ""
@@ -47,7 +48,8 @@ class TestSuiteInterface():
         self.ntab = False
 
         # "CHECK : 00:00:05 [  0.016] : 2015-03-14 02:46:06 :[ PASSED] :  FINISH: 'Global replace' /0:00:00.000837/"
-        self.re_log = re.compile(r"([\w]+)[^:]*:[ ]*(\d{2}:\d{2}:\d{2}) \[[ ]*([\d.]+)\] : (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) :\[[ ]*([\w*]*)\][ ]*:[ ]*([^:]+):[  ]*(.*)$")
+        self.re_log = re.compile(
+            r"([\w]+)[^:]*:[ ]*(\d{2}:\d{2}:\d{2}) \[[ ]*([\d.]+)\] : (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) :\[[ ]*([\w*]*)\][ ]*:[ ]*([^:]+):[  ]*(.*)$")
 
         # "'simple test' /0:00:00.001361/"
         self.re_tinfo = re.compile(r"[^/]*(/(\d+):(\d{1,2}):(\d{1,2})([.](\d*))*/)*$")
@@ -156,7 +158,7 @@ class TestSuiteInterface():
     def set_default_config(self, xmlfile, already_ignore=True):
         if xmlfile in self.ui_list:
             if not already_ignore:
-                self.log(t_FAILED,'(set_default_config): %s already added..(Ignore add..)' % (xmlfile), "", True)
+                self.log(t_FAILED, '(set_default_config): %s already added..(Ignore add..)' % (xmlfile), "", True)
                 return False
 
             ui = UInterface()
@@ -289,11 +291,6 @@ class TestSuiteInterface():
 
     def print_log(self, t_result, t_test, txt, t_comment):
 
-        """
-
-        :param txt: text
-        :param t_comment: comment
-        """
         self.log_numstr += 1
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
         txt2 = self.set_tab_space(txt)
@@ -303,11 +300,11 @@ class TestSuiteInterface():
         if not self.log_show_testtype:
             txt = str('[%7s] %s %s' % (t_result, self.colsep, txt2))
 
-        if self.log_show_comments:
-            if not t_comment:
+        if self.log_show_comments or self.log_show_test_comment:
+            if not t_comment or (self.log_show_test_comment and not self.log_show_comments and t_test != 'BEGIN'):
                 t_comment = ""
             try:
-                t_comment = unicode(t_comment,"UTF-8",errors='replace')
+                t_comment = unicode(t_comment, "UTF-8", errors='replace')
             except UnicodeDecodeError, e:
                 pass
 
@@ -348,11 +345,11 @@ class TestSuiteInterface():
         if not self.log_show_testtype:
             txt = str('[%7s] %s %s' % (t_result, self.colsep, txt2))
 
-        if self.log_show_comments:
-            if not t_comment:
+        if self.log_show_comments or self.log_show_test_comment:
+            if not t_comment or (self.log_show_test_comment and not self.log_show_comments and t_act != 'BEGIN'):
                 t_comment = ""
             try:
-                t_comment = unicode(t_comment,"UTF-8",errors='replace')
+                t_comment = unicode(t_comment, "UTF-8", errors='replace')
             except UnicodeDecodeError, e:
                 pass
 
@@ -396,7 +393,7 @@ class TestSuiteInterface():
             self.actlog_callback(t_result, t_act, txt, t_comment, throw)
 
         if self.ignorefailed is False and throw is True:
-                raise TestSuiteException(txt)
+            raise TestSuiteException(txt)
 
     def get_ui(self, cf):
         try:
@@ -952,3 +949,6 @@ class TestSuiteInterface():
 
     def set_col_comment_width(self, col_comment_width):
         self.col_comment_width = col_comment_width
+
+    def set_show_test_comment(self, show_test_comment):
+        self.log_show_test_comment = show_test_comment
