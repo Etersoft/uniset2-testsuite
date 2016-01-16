@@ -28,7 +28,7 @@ t_RUN = ""
 t_NONE = ""
 
 
-class fid():
+class gfid():
     pic = 0
     result = 1
     time = 2
@@ -230,14 +230,14 @@ class guiTestSuitePlayer():
         self.tv.columns_autosize()
 
         crnd = gtk.CellRendererText()
-        col1 = gtk.TreeViewColumn(_("NN"), crnd, text=fid.t_num)
+        col1 = gtk.TreeViewColumn(_("NN"), crnd, text=gfid.t_num)
         col1.set_clickable(False)
         self.tv.append_column(col1)
 
         ign = gtk.CellRendererToggle()
         ign.set_property("activatable", True)
         ign.connect('toggled', self.ignore_cell_toggled, self.model)
-        col0 = gtk.TreeViewColumn(_("IGN"), ign, active=fid.i_ign)
+        col0 = gtk.TreeViewColumn(_("IGN"), ign, active=gfid.i_ign)
         col0.set_clickable(True)
         col0.connect("clicked", self.ignore_column_clicked)
         self.ignore_column_flag = False
@@ -252,15 +252,15 @@ class guiTestSuitePlayer():
         col.pack_start(tres, False)
         col.pack_start(pbar, True)
         col.pack_start(ttime, False)
-        col.set_attributes(pbcell, pixbuf=fid.pic)
-        col.set_attributes(pbar, value=fid.pbar, visible=fid.pbar_vis)
-        col.set_attributes(tres, text=fid.result, cell_background=fid.bg, visible=fid.res_vis)
-        col.set_attributes(ttime, text=fid.time, visible=fid.res_vis)
+        col.set_attributes(pbcell, pixbuf=gfid.pic)
+        col.set_attributes(pbar, value=gfid.pbar, visible=gfid.pbar_vis)
+        col.set_attributes(tres, text=gfid.result, cell_background=gfid.bg, visible=gfid.res_vis)
+        col.set_attributes(ttime, text=gfid.time, visible=gfid.res_vis)
         self.tv.append_column(col)
 
         renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_("Test"), renderer, text=fid.tname)
-        #        column.set_attributes(renderer,text=fid.tname,cell_background=fid.bg)
+        column = gtk.TreeViewColumn(_("Test"), renderer, text=gfid.tname)
+        #        column.set_attributes(renderer,text=gfid.tname,cell_background=gfid.bg)
         column.set_clickable(False)
         self.tv.append_column(column)
 
@@ -298,8 +298,8 @@ class guiTestSuitePlayer():
 
         cell.set_active(not cell.get_active())
         iter = model.get_iter(path)
-        #        print "*** SET IGNORE: %s = %d"%(model.get_value(iter,fid.tname),cell.get_active())
-        #model.set_value(iter,fid.i_ign, cell.get_active())
+        #        print "*** SET IGNORE: %s = %d"%(model.get_value(iter,gfid.tname),cell.get_active())
+        #model.set_value(iter,gfid.i_ign, cell.get_active())
         # ставим текущему 
         self.set_ignore_flag(iter, cell.get_active())
 
@@ -311,16 +311,16 @@ class guiTestSuitePlayer():
         if not iter:
             return
 
-        self.model.set_value(iter, fid.i_ign, set_val)
+        self.model.set_value(iter, gfid.i_ign, set_val)
         if set_val == True:
             self.set_default_param(iter)
-            self.model.set_value(iter, fid.result, t_IGNORE)
+            self.model.set_value(iter, gfid.result, t_IGNORE)
             r_img = gtk.gdk.pixbuf_new_from_file(self.imgdir + pic_IGNORE)
-            self.model.set_value(iter, fid.bg, bg_IGNORE)
-            self.model.set_value(iter, fid.result, t_IGNORE)
-            self.model.set_value(iter, fid.pic, r_img)
-            self.model.set_value(iter, fid.res_vis, True)
-            self.model.set_value(iter, fid.pbar_vis, False)
+            self.model.set_value(iter, gfid.bg, bg_IGNORE)
+            self.model.set_value(iter, gfid.result, t_IGNORE)
+            self.model.set_value(iter, gfid.pic, r_img)
+            self.model.set_value(iter, gfid.res_vis, True)
+            self.model.set_value(iter, gfid.pbar_vis, False)
         else:
             self.set_default_param(iter)
 
@@ -350,7 +350,7 @@ class guiTestSuitePlayer():
 
         if event.button == 3:
             self.test_popup.popup(None, None, None, event.button, event.time)
-            t = model.get_value(iter, fid.etype)
+            t = model.get_value(iter, gfid.etype)
             # if t == tt.Test:
             #              self.builder.get_object("mi_addCheck").set_sensitive(False)
             #           else:
@@ -375,7 +375,7 @@ class guiTestSuitePlayer():
         if res == gtk.RESPONSE_NO:
             return False
 
-        xmlnode = model.get_value(iter, fid.xmlnode)
+        xmlnode = model.get_value(iter, gfid.xmlnode)
         if xmlnode:
             xmlnode.unlinkNode()
 
@@ -390,9 +390,9 @@ class guiTestSuitePlayer():
         if not iter:
             return
 
-        t = model.get_value(iter, fid.etype)
-        xmlnode = model.get_value(iter, fid.xmlnode)
-        xml = model.get_value(iter, fid.xml)
+        t = model.get_value(iter, gfid.etype)
+        xmlnode = model.get_value(iter, gfid.xmlnode)
+        xml = model.get_value(iter, gfid.xml)
         if t == tt.Test:
             p_node = xmlnode
             xmlnode = xml.lastNode(p_node.children)
@@ -424,13 +424,13 @@ class guiTestSuitePlayer():
         if not iter:
             return
 
-        t = model.get_value(iter, fid.etype)
+        t = model.get_value(iter, gfid.etype)
 
         if t != tt.Test:
             iter = model.iter_parent(iter)
 
-        xmlnode = model.get_value(iter, fid.xmlnode)
-        xml = model.get_value(iter, fid.xml)
+        xmlnode = model.get_value(iter, gfid.xmlnode)
+        xml = model.get_value(iter, gfid.xml)
         p_node = xmlnode.parent
         new_xmlnode = p_node.newChild(None, "test", None)
         if xmlnode:
@@ -453,9 +453,9 @@ class guiTestSuitePlayer():
     def on_edit(self, model, iter, newItem=False):
         tbox = self.editor_ui.get_object("testlist")
         tbox.set_sensitive(True)
-        xmlnode = model.get_value(iter, fid.xmlnode)
+        xmlnode = model.get_value(iter, gfid.xmlnode)
         old_name = xmlnode.prop("name")
-        t = model.get_value(iter, fid.etype)
+        t = model.get_value(iter, gfid.etype)
         editor_name = ""
         for i in range(1, 10):
             if xmlnode.name == "test":
@@ -466,7 +466,7 @@ class guiTestSuitePlayer():
                     res = dlg.run()
                     dlg.hide()
                     if res == 1:  # link
-                        xmlnode = model.get_editor_nameue(iter, fid.link_xmlnode)
+                        xmlnode = model.get_editor_nameue(iter, gfid.link_xmlnode)
                         tbox.set_sensitive(True)
                     elif res == 2:  # test
                         editor_name = "test"
@@ -524,15 +524,15 @@ class guiTestSuitePlayer():
                 return
 
             if self.editor.get_etype() == "test":
-                self.model.set_value(p_iter, fid.etype, tt.Test)
+                self.model.set_value(p_iter, gfid.etype, tt.Test)
             elif self.editor.get_etype() == "action":
-                self.model.set_value(p_iter, fid.etype, tt.Action)
+                self.model.set_value(p_iter, gfid.etype, tt.Action)
             elif self.editor.get_etype() == "check":
-                self.model.set_value(p_iter, fid.etype, tt.Check)
+                self.model.set_value(p_iter, gfid.etype, tt.Check)
                 if self.editor.get_etype() == "link":
-                    self.model.set_value(p_iter, fid.etype, tt.Link)
+                    self.model.set_value(p_iter, gfid.etype, tt.Link)
                 elif self.editor.get_etype() == "outlink":
-                    self.model.set_value(p_iter, fid.etype, tt.Link)
+                    self.model.set_value(p_iter, gfid.etype, tt.Link)
 
             p_iter = model.convert_iter_to_child_iter(iter)
             self.update_info(p_iter, old_name)
@@ -566,8 +566,8 @@ class guiTestSuitePlayer():
             return False
 
         p_iter = self.fmodel.convert_iter_to_child_iter(iter)
-        # t = model.get_value(iter,fid.etype)
-        print "PLAY SELECTED: %s" % (self.model.get_value(p_iter, fid.tname))
+        # t = model.get_value(iter,gfid.etype)
+        print "PLAY SELECTED: %s" % (self.model.get_value(p_iter, gfid.tname))
 
         self.play_selected_iter = p_iter
         self.on_play(p_iter)
@@ -616,8 +616,8 @@ class guiTestSuitePlayer():
         xmlnode = None
         etype = None
         if iter:
-            xmlnode = self.model.get_value(iter, fid.xmlnode)
-            etype = self.model.get_value(iter, fid.etype)
+            xmlnode = self.model.get_value(iter, gfid.xmlnode)
+            etype = self.model.get_value(iter, gfid.etype)
 
         self.model.clear()
         self.build_test_scenario(self.player.xml)
@@ -638,7 +638,7 @@ class guiTestSuitePlayer():
     def find_iter(self, iter, xmlnode, etype):
         while iter is not None:
 
-            if self.model.get_value(iter, fid.xmlnode) == xmlnode and self.model.get_value(iter, fid.etype) == etype:
+            if self.model.get_value(iter, gfid.xmlnode) == xmlnode and self.model.get_value(iter, gfid.etype) == etype:
                 return iter;
 
             it1 = self.model.iter_children(iter)
@@ -724,12 +724,12 @@ class guiTestSuitePlayer():
         t_node = self.player.find_test(xml, t_name, t_field)
         if t_node == None:
             print "LINK: Not found test (%s='%s')" % (t_field, t_name)
-            self.model.set_value(iter, fid.xmlnode, None)
+            self.model.set_value(iter, gfid.xmlnode, None)
             self.player.del_from_replace(r_list)
             return
 
-        self.model.set_value(iter, fid.xmlnode, t_node)
-        self.model.set_value(iter, fid.link_xmlnode, node)
+        self.model.set_value(iter, gfid.xmlnode, t_node)
+        self.model.set_value(iter, gfid.link_xmlnode, node)
         self.build_test(iter, xml, t_node.children, num, s_num)
         # удаляем, то что временно добавляли
         self.player.del_from_replace(r_list)
@@ -739,14 +739,14 @@ class guiTestSuitePlayer():
         t_file = self.player.get_outlink_filename(node)
         if t_file == "":
             print "OUTLINK: Unknown file. Use file=''"
-            t_name = self.model.get_value(iter, fid.tname)
+            t_name = self.model.get_value(iter, gfid.tname)
             t_name = "%s [FAILED! Unknown file!]" % t_name
-            self.model.set_value(iter, fid.tname, t_name)
-            self.model.set_value(iter, fid.xmlnode, None)
-            self.model.set_value(iter, fid.fail, t_FAILED)
+            self.model.set_value(iter, gfid.tname, t_name)
+            self.model.set_value(iter, gfid.xmlnode, None)
+            self.model.set_value(iter, gfid.fail, t_FAILED)
             return
 
-        self.model.set_value(iter, fid.link_xmlnode, node)
+        self.model.set_value(iter, gfid.link_xmlnode, node)
 
         r_list = self.set_replace_list(iter, node)
 
@@ -762,10 +762,10 @@ class guiTestSuitePlayer():
             except UException, e:
                 print "OUTLINK: Can`t open file='%s'." % (t_file)
                 self.player.del_from_replace(r_list)
-                t_name = self.model.get_value(iter, fid.tname)
+                t_name = self.model.get_value(iter, gfid.tname)
                 t_name = "%s [FAILED! Can`t open file='%s']" % (t_name, t_file)
-                self.model.set_value(iter, fid.tname, t_name)
-                self.model.set_value(iter, fid.fail, t_FAILED)
+                self.model.set_value(iter, gfid.tname, t_name)
+                self.model.set_value(iter, gfid.fail, t_FAILED)
                 return
 
         # смотрим link с учтётом replace
@@ -781,19 +781,19 @@ class guiTestSuitePlayer():
         self.player.del_from_replace(r_list)
 
     def update_info(self, iter, old_name):
-        t = self.model.get_value(iter, fid.etype)
-        xmlnode = self.model.get_value(iter, fid.xmlnode)
+        t = self.model.get_value(iter, gfid.etype)
+        xmlnode = self.model.get_value(iter, gfid.xmlnode)
         if t == tt.Check:
             txt = self.tsi.get_check_info(xmlnode)
-            self.model.set_value(iter, fid.tname, txt)
+            self.model.set_value(iter, gfid.tname, txt)
         elif t == tt.Action:
             txt = self.tsi.get_action_info(xmlnode)
-            self.model.set_value(iter, fid.tname, txt)
+            self.model.set_value(iter, gfid.tname, txt)
         elif t == tt.Link:
-            xmlnode = self.model.get_value(iter, fid.link_xmlnode)
-            xml = self.model.get_value(iter, fid.xml)
-            num = self.model.get_value(iter, fid.num)
-            s_num = self.model.get_value(iter, fid.t_num)
+            xmlnode = self.model.get_value(iter, gfid.link_xmlnode)
+            xml = self.model.get_value(iter, gfid.xml)
+            num = self.model.get_value(iter, gfid.num)
+            s_num = self.model.get_value(iter, gfid.t_num)
             txt = self.tsi.get_check_info(xmlnode)
             it1 = self.model.insert_after(None, iter,
                                           [None, '', '', txt, bg_DEFAULT, xmlnode, tt.Link, 0, 0, False, True, num, xml,
@@ -802,10 +802,10 @@ class guiTestSuitePlayer():
             self.model.remove(iter)
             self.build_link(it1, xmlnode, xml, num, s_num)
         elif t == tt.Outlink:
-            xmlnode = self.model.get_value(iter, fid.link_xmlnode)
-            xml = self.model.get_value(iter, fid.xml)
-            num = self.model.get_value(iter, fid.num)
-            s_num = self.model.get_value(iter, fid.t_num)
+            xmlnode = self.model.get_value(iter, gfid.link_xmlnode)
+            xml = self.model.get_value(iter, gfid.xml)
+            num = self.model.get_value(iter, gfid.num)
+            s_num = self.model.get_value(iter, gfid.t_num)
             txt = self.tsi.get_check_info(xmlnode)
             it1 = self.model.insert_after(None, iter,
                                           [None, '', '', txt, bg_DEFAULT, xmlnode, tt.Outlink, 0, 0, False, True, num,
@@ -814,9 +814,9 @@ class guiTestSuitePlayer():
             self.model.remove(iter)
             self.build_outlink(it1, xmlnode, num, s_num)
         elif t == tt.Test:
-            xmlnode = self.model.get_value(iter, fid.xmlnode)
+            xmlnode = self.model.get_value(iter, gfid.xmlnode)
             n_name = xmlnode.prop("name")
-            self.model.set_value(iter, fid.tname, n_name)
+            self.model.set_value(iter, gfid.tname, n_name)
 
             if n_name != old_name:
                 # надо пройти по всем тестам и проверить у кого ссылка на данный тест
@@ -827,16 +827,16 @@ class guiTestSuitePlayer():
 
     def update_link(self, it, old_name, new_name):
         while it is not None:
-            t = self.model.get_value(it, fid.etype)
+            t = self.model.get_value(it, gfid.etype)
             if t == tt.Link or t == tt.Outlink:
-                link_xmlnode = self.model.get_value(it, fid.link_xmlnode)
+                link_xmlnode = self.model.get_value(it, gfid.link_xmlnode)
                 if link_xmlnode:
                     l_name, l_val = get_sinfo(link_xmlnode.prop("link"), '=')
                     if l_name == "name" and l_val == old_name:
-                        l_xmlnode = self.model.get_value(it, fid.link_xmlnode)
+                        l_xmlnode = self.model.get_value(it, gfid.link_xmlnode)
                         l_xmlnode.setProp("link", "name=%s" % new_name)
                         txt = self.tsi.get_check_info(l_xmlnode)
-                        self.model.set_value(it, fid.tname, txt)
+                        self.model.set_value(it, gfid.tname, txt)
 
             c_iter = self.model.iter_children(it)
             if c_iter != None:
@@ -847,7 +847,7 @@ class guiTestSuitePlayer():
     def set_replace_list(self, iter, testnode):
 
         r_list = []
-        r = self.model.get_value(iter, fid.r_list)
+        r = self.model.get_value(iter, gfid.r_list)
         if r != None:
             r_list = r_list + r
 
@@ -857,10 +857,10 @@ class guiTestSuitePlayer():
             r_list = r_list + r
 
         if len(r_list) >= 1:
-            self.model.set_value(iter, fid.r_list, r_list)
+            self.model.set_value(iter, gfid.r_list, r_list)
             return r_list
 
-        self.model.set_value(iter, fid.r_list, None)
+        self.model.set_value(iter, gfid.r_list, None)
         return None
 
     def rebuild_test_list(self, it=None):
@@ -870,34 +870,34 @@ class guiTestSuitePlayer():
         while it is not None:
             it1 = self.model.iter_children(it)
             while it1 is not None:
-                if not self.model.get_value(it1, fid.i_ign):
+                if not self.model.get_value(it1, gfid.i_ign):
                     self.set_default_param(it1)
                 it2 = self.model.iter_children(it1)
                 if it2 != None:
                     self.rebuild_test_list(it2)
                 it1 = self.model.iter_next(it1)
 
-            if not self.model.get_value(it, fid.i_ign):
+            if not self.model.get_value(it, gfid.i_ign):
                 self.set_default_param(it)
             it = self.model.iter_next(it)
 
     def set_default_param(self, iter):
         img = gtk.gdk.pixbuf_new_from_file(self.imgdir + pic_DEFAULT)
-        self.model.set_value(iter, fid.result, t_NONE)
-        self.model.set_value(iter, fid.bg, bg_DEFAULT)
-        self.model.set_value(iter, fid.time, "")
-        self.model.set_value(iter, fid.t_time, 0)
-        self.model.set_value(iter, fid.pbar, 0)
-        self.model.set_value(iter, fid.i_fail, True)
-        t = self.model.get_value(iter, fid.etype)
+        self.model.set_value(iter, gfid.result, t_NONE)
+        self.model.set_value(iter, gfid.bg, bg_DEFAULT)
+        self.model.set_value(iter, gfid.time, "")
+        self.model.set_value(iter, gfid.t_time, 0)
+        self.model.set_value(iter, gfid.pbar, 0)
+        self.model.set_value(iter, gfid.i_fail, True)
+        t = self.model.get_value(iter, gfid.etype)
         if t == tt.Test or t == tt.Outlink or t == tt.Link:
-            self.model.set_value(iter, fid.pic, None)
-            self.model.set_value(iter, fid.pbar_vis, False)
-            self.model.set_value(iter, fid.res_vis, False)
+            self.model.set_value(iter, gfid.pic, None)
+            self.model.set_value(iter, gfid.pbar_vis, False)
+            self.model.set_value(iter, gfid.res_vis, False)
         elif t == tt.Check or t == tt.Action:
-            self.model.set_value(iter, fid.pic, img)
-            self.model.set_value(iter, fid.pbar_vis, False)
-            self.model.set_value(iter, fid.res_vis, True)
+            self.model.set_value(iter, gfid.pic, img)
+            self.model.set_value(iter, gfid.pbar_vis, False)
+            self.model.set_value(iter, gfid.res_vis, True)
 
     def on_btn_play_clicked(self, btn):
         self.on_play(self.model.get_iter_first())
@@ -921,8 +921,8 @@ class guiTestSuitePlayer():
 
         if self.start_pmonitor(self.play_iter) == False:
             self.stop_pmonitor(self.play_iter, True)
-            print "*** FAILED RUN LIST for (%s) '%s'" % (self.model.get_value(self.play_iter, fid.xml).getFileName(),
-                                                         self.model.get_value(self.play_iter, fid.tname))
+            print "*** FAILED RUN LIST for (%s) '%s'" % (self.model.get_value(self.play_iter, gfid.xml).getFileName(),
+                                                         self.model.get_value(self.play_iter, gfid.tname))
             self.play_scenario = False
             return
 
@@ -948,11 +948,11 @@ class guiTestSuitePlayer():
             self.on_finish_scenario()
             return False
 
-        t = self.model.get_value(self.play_iter, fid.etype)
+        t = self.model.get_value(self.play_iter, gfid.etype)
         if t == tt.Test or t == tt.Outlink or t == tt.Link:
             res = self.on_begin_test(self.play_iter)
             if res == t_FAILED:
-                if self.ignore_from_test.get_active() and self.model.get_value(self.play_iter, fid.i_fail) == False:
+                if self.ignore_from_test.get_active() and self.model.get_value(self.play_iter, gfid.i_fail) == False:
                     self.on_finish_test(self.play_iter)
                     self.on_finish_scenario()
                     return False
@@ -991,7 +991,7 @@ class guiTestSuitePlayer():
                     self.unwinding_tests(self.play_iter, False)
                     return False
                 p_iter = self.model.iter_parent(self.play_iter)
-                if p_iter and self.ignore_from_test.get_active() and self.model.get_value(p_iter, fid.i_fail) == False:
+                if p_iter and self.ignore_from_test.get_active() and self.model.get_value(p_iter, gfid.i_fail) == False:
                     self.unwinding_tests(self.play_iter, False)
                     # self.on_finish_test(self.play_iter)
                     #                 self.on_finish_scenario()
@@ -1059,7 +1059,7 @@ class guiTestSuitePlayer():
         return ( self.model.get_string_from_iter(l_iter) == self.model.get_string_from_iter(r_iter) )
 
     def show_progress(self, iter):
-        # t = self.model.get_value(iter,fid.etype)
+        # t = self.model.get_value(iter,gfid.etype)
         #if t == tt.Test or t == tt.Outlink or t == tt.Link:
         #   return
         t_it = self.model.iter_parent(iter)
@@ -1067,15 +1067,15 @@ class guiTestSuitePlayer():
             return
 
         allnum = self.model.iter_n_children(t_it)
-        curnum = self.model.get_value(iter, fid.num)
+        curnum = self.model.get_value(iter, gfid.num)
 
         # проверяем если тест ещё не закончен, он не должен
         # участвовать в расчёте
-        t_res = self.model.get_value(iter, fid.result)
+        t_res = self.model.get_value(iter, gfid.result)
         if t_res == t_NONE:
             curnum -= 1
 
-        self.model.set_value(t_it, fid.pbar, ((curnum * 1.0 / allnum) * 100.0))
+        self.model.set_value(t_it, gfid.pbar, ((curnum * 1.0 / allnum) * 100.0))
 
         # Обновляем рекурсивно по всему дереву наверх...
         #self.show_progress(t_it)
@@ -1093,19 +1093,19 @@ class guiTestSuitePlayer():
         self.pb_runlist.set_text(text)
 
     def on_begin_test(self, iter):
-        print "begin test: " + str(self.model.get_value(iter, fid.t_num))
-        self.to_log(t_RUN, "%s. %s" % (self.model.get_value(iter, fid.t_num), (self.model.get_value(iter, fid.tname))))
-        t = self.model.get_value(iter, fid.etype)
+        print "begin test: " + str(self.model.get_value(iter, gfid.t_num))
+        self.to_log(t_RUN, "%s. %s" % (self.model.get_value(iter, gfid.t_num), (self.model.get_value(iter, gfid.tname))))
+        t = self.model.get_value(iter, gfid.etype)
         if t != tt.Test and t != tt.Outlink and t != tt.Link:
             return t_FAILED
 
-        testnode = self.model.get_value(iter, fid.xmlnode)
+        testnode = self.model.get_value(iter, gfid.xmlnode)
 
         t_ignore = to_int(self.player.replace(testnode.prop("ignore")))
         if t_ignore:
             return t_IGNORE
 
-        t_ignore = self.model.get_value(iter, fid.i_ign)
+        t_ignore = self.model.get_value(iter, gfid.i_ign)
         if t_ignore:
             return t_IGNORE
 
@@ -1113,7 +1113,7 @@ class guiTestSuitePlayer():
         self.tsi.set_logfile("", False)
 
         # set replace_list
-        r_list = self.model.get_value(iter, fid.r_list)
+        r_list = self.model.get_value(iter, gfid.r_list)
         self.player.add_to_test_replace(r_list)
 
         # setup player config
@@ -1128,7 +1128,7 @@ class guiTestSuitePlayer():
             ignore_failed = False
 
         self.tsi.set_ignorefailed(ignore_failed)
-        self.model.set_value(iter, fid.i_fail, ignore_failed)
+        self.model.set_value(iter, gfid.i_fail, ignore_failed)
 
         self.test_conf = self.player.replace(testnode.prop("config"))
 
@@ -1147,10 +1147,10 @@ class guiTestSuitePlayer():
                         self.stop_pmonitor(c_iter)
                         return t_FAILED
 
-        self.model.set_value(iter, fid.pic, img)
-        self.model.set_value(iter, fid.pbar_vis, True)
-        self.model.set_value(iter, fid.res_vis, False)
-        self.model.set_value(iter, fid.pbar, 0)
+        self.model.set_value(iter, gfid.pic, img)
+        self.model.set_value(iter, gfid.pbar_vis, True)
+        self.model.set_value(iter, gfid.res_vis, False)
+        self.model.set_value(iter, gfid.pbar, 0)
 
         path = self.model.get_path(iter)
         if self.mi_expand.get_active():
@@ -1159,11 +1159,11 @@ class guiTestSuitePlayer():
         return t_PASSED
 
     def on_finish_test(self, iter):
-        t = self.model.get_value(iter, fid.etype)
+        t = self.model.get_value(iter, gfid.etype)
         if t != tt.Test and t != tt.Outlink and t != tt.Link:
             return
 
-        r_list = self.model.get_value(iter, fid.r_list)
+        r_list = self.model.get_value(iter, gfid.r_list)
         self.player.del_from_test_replace(r_list)
 
         self.stop_pmonitor(iter)
@@ -1175,13 +1175,13 @@ class guiTestSuitePlayer():
 
         res = self.collapse_test_result(iter)
         self.show_test_result(iter, res[0], res[1])
-        self.model.set_value(iter, fid.pbar_vis, False)
-        self.model.set_value(iter, fid.res_vis, True)
-        self.model.set_value(iter, fid.result, res[0])
+        self.model.set_value(iter, gfid.pbar_vis, False)
+        self.model.set_value(iter, gfid.res_vis, True)
+        self.model.set_value(iter, gfid.result, res[0])
         self.show_progress(iter)
-        print "finish test '%s' res=%s" % (str(self.model.get_value(iter, fid.t_num)), res[0])
+        print "finish test '%s' res=%s" % (str(self.model.get_value(iter, gfid.t_num)), res[0])
         self.to_log(res[0], "Завершили тест %s. %s" % (
-        self.model.get_value(iter, fid.t_num), (self.model.get_value(iter, fid.tname))))
+        self.model.get_value(iter, gfid.t_num), (self.model.get_value(iter, gfid.tname))))
 
     def collapse_test_result(self, iter):
         ''' Успешным считается только все OK
@@ -1192,7 +1192,7 @@ class guiTestSuitePlayer():
             идти в глубину не надо, т.к. когда они выполнились они
             были тоже свёрнуты..
         '''
-        t_res = self.model.get_value(iter, fid.result)
+        t_res = self.model.get_value(iter, gfid.result)
         if t_res == t_IGNORE:
             return [t_IGNORE, 0]
 
@@ -1207,13 +1207,13 @@ class guiTestSuitePlayer():
         t_time = 0
         it = self.model.iter_children(iter)
         if not it:
-            t_time = self.model.get_value(iter, fid.t_time)
-            res = self.model.get_value(iter, fid.result)
+            t_time = self.model.get_value(iter, gfid.t_time)
+            res = self.model.get_value(iter, gfid.result)
             return [res, t_time]
 
         while it is not None:
-            t_time += self.model.get_value(it, fid.t_time)
-            r = self.model.get_value(it, fid.result)
+            t_time += self.model.get_value(it, gfid.t_time)
+            r = self.model.get_value(it, gfid.result)
             if r == t_FAILED:
                 f_res += 1
             elif r == t_IGNORE:
@@ -1227,7 +1227,7 @@ class guiTestSuitePlayer():
             else:
                 u_res += 1
 
-            # print "***test child '%s' RES=%s (f=%d w=%d p=%d b=%d i=%d)"%(self.model.get_value(it,fid.t_num),r,f_res,w_res,p_res,b_res,i_res)
+            # print "***test child '%s' RES=%s (f=%d w=%d p=%d b=%d i=%d)"%(self.model.get_value(it,gfid.t_num),r,f_res,w_res,p_res,b_res,i_res)
             it = self.model.iter_next(it)
 
         if w_res > 0:
@@ -1243,16 +1243,16 @@ class guiTestSuitePlayer():
         else:
             res = t_WARNING
 
-        # print "***collapse test '%s' RES=%s (f=%d w=%d p=%d b=%d i=%d)"%(self.model.get_value(iter,fid.t_num),res,f_res,w_res,p_res,b_res,i_res)
+        # print "***collapse test '%s' RES=%s (f=%d w=%d p=%d b=%d i=%d)"%(self.model.get_value(iter,gfid.t_num),res,f_res,w_res,p_res,b_res,i_res)
         return [res, t_time]
 
     def show_test_result(self, iter, result, ttime):
-        self.model.set_value(iter, fid.result, result)
-        self.model.set_value(iter, fid.bg, self.result_bg[result])
+        self.model.set_value(iter, gfid.result, result)
+        self.model.set_value(iter, gfid.bg, self.result_bg[result])
         img = gtk.gdk.pixbuf_new_from_file(self.imgdir + self.result_pic[result])
-        self.model.set_value(iter, fid.pic, img)
+        self.model.set_value(iter, gfid.pic, img)
         td = datetime.timedelta(0, ttime)
-        self.model.set_value(iter, fid.time, str(td))
+        self.model.set_value(iter, gfid.time, str(td))
 
     # self.tv.columns_autosize()
 
@@ -1276,20 +1276,20 @@ class guiTestSuitePlayer():
 
     def start_pmonitor(self, iter):
         # запуск RunList
-        xml = self.model.get_value(iter, fid.xml)
+        xml = self.model.get_value(iter, gfid.xml)
         # берём встроенный монитор, но используем от него только список
         # т.к. в gtk многопоточноть плохо походит
         # используем свой GtkProcessMonitor
         pmon = self.player.get_pmonitor(xml)
 
         print "********* START RUNLIST (runlist=%d for %s)" % (len(pmon.plist), xml.getFileName())
-        #self.model.get_value(iter,fid.tname)
+        #self.model.get_value(iter,gfid.tname)
         try:
             if pmon and len(pmon.plist) > 0:
                 t_mp = GtkProcessMonitor()
                 pmonitor = copy.deepcopy(t_mp)
                 pmonitor.init(pmon.plist, pmon.check_msec, pmon.after_run_pause * 1000)
-                self.model.set_value(iter, fid.pmonitor, pmonitor)
+                self.model.set_value(iter, gfid.pmonitor, pmonitor)
                 pmonitor.setTerminateCallback(self.pmonitor_terminated)
                 pmonitor.setRunProgressCallback(self.pmonitor_runprogress)
                 self.pb_runlist.set_property("visible", True)
@@ -1304,96 +1304,96 @@ class guiTestSuitePlayer():
                 return self.async_wait_msec(pmonitor.after_run_pause)
 
             self.pb_runlist.set_property("visible", False)
-            self.model.set_value(iter, fid.pmonitor, None)
+            self.model.set_value(iter, gfid.pmonitor, None)
             return True
 
         except TestSuiteException, e:
-            self.model.set_value(iter, fid.pmonitor, None)
+            self.model.set_value(iter, gfid.pmonitor, None)
             return False
 
-        self.model.set_value(iter, fid.pmonitor, None)
+        self.model.set_value(iter, gfid.pmonitor, None)
         return False
 
     def stop_pmonitor(self, iter, stop_main=False):
-        pmon = self.model.get_value(iter, fid.pmonitor)
+        pmon = self.model.get_value(iter, gfid.pmonitor)
         if not pmon:
             return
 
-        xml = self.model.get_value(iter, fid.xml)
+        xml = self.model.get_value(iter, gfid.xml)
 
         if xml == self.main_xml and stop_main == False:
             return
 
         print "********* STOP RUNLIST (runlist=%d for %s)" % (len(pmon.plist), xml.getFileName())
         pmon.m_finish()
-        self.model.set_value(iter, fid.pmonitor, None)
+        self.model.set_value(iter, gfid.pmonitor, None)
 
     def on_play_item(self, iter):
 
         res = t_FAILED
         p = self.model.get_path(iter)
         self.tv.set_cursor(p)
-        self.model.set_value(iter, fid.result, t_NONE)
+        self.model.set_value(iter, gfid.result, t_NONE)
 
         tm_start = time.time()
         tm_finish = tm_start;
 
-        xml = self.model.get_value(iter, fid.xml)
+        xml = self.model.get_value(iter, gfid.xml)
         try:
-            t_ignore = self.model.get_value(iter, fid.i_ign)
+            t_ignore = self.model.get_value(iter, gfid.i_ign)
             if t_ignore:
                 res = t_IGNORE
             else:
-                t = self.model.get_value(iter, fid.etype)
+                t = self.model.get_value(iter, gfid.etype)
                 if t == tt.Check or t == tt.Action:
-                    xmlnode = self.model.get_value(iter, fid.xmlnode)
+                    xmlnode = self.model.get_value(iter, gfid.xmlnode)
 
                     res = self.special_item(xmlnode, xml, iter)
                     if res == t_NONE:
                         res = self.player.play_item(xmlnode, xml)
 
-        except TestSuiteException, e:
+        except TestSuiteException, ex:
             tm_finish = time.time()  # e.getFinishTime()
-            print "(play_item): " + e.getError()
+            print "(play_item): " + ex.getError()
             res = t_FAILED
-        except UException, e:
+        except UException, ex:
             tm_finish = time.time()
-            print "(play_item): " + e.getError()
+            print "(play_item): " + ex.getError()
             res = t_FAILED
         else:
             tm_finish = time.time()
 
         finally:
-            print "***on_play_item: '%s' res=%s" % (self.model.get_value(iter, fid.t_num), str(res))
+            print "***on_play_item: '%s' res=%s" % (self.model.get_value(iter, gfid.t_num), str(res))
             self.to_log(res,
-                        "%s. '%s'" % (self.model.get_value(iter, fid.t_num), (self.model.get_value(iter, fid.tname))))
+                        "%s. '%s'" % (self.model.get_value(iter, gfid.t_num), (self.model.get_value(iter, gfid.tname))))
             ttime = tm_finish - tm_start
-            self.model.set_value(iter, fid.t_time, ttime)
+            self.model.set_value(iter, gfid.t_time, ttime)
             td = datetime.timedelta(0, ttime)
-            self.model.set_value(iter, fid.time, str(td))
+            self.model.set_value(iter, gfid.time, str(td))
             if res == t_PASSED:
                 r_img = gtk.gdk.pixbuf_new_from_file(self.imgdir + pic_PASSED)
-                self.model.set_value(iter, fid.bg, bg_PASSED)
-                self.model.set_value(iter, fid.result, t_PASSED)
-                self.model.set_value(iter, fid.pic, r_img)
+                self.model.set_value(iter, gfid.bg, bg_PASSED)
+                self.model.set_value(iter, gfid.result, t_PASSED)
+                self.model.set_value(iter, gfid.pic, r_img)
             elif res == t_FAILED:
                 r_img = gtk.gdk.pixbuf_new_from_file(self.imgdir + pic_FAILED)
-                self.model.set_value(iter, fid.bg, bg_FAILED)
-                self.model.set_value(iter, fid.result, t_FAILED)
-                self.model.set_value(iter, fid.pic, r_img)
+                self.model.set_value(iter, gfid.bg, bg_FAILED)
+                self.model.set_value(iter, gfid.result, t_FAILED)
+                self.model.set_value(iter, gfid.pic, r_img)
             elif res == t_IGNORE:
                 r_img = gtk.gdk.pixbuf_new_from_file(self.imgdir + pic_IGNORE)
-                self.model.set_value(iter, fid.bg, bg_IGNORE)
-                self.model.set_value(iter, fid.result, t_IGNORE)
-                self.model.set_value(iter, fid.pic, r_img)
+                self.model.set_value(iter, gfid.bg, bg_IGNORE)
+                self.model.set_value(iter, gfid.result, t_IGNORE)
+                self.model.set_value(iter, gfid.pic, r_img)
             elif res == t_BREAK:
                 r_img = gtk.gdk.pixbuf_new_from_file(self.imgdir + pic_BREAK)
-                self.model.set_value(iter, fid.bg, bg_BREAK)
-                self.model.set_value(iter, fid.result, t_BREAK)
-                self.model.set_value(iter, fid.pic, r_img)
+                self.model.set_value(iter, gfid.bg, bg_BREAK)
+                self.model.set_value(iter, gfid.result, t_BREAK)
+                self.model.set_value(iter, gfid.pic, r_img)
 
             # прогрессбар пересчитывать последним (!)
-            # потому-что там требуется чтобы fid.result
+            # потому-что там требуется чтобы gfid.result
             # был выставлен
             self.show_progress(iter)
 
@@ -1582,15 +1582,15 @@ class guiTestSuitePlayer():
         self.to_log(t_BREAK, "Нажата кнопка 'Остановить'")
         if self.tmr:
             gobject.source_remove(self.tmr)
-        t = self.model.get_value(self.play_iter, fid.etype)
+        t = self.model.get_value(self.play_iter, gfid.etype)
         iter = self.play_iter
         if t != tt.Test and t != tt.Outlink and t != tt.Link:
             iter = self.model.iter_parent(self.play_iter)
 
         self.play_stopped = True
         self.btn_repeat.set_active(False)
-        self.model.set_value(iter, fid.result, t_BREAK)
-        self.model.set_value(self.play_iter, fid.result, t_BREAK)
+        self.model.set_value(iter, gfid.result, t_BREAK)
+        self.model.set_value(self.play_iter, gfid.result, t_BREAK)
         self.on_finish_test(iter)
         self.on_finish_scenario()
         self.btn_pause.set_active(False)
@@ -1600,7 +1600,7 @@ class guiTestSuitePlayer():
         if self.play_timer_running == False:
             return
 
-        #t = self.model.get_value(self.play_iter,fid.etype)
+        #t = self.model.get_value(self.play_iter,gfid.etype)
         iter = self.play_iter
         #if t != tt.Test and t != tt.Action and t != tt.Link:
         #   iter = self.model.iter_parent(self.play_iter)
@@ -1609,17 +1609,17 @@ class guiTestSuitePlayer():
             if self.tmr:
                 gobject.source_remove(self.tmr)
             self.to_log(t_PAUSE, "Нажата кнопка 'Приостановить'")
-            self.pause_prev_pic = self.model.get_value(iter, fid.pic)
-            self.pause_prev_bg = self.model.get_value(iter, fid.bg)
-            self.model.set_value(iter, fid.result, t_PAUSE)
-            self.model.set_value(iter, fid.bg, bg_PAUSE)
+            self.pause_prev_pic = self.model.get_value(iter, gfid.pic)
+            self.pause_prev_bg = self.model.get_value(iter, gfid.bg)
+            self.model.set_value(iter, gfid.result, t_PAUSE)
+            self.model.set_value(iter, gfid.bg, bg_PAUSE)
             r_img = gtk.gdk.pixbuf_new_from_file(self.imgdir + pic_PAUSE)
-            self.model.set_value(iter, fid.pic, r_img)
+            self.model.set_value(iter, gfid.pic, r_img)
         else:
             self.to_log(t_PAUSE, "Отжата кнопка 'Приостановить'")
-            self.model.set_value(iter, fid.result, "...")
-            self.model.set_value(iter, fid.pic, self.pause_prev_pic)
-            self.model.set_value(iter, fid.bg, self.pause_prev_bg)
+            self.model.set_value(iter, gfid.result, "...")
+            self.model.set_value(iter, gfid.pic, self.pause_prev_pic)
+            self.model.set_value(iter, gfid.bg, self.pause_prev_bg)
             self.pause_prev_pic = None
             self.btn_play.set_sensitive(False)
             self.tmr = gobject.timeout_add(self.step_msec.get_value_as_int(), self.next_step_timer)
@@ -1635,7 +1635,7 @@ class guiTestSuitePlayer():
         if it == None:
             return True
 
-        t = model.get_value(it, fid.etype)
+        t = model.get_value(it, gfid.etype)
 
         if self.no_view_actions.get_active() == True and t == tt.Action:
             return False
@@ -1717,7 +1717,7 @@ class guiTestSuitePlayer():
     def save_xml(self, it, saved_xml):
 
         while it is not None:
-            xml = self.model.get_value(it, fid.xml)
+            xml = self.model.get_value(it, gfid.xml)
             if xml not in saved_xml:
                 xml.save(xml.fname, True, True)
                 saved_xml[xml.fname] = xml
@@ -1776,11 +1776,11 @@ class guiTestSuitePlayer():
             if widget and widget.get_name() != "dummy":
                 if ename == sel_name:
                     self.editor = widget
-                    xmlnode = self.fmodel.get_value(self.edit_iter, fid.xmlnode)
-                    t = self.fmodel.get_value(self.edit_iter, fid.etype)
+                    xmlnode = self.fmodel.get_value(self.edit_iter, gfid.xmlnode)
+                    t = self.fmodel.get_value(self.edit_iter, gfid.etype)
                     if t == tt.Link or t == tt.Outlink:
-                        xmlnode = self.fmodel.get_value(self.edit_iter, fid.link_xmlnode)
-                    xml = self.fmodel.get_value(self.edit_iter, fid.xml)
+                        xmlnode = self.fmodel.get_value(self.edit_iter, gfid.link_xmlnode)
+                    xml = self.fmodel.get_value(self.edit_iter, gfid.xml)
                     self.player.initConfig(xml)
                     config = self.player.get_item_config(xmlnode)
                     self.editor.init(xmlnode, config, self.dlg_xlist, xml)

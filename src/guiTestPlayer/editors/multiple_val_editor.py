@@ -7,7 +7,7 @@ import uniset2
 
 from TestSuiteGlobal import *
 from edit_global_functions import *
-from dlg_xlist import fid as xlist_fid
+from dlg_xlist import xfid as xlist_fid
 
 
 class fid():

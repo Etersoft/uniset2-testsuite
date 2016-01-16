@@ -1,22 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-import time
-
 import gobject
 import gtk
 
-from TestSuiteGlobal import *
 from ProcessMonitor import *
+
 
 # ---------------------------------------------------------
 # class GtkProcessMonitor(gobject.GObject):
 class GtkProcessMonitor():
-    def __init__(self, plist=[], check_msec=2000, after_run_pause=0):
+    def __init__(self, plist=None, check_msec=2000, after_run_pause=0):
 
         #gobject.GObject.__init__(self)
+        if not plist:
+            plist = []
         self.init(plist, check_msec, after_run_pause)
 
     def init(self, plist, check_msec, after_run_pause):
@@ -78,8 +76,8 @@ class GtkProcessMonitor():
                 if p.ignore_run_failed == False and self.term_flag == False:
                     print err
                     print "(ProcessMonitor): ..terminate all.."
-                    for p in self.plist:
-                        p.stop()
+                    for pp in self.plist:
+                        pp.stop()
 
                     self.active = False
                     if self.term_callback:
@@ -102,8 +100,8 @@ class GtkProcessMonitor():
 
                     #raise TestSuiteException(err)
                     print "(ProcessMonitor): ..terminate all.."
-                    for p in self.plist:
-                        p.stop()
+                    for pp in self.plist:
+                        pp.stop()
 
                     self.active = False
                     if self.term_callback:

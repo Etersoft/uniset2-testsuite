@@ -12,7 +12,7 @@ def get_str_val(str_val):
     return str_val
 
 
-class fid():
+class xfid():
     id = 0
     name = 1
     tname = 2
@@ -62,22 +62,22 @@ class XListDialog():
         self.tv.connect("button-press-event", self.on_button_press_event)
 
         renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_("ID"), renderer, text=fid.id)
+        column = gtk.TreeViewColumn(_("ID"), renderer, text=xfid.id)
         column.set_clickable(False)
         self.tv.append_column(column)
 
         renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_("Name"), renderer, text=fid.name)
+        column = gtk.TreeViewColumn(_("Name"), renderer, text=xfid.name)
         column.set_clickable(False)
         self.tv.append_column(column)
 
         renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_("TextName"), renderer, text=fid.tname)
+        column = gtk.TreeViewColumn(_("TextName"), renderer, text=xfid.tname)
         column.set_clickable(False)
         self.tv.append_column(column)
 
         renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_("Conffile"), renderer, text=fid.conf)
+        column = gtk.TreeViewColumn(_("Conffile"), renderer, text=xfid.conf)
         column.set_clickable(False)
         self.tv.append_column(column)
 
@@ -109,7 +109,7 @@ class XListDialog():
         for c in confilst:
             try:
                 # print "********* open confile='%s'"%c
-                xml = UniXML(c)
+                xml = uniset2.UniXML(c)
                 self.build_one_tree(xml, section, c)
             except:
                 self.model.append([_("Can`t open '%s'" % c), "", "", c, None, None])
@@ -119,16 +119,16 @@ class XListDialog():
     def build_one_tree(self, xml, section, confname):
         node = xml.findNode(xml.getDoc(), section)[0].children
         while node != None:
-            self.model.append([get_str_val(node.prop("id")), \
-                               get_str_val(node.prop("name")), \
+            self.model.append([get_str_val(node.prop("id")),
+                               get_str_val(node.prop("name")),
                                get_str_val(node.prop("textname")), confname, node, xml])
             node = xml.nextNode(node)
 
     def sfunc(self, model, column, key, iter):
 
-        if model.get_value(iter, fid.id).find(key) != -1:
+        if model.get_value(iter, xfid.id).find(key) != -1:
             return False
-        if model.get_value(iter, fid.name).find(key) != -1:
+        if model.get_value(iter, xfid.name).find(key) != -1:
             return False
             # if model.get_value(iter,2).find(key) != -1:
         #           return False
@@ -150,7 +150,7 @@ class XListDialog():
         self.fentry.set_text("")
         it = self.model.get_iter_first()
         while it is not None:
-            if self.model.get_value(it, fid.xmlnode) == sel:  # check iterator
+            if self.model.get_value(it, xfid.xmlnode) == sel:  # check iterator
                 ts.select_iter(self.fmodel.convert_child_iter_to_iter(it))
                 self.tv.scroll_to_cell(self.model.get_path(it))
                 return
@@ -164,11 +164,11 @@ class XListDialog():
         self.fentry.set_text("")
         it = self.model.get_iter_first()
         while it is not None:
-            if config != "" and self.model.get_value(it, fid.conf) != config:
+            if config != "" and self.model.get_value(it, xfid.conf) != config:
                 it = self.model.iter_next(it)
                 continue
 
-            if self.model.get_value(it, fid.name) == sel:
+            if self.model.get_value(it, xfid.name) == sel:
                 ts.select_iter(self.fmodel.convert_child_iter_to_iter(it))
                 self.tv.scroll_to_cell(self.model.get_path(it))
                 return it
@@ -185,11 +185,11 @@ class XListDialog():
         it = self.model.get_iter_first()
         while it is not None:
 
-            if config != "" and self.model.get_value(it, fid.conf) != config:
+            if config != "" and self.model.get_value(it, xfid.conf) != config:
                 it = self.model.iter_next(it)
                 continue
 
-            if self.model.get_value(it, fid.id) == sel:
+            if self.model.get_value(it, xfid.id) == sel:
                 ts.select_iter(self.fmodel.convert_child_iter_to_iter(it))
                 self.tv.scroll_to_cell(self.model.get_path(it))
                 return it
@@ -219,14 +219,14 @@ class XListDialog():
             if sel_mode == gtk.SELECTION_SINGLE:
                 (model, iter) = self.tv.get_selection().get_selected()
                 if iter:
-                    return model.get_value(iter, fid.xmlnode)
+                    return model.get_value(iter, xfid.xmlnode)
 
             elif sel_mode == gtk.SELECTION_MULTIPLE:
                 (model, plist) = self.tv.get_selection().get_selected_rows()
                 nlist = []
                 for p in plist:
-                    nlist.append(model.get_value(model.get_iter(p), fid.xmlnode))
-                #               treeselection.selected_foreach(self.foreach_sel_list,plist)
+                    nlist.append(model.get_value(model.get_iter(p), xfid.xmlnode))
+                # treeselection.selected_foreach(self.foreach_sel_list,plist)
                 #               model = sel.get_treeview().get_model()
                 #               return (model, pathlist)
                 return nlist
@@ -273,7 +273,7 @@ class XListDialog():
             return True
 
         if self.allConf == False:
-            if model.get_value(it, fid.conf) != self.cbox.get_active_text():
+            if model.get_value(it, xfid.conf) != self.cbox.get_active_text():
                 return False
 
         t = self.fentry.get_text()
@@ -282,17 +282,16 @@ class XListDialog():
 
         case = self.case_cb.get_active()
 
-        if self.id_check.get_active() and self.find_str(model.get_value(it, fid.id), t, case):
+        if self.id_check.get_active() and self.find_str(model.get_value(it, xfid.id), t, case):
             return True
 
-        if self.name_check.get_active() and self.find_str(model.get_value(it, fid.name), t, case):
+        if self.name_check.get_active() and self.find_str(model.get_value(it, xfid.name), t, case):
             return True
 
-        if self.tname_check.get_active() and self.find_str(model.get_value(it, fid.tname), t, case):
+        if self.tname_check.get_active() and self.find_str(model.get_value(it, xfid.tname), t, case):
             return True
 
         if self.id_check.get_active() or self.name_check.get_active() or self.tname_check.get_active():
             return False
 
         return True
-       
