@@ -942,7 +942,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         t_ignore = to_int(self.replace(testnode.prop('ignore')))
         if t_ignore:
-            self.tsi.log(t_IGNORE, t_IGNORE, "'%s'" % t_name, False)
+            self.tsi.log(t_IGNORE, t_IGNORE, "'%s'" % t_name, t_comment, False)
             ret = [t_IGNORE, t_name, 0, "", xml.getFileName()]
             return ret
 

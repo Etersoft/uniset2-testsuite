@@ -380,6 +380,12 @@ class TestSuiteInterface():
 
     def log(self, t_result, t_test, txt, t_comment, throw=False):
 
+        try:
+            if t_comment!=None and len(t_comment): 
+                t_comment = unicode(t_comment, "UTF-8", errors='replace')
+        except UnicodeDecodeError, e:
+            pass
+        
         self.print_log(t_result, t_test, txt, t_comment)
         if self.log_callback:
             self.log_callback(t_result, t_test, txt, t_comment, throw)
@@ -388,6 +394,13 @@ class TestSuiteInterface():
             raise TestSuiteException(txt)
 
     def actlog(self, t_result, t_act, txt, t_comment, throw=False):
+
+        try:
+            if t_comment!=None and len(t_comment): 
+                t_comment = unicode(t_comment, "UTF-8", errors='replace')
+        except UnicodeDecodeError, e:
+            pass
+
         self.print_actlog(t_result, t_act, txt, t_comment)
         if self.actlog_callback:
             self.actlog_callback(t_result, t_act, txt, t_comment, throw)

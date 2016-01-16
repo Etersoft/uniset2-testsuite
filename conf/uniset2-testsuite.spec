@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.1
-Release: eter3
+Release: eter3.2
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Sat Jan 16 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter3.2
+- minor fixes
+
 * Fri Oct 16 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-eter3
 - add --show-test-comment param
 
@@ -118,7 +121,7 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 - added support spec symbol '[',']','{','}' for replace 
 
 * Wed Jun 10 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter14
-- added support spec symbol '#','$','%' for replace
+- added support spec symbol '#','$','%%' for replace
 
 * Mon Jun 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-eter13
 - fixed bug in replace mechanism..(link='..')
