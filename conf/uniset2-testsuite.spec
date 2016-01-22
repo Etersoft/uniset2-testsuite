@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.1
-Release: eter3.2
+Release: eter4
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Fri Jan 22 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter4
+- fixed bug in processing replace rule
+
 * Sat Jan 16 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter3.2
 - minor fixes
 

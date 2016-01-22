@@ -182,7 +182,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if xml.begnode.prop("notimestamp") != None:
                 self.tsi.set_notimestamp(to_int(self.replace(xml.begnode.prop("notimestamp"))))
 
-            self.add_to_global_replace(get_replace_list(to_str(self.replace(xml.begnode.prop("replace")))))
+            self.add_to_global_replace(get_replace_list(to_str(xml.begnode.prop("replace"))))
             self.global_conf = self.replace(xml.begnode.prop("config"))
             xml.begnode = xml.begnode.children
             self.begin_tests(xml)
@@ -378,7 +378,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         return self.tsi.get_default_ui()
 
     def get_outlink_filename(self, node):
-        r_list = get_replace_list(to_str(self.replace(node.prop("replace"))))
+        r_list = get_replace_list(to_str(node.prop("replace")))
         r_list = self.replace_list(r_list)
         self.add_to_replace(r_list)
         t_file = to_str(self.replace(node.prop("file"))).strip()
@@ -492,7 +492,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if test == "LINK":
             t_name, t_field = self.get_link_param(node)
 
-            r_list = get_replace_list(to_str(self.replace(node.prop("replace"))))
+            r_list = get_replace_list(to_str(node.prop("replace")))
             r_list = self.replace_list(r_list)
             self.add_to_replace(r_list)
 
@@ -519,7 +519,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             t_name, t_field = self.get_link_param(node)
 
             # replace должен действовать только после "получения" t_link
-            r_list = get_replace_list(to_str(self.replace(node.prop("replace"))))
+            r_list = get_replace_list(to_str(node.prop("replace")))
             r_list = self.replace_list(r_list)
             self.add_to_replace(r_list)
 
@@ -994,7 +994,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             td = datetime.timedelta(0, ttime)
             self.tsi.ntab = False
             self.tsi.log(tres[res.Result], 'FINISH', "'%s' /%s/" % (t_name, td),"", False)
-            # чисто визуальное отделение нового теста 
+            # чисто визуальное отделение нового теста
             if self.tsi.printlog == True and self.tsi.nrecur <= 0:
                 print "---------------------------------------------------------------------------------------------------------------------"
 
