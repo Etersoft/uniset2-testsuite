@@ -182,8 +182,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if xml.begnode.prop("notimestamp") != None:
                 self.tsi.set_notimestamp(to_int(self.replace(xml.begnode.prop("notimestamp"))))
 
-            self.add_to_global_replace(get_replace_list(to_str(xml.begnode.prop("replace"))))
+            # WARNING!! Модифицируем класс, добавляем своё поле (не красиво наверно, но сам язык позволяет)
+            xml.global_replace_list = get_replace_list(to_str(xml.begnode.prop("replace")))
+            self.add_to_global_replace(xml.global_replace_list)
             self.global_conf = self.replace(xml.begnode.prop("config"))
+            # WARNING!! Модифицируем класс, добавляем своё поле (не красиво наверно, но сам язык позволяет)
             xml.begnode = xml.begnode.children
             self.begin_tests(xml)
         else:
@@ -250,6 +253,18 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             for v in lst:
                 if v[0] != '' and v[0] != v[1]:
                     self.replace_global_dict.append([v[0], v[1]])
+        except KeyError, ValueError:
+            pass
+
+    def del_from_global_replace(self, lst):
+
+        if lst == None:
+            return
+
+        try:
+            for v in lst:
+                if v[0] != '':
+                    self.replace_delete_key(self.replace_global_dict, v[0])
         except KeyError, ValueError:
             pass
 
@@ -331,9 +346,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         #        print "TEST REPLACE: " + str(self.replace_test_dict)
         #        print "ITEM REPLACE: " + str(self.replace_dict)
 
-        name = self.replace_in(name, self.replace_dict)
-        name = self.replace_in(name, self.replace_test_dict)
-        name = self.replace_in(name, self.replace_global_dict)
+        name = self.replace_in(name, self.replace_global_dict) # применяем глобальный replace
+        name = self.replace_in(name, self.replace_test_dict) # потом уровень теста
+        name = self.replace_in(name, self.replace_dict) # потом уровень item
 
         return name
 
@@ -541,9 +556,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 self.tsi.nrecur += 1
                 res = self.play_xml(t_xml)
                 self.tsi.nrecur -= 1
-                # возващаем обобщённый результат
-                # см. play_xml
                 self.del_from_replace(r_list)
+                # возвращаем обобщённый результат
+                # см. play_xml
                 return res[0]
 
             else:
@@ -885,6 +900,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         finally:
             pmonitor.stop()
 
+        self.del_from_global_replace(xml.global_replace_list)
         r = self.get_cumulative_result(results)
         ttime = time.time() - tm_all_start
         return [r[res.Result], results, ttime, r[res.Error], None]
