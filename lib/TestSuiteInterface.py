@@ -305,7 +305,7 @@ class TestSuiteInterface():
                 t_comment = ""
             try:
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
-            except UnicodeDecodeError, e:
+            except TypeError, UnicodeDecodeError:
                 pass
 
             txt = '%s %s %s' % (t_comment.ljust(self.col_comment_width)[0:self.col_comment_width], self.colsep, txt)
@@ -350,7 +350,7 @@ class TestSuiteInterface():
                 t_comment = ""
             try:
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
-            except UnicodeDecodeError, e:
+            except TypeError, UnicodeDecodeError:
                 pass
 
             txt = '%s %s %s' % (t_comment.ljust(self.col_comment_width)[0:self.col_comment_width], self.colsep, txt)
@@ -383,7 +383,7 @@ class TestSuiteInterface():
         try:
             if t_comment!=None and len(t_comment): 
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
-        except UnicodeDecodeError, e:
+        except TypeError, UnicodeDecodeError:
             pass
         
         self.print_log(t_result, t_test, txt, t_comment)
@@ -398,7 +398,7 @@ class TestSuiteInterface():
         try:
             if t_comment!=None and len(t_comment): 
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
-        except UnicodeDecodeError, e:
+        except TypeError, UnicodeDecodeError:
             pass
 
         self.print_actlog(t_result, t_act, txt, t_comment)
