@@ -56,10 +56,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         # для реализации механизма ссылок на внешние файлы
         self.xmllist = dict()
 
-        # списки пар ["что заменить","на что заменить"] замен (для реализации шаблонов)
-        self.replace_global_dict = []
-        self.replace_test_dict = []
-        self.replace_dict = []
+        # спискок со списками замен (получаемых из replace="..") с учётом добавления (зоны видимости)
+        self.replace_stack = list()
 
         # загружаем основной файл
         self.global_ignore_runlist = ignore_runlist
@@ -73,11 +71,13 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         # воспользуемся свойством питон и добавим к классу нужное нам поле
         self.xml.begnode = None
+        self.xml.global_replace_list = None
         self.test_conf = ""
 
         self.show_result_report = False
         self.initConfig(self.xml)
         self.initTestList(self.xml)
+        self.add_to_global_replace(self.xml.global_replace_list)
         self.initProcessMonitor(self.xml)
         self.keyb_inttr_callback = None
 
@@ -182,9 +182,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if xml.begnode.prop("notimestamp") != None:
                 self.tsi.set_notimestamp(to_int(self.replace(xml.begnode.prop("notimestamp"))))
 
-            # WARNING!! Модифицируем класс, добавляем своё поле (не красиво наверно, но сам язык позволяет)
+            if hasattr(xml,'global_replace_list') == False:
+                # WARNING!! Модифицируем класс, добавляем своё поле (не красиво наверно, но сам язык позволяет)
+                xml.global_replace_list = None
+
             xml.global_replace_list = get_replace_list(to_str(xml.begnode.prop("replace")))
-            self.add_to_global_replace(xml.global_replace_list)
             self.global_conf = self.replace(xml.begnode.prop("config"))
             # WARNING!! Модифицируем класс, добавляем своё поле (не красиво наверно, но сам язык позволяет)
             xml.begnode = xml.begnode.children
@@ -246,79 +248,53 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def add_to_global_replace(self, lst):
 
-        if lst == None:
+        if lst == None or len(lst) == 0:
             return
 
-        try:
-            for v in lst:
-                if v[0] != '' and v[0] != v[1]:
-                    self.replace_global_dict.append([v[0], v[1]])
-        except KeyError, ValueError:
-            pass
+        self.replace_stack.append(lst)
 
     def del_from_global_replace(self, lst):
 
-        if lst == None:
+        if lst == None or len(lst) == 0:
             return
 
         try:
-            for v in lst:
-                if v[0] != '':
-                    self.replace_delete_key(self.replace_global_dict, v[0])
-        except KeyError, ValueError:
+            self.replace_stack.remove(lst)
+        except ValueError:
             pass
 
     def add_to_test_replace(self, lst):
 
-        if lst == None:
+        if lst == None or len(lst) == 0:
             return
 
-        try:
-            for v in lst:
-                if v[0] != '' and v[0] != v[1]:
-                    self.replace_test_dict.append([v[0], v[1]])
-        except KeyError, ValueError:
-            pass
+        self.replace_stack.append(lst)
 
     def del_from_test_replace(self, lst):
 
-        if lst == None:
+        if lst == None or len(lst) == 0:
             return
 
         try:
-            for v in lst:
-                if v[0] != '':
-                    self.replace_delete_key(self.replace_test_dict, v[0])
-        except KeyError, ValueError:
+            self.replace_stack.remove(lst)
+        except ValueError:
             pass
 
     def add_to_replace(self, lst):
 
-        if lst == None:
+        if lst == None or len(lst) == 0:
             return
 
-        # print "(add_to_replace): " + str(lst)
-        try:
-            for v in lst:
-                if v[0] != '':
-                    self.replace_dict.append([v[0], v[1]])
-        except KeyError, ValueError:
-            pass
-            # print "GLOBAL REPLACE: " + str(self.replace_global_dict)
-            # print "TEST REPLACE: " + str(self.replace_test_dict)
-            # print "ITEM REPLACE: " + str(self.replace_dict)
+        self.replace_stack.append(lst)
 
     def del_from_replace(self, lst):
 
-        if lst == None:
+        if lst == None or len(lst) == 0:
             return
 
-        # print "(del_from_replace): " + str(lst)
         try:
-            for v in lst:
-                if v[0] != '':
-                    self.replace_delete_key(self.replace_dict, v[0])
-        except KeyError, ValueError:
+            self.replace_stack.remove(lst)
+        except ValueError:
             pass
 
     def str_to_idlist(self, str_val, ui):
@@ -330,7 +306,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def replace_list(self, slist):
         res = []
         for v in slist:
-            if len(v) < 1 or v == None or v[0] == v[1]:
+            if v == None or len(v) < 1 or v[0] == v[1]:
                 continue
 
             res.append([self.replace(v[0]), self.replace(v[1])])
@@ -341,24 +317,22 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         ''' преобразование, если есть в словаре замена.. '''
         if name == None or name == "" or name.__class__.__name__ == "int":
             return name
-        #        print "** replace **"
-        #        print "GLOBAL REPLACE: " + str(self.replace_global_dict)
-        #        print "TEST REPLACE: " + str(self.replace_test_dict)
-        #        print "ITEM REPLACE: " + str(self.replace_dict)
 
-        name = self.replace_in(name, self.replace_global_dict) # применяем глобальный replace
-        name = self.replace_in(name, self.replace_test_dict) # потом уровень теста
-        name = self.replace_in(name, self.replace_dict) # потом уровень item
+        if len(self.replace_stack) == 0:
+            return name
+
+        for v in reversed(self.replace_stack):
+            if v == None or len(v)==0:
+                continue
+
+            name = self.replace_in(name,v)
 
         return name
 
     def replace_in(self, name, r_dict):
         try:
             for k, v in r_dict:
-                #               print "(repl): name='%s' k='%s'  v='%s'"%(name,k,v)
                 name = name.replace(k, v)
-
-            #                print "(repl):Rname='%s'"%name
 
             return name
 
@@ -366,16 +340,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             pass
 
         return None
-
-    def replace_delete_key(self, r_dict, key):
-        try:
-            for e in r_dict:
-                if e[0] == key:
-                    r_dict.remove(e)
-                    return
-
-        except KeyError, ValueError:
-            pass
 
     def get_current_ui(self, alias):
         ui = self.tsi.get_ui(alias)
@@ -509,17 +473,17 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             r_list = get_replace_list(to_str(node.prop("replace")))
             r_list = self.replace_list(r_list)
-            self.add_to_replace(r_list)
+            #self.add_to_replace(r_list)
 
             t_node = self.find_test(xml, t_name, t_field)
             if t_node != None:
                 logfile = self.tsi.get_logfile()
                 self.tsi.log(" ", "LINK", "go to %s='%s'" % (t_field, t_name), t_comment, False)
-                res = self.play_test(xml, t_node, logfile)
+                res = self.play_test(xml, t_node, logfile, r_list)
                 self.del_from_replace(r_list)
                 return res[0]
 
-            self.del_from_replace(r_list)
+            #self.del_from_replace(r_list)
             self.tsi.log(t_FAILED, "LINK", "Not found test (%s='%s')" % (t_field, t_name), t_comment, True)
             return t_FAILED
 
@@ -536,7 +500,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             # replace должен действовать только после "получения" t_link
             r_list = get_replace_list(to_str(node.prop("replace")))
             r_list = self.replace_list(r_list)
-            self.add_to_replace(r_list)
 
             t_ignore_runlist = to_int(self.replace(node.prop("ignore_runlist")))
             t_xml = self.xmllist.get(t_file)
@@ -545,7 +508,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 try:
                     t_xml = self.loadXML(t_file)
                 except UException, e:
-                    self.del_from_replace(r_list)
                     self.tsi.log(t_FAILED, "OUTLINK", "Can`t open file='%s'." % (t_file), t_comment, True)
                     return t_FAILED
 
@@ -554,9 +516,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if t_link == "ALL":
                 self.tsi.log(" ", "OUTLINK", "go to file='%s' play ALL" % (t_file), t_comment, False)
                 self.tsi.nrecur += 1
-                res = self.play_xml(t_xml)
+                res = self.play_xml(t_xml,r_list)
                 self.tsi.nrecur -= 1
-                self.del_from_replace(r_list)
                 # возвращаем обобщённый результат
                 # см. play_xml
                 return res[0]
@@ -567,9 +528,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     logfile = self.tsi.get_logfile()
                     self.tsi.log(" ", "OUTLINK", "go to file='%s' %s='%s'" % (t_file, t_field, t_name), t_comment, False)
                     self.tsi.nrecur += 1
-                    res = self.play_test(t_xml, t_node, logfile)
+                    # т.к. вызываем только один тест из всего xml, приходиться самостоятельно добавлять global_replace
+                    self.add_to_global_replace(t_xml.global_replace_list)
+                    res = self.play_test(t_xml, t_node, logfile, r_list)
                     self.tsi.nrecur -= 1
-                    self.del_from_replace(r_list)
+                    self.del_from_global_replace(t_xml.global_replace_list)
                     return res[0]
                 else:
                     self.del_from_replace(r_list)
@@ -874,7 +837,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.print_result_report(results)
             pmonitor.stop()
 
-    def play_xml(self, xml):
+    def play_xml(self, xml, spec_replace_list=[]):
 
         logfile = self.tsi.get_logfile()
         b = self.begin_tests(xml)
@@ -883,6 +846,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         tm_start = 0
         tm_all_start = time.time()
         pmonitor = self.get_pmonitor(xml)
+        self.add_to_global_replace(xml.global_replace_list)
+        self.add_to_test_replace(spec_replace_list)
+
         try:
             pmonitor.start()
             while testnode != None:
@@ -900,6 +866,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         finally:
             pmonitor.stop()
 
+        self.del_from_test_replace(spec_replace_list)
         self.del_from_global_replace(xml.global_replace_list)
         r = self.get_cumulative_result(results)
         ttime = time.time() - tm_all_start
@@ -951,7 +918,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         return t_UNKNOWN
 
-    def play_test(self, xml, testnode, logfile):
+    def play_test(self, xml, testnode, logfile, spec_replace_list=[] ):
+
+        self.add_to_test_replace(spec_replace_list)
 
         t_name = to_str(self.replace(testnode.prop('name')))
         t_comment = to_str(self.replace(testnode.prop('comment')))
@@ -960,6 +929,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if t_ignore:
             self.tsi.log(t_IGNORE, t_IGNORE, "'%s'" % t_name, t_comment, False)
             ret = [t_IGNORE, t_name, 0, "", xml.getFileName()]
+            self.del_from_test_replace(spec_replace_list)
             return ret
 
         curnode = self.begin(testnode)
@@ -978,7 +948,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.tsi.set_ignorefailed(to_int(self.replace(testnode.prop('ignore_failed'))))
         self.test_conf = self.replace(testnode.prop('config'))
 
-        # чисто визуальное отделение нового теста 
+        # чисто визуальное отделение нового теста
         #        if self.tsi.printlog == True and self.tsi.nrecur<=0:
         #           print "---------------------------------------------------------------------------------------------------------------------"
 
@@ -1003,6 +973,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             tm_finish = time.time()
         finally:
             self.wait_finish_reset_thread()
+            self.del_from_test_replace(spec_replace_list)
             self.del_from_test_replace(r_list)
             self.test_conf = ""
             tres = self.get_cumulative_result(i_res)
