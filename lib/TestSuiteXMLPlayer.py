@@ -736,7 +736,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             ttime = 0
             for r in results:
                 td = datetime.timedelta(0, r[res.Time])
-                print '%s. [%7s] - %s /%s/' % (string.rjust(str(i), 3), r[res.Result], r[res.Name], td)
+                print '%s. [%s] - %s /%s/' % (string.rjust(str(i), 3), self.tsi.colorize_result(r[res.Result]), r[res.Name], td)
                 i = i + 1
                 ttime = ttime + r[res.Time]
 
@@ -953,7 +953,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         #           print "---------------------------------------------------------------------------------------------------------------------"
 
         self.tsi.ntab = False
-        self.tsi.log("", 'BEGIN', "'%s'" % t_name, t_comment, False)
+        self.tsi.log("", 'BEGIN', "'%s'" % self.tsi.colorize_test_name(t_name), t_comment, False)
         i_res = []
         tm_start = time.time()
         tm_finish = tm_start
@@ -980,7 +980,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             ttime = tm_finish - tm_start
             td = datetime.timedelta(0, ttime)
             self.tsi.ntab = False
-            self.tsi.log(tres[res.Result], 'FINISH', "'%s' /%s/" % (t_name, td),"", False)
+            self.tsi.log(tres[res.Result], 'FINISH', "'%s' /%s/" % (self.tsi.colorize_test_finish(t_name), td),"", False)
             # чисто визуальное отделение нового теста
             if self.tsi.printlog == True and self.tsi.nrecur <= 0:
                 print "---------------------------------------------------------------------------------------------------------------------"
@@ -1084,6 +1084,7 @@ if __name__ == "__main__":
             print '--default-timeout msec        - Default <check timeout=\'..\' ../>.\''
             print '--default-check-pause msec    - Default <check check_pause=\'..\' ../>.\''
             print '--junit filename          - Save report file. JUnit format.'
+            print '--no-coloring-output      - Disable colorization output'
             exit(0)
 
         testfile = ts.getArgParam('--testfile', "")
@@ -1120,6 +1121,7 @@ if __name__ == "__main__":
         check_pause = ts.getArgInt("--default-check-pause", 500)
         col_comment_width = ts.getArgInt("--col-comment-width", 50)
         junit = ts.getArgParam("--junit", "")
+        coloring_out = ts.checkArgParam('--no-coloring-output', False)
 
         cf = conflist.split(',')
         ts.init_testsuite(cf, show_log, show_actlog)
@@ -1131,6 +1133,7 @@ if __name__ == "__main__":
         ts.set_show_test_type(show_test_type)
         ts.set_col_comment_width(col_comment_width)
         ts.set_show_test_comment(show_test_comment)
+        ts.no_coloring_output = coloring_out
 
         player = TestSuiteXMLPlayer(ts, testfile, ignore_runlist)
         player.show_result_report = show_result

@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.1
-Release: eter7
+Release: eter8
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Sun Jan 24 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter8
+- added coloring output
+
 * Sun Jan 24 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter7
 - minor fixes for processing unicode
 

@@ -3,6 +3,9 @@
 
 import subprocess
 
+# \todo может потом перейти на использование colorama
+#import colorama as clr
+
 from TestSuiteGlobal import *
 
 
@@ -46,6 +49,7 @@ class TestSuiteInterface():
         self.log_list = []
         self.nrecur = 0
         self.ntab = False
+        self.no_coloring_output = False
 
         # "CHECK : 00:00:05 [  0.016] : 2015-03-14 02:46:06 :[ PASSED] :  FINISH: 'Global replace' /0:00:00.000837/"
         self.re_log = re.compile(
@@ -53,6 +57,8 @@ class TestSuiteInterface():
 
         # "'simple test' /0:00:00.001361/"
         self.re_tinfo = re.compile(r"[^/]*(/(\d+):(\d{1,2}):(\d{1,2})([.](\d*))*/)*$")
+
+        # clr.init(autoreset=True)
 
     @staticmethod
     def get_aliasname(cname):
@@ -289,16 +295,57 @@ class TestSuiteInterface():
 
         return txt
 
+    def colorize(self, t_result, txt):
+
+        if self.no_coloring_output:
+            return txt
+
+        if t_result == t_PASSED:
+            return "\033[1;32m%s\033[1;m"%txt
+        if t_result == t_WARNING or t_result == t_UNKNOWN:
+            return "\033[1;33m%s\033[1;m"%txt
+        if t_result == t_FAILED:
+            return "\033[1;31m%s\033[1;m"%txt
+        if t_result == t_IGNORE:
+            return "\033[1;34m%s\033[1;m"%txt
+
+        return txt
+
+    def colorize_test_name(self, txt):
+        if self.no_coloring_output:
+            return txt
+
+        return "\033[1;37m%s\033[1;m"%txt
+
+    def colorize_test_finish(self, txt):
+
+        # пока не будем расскрашивать "finish"
+        return txt
+        # return self.colorize_test_name(txt)
+
+    def colorize_text(self, t_result, txt):
+
+        # раскрашиваем только t_FAILED
+        if t_result == t_FAILED:
+            return self.colorize(t_result,txt)
+
+        return txt
+
+    def colorize_result(self, t_result):
+        return self.colorize(t_result,"%7s"%t_result)
+
     def print_log(self, t_result, t_test, txt, t_comment):
 
         self.log_numstr += 1
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
         txt2 = self.set_tab_space(txt)
-        txt = str('[%7s] %s%8s%s %s' % (t_result, self.colsep, t_test, self.colsep, txt2))
-        llog = '%s %s%s' % (t_tm, self.colsep, txt)
+
+        txt = str('[%s] %s%8s%s %s' % (self.colorize_result(t_result), self.colsep, t_test, self.colsep, self.colorize_text(t_result,txt2)))
+        txt3 = str('[%7s] %s%8s%s %s' % (t_result, self.colsep, t_test, self.colsep, txt2))
+        llog = '%s %s%s' % (t_tm, self.colsep, txt3)
 
         if not self.log_show_testtype:
-            txt = str('[%7s] %s %s' % (t_result, self.colsep, txt2))
+            txt = str('[%s] %s %s' % (self.colorize_result(t_result), self.colsep, self.colorize_text(t_result,txt2)))
 
         if self.log_show_comments or self.log_show_test_comment:
             if not t_comment or (self.log_show_test_comment and not self.log_show_comments and t_test != 'BEGIN'):
@@ -338,12 +385,13 @@ class TestSuiteInterface():
         self.log_numstr += 1
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
         txt2 = self.set_tab_space(txt)
-        txt = str('[%7s] %s%8s%s %s' % (t_result, self.colsep, t_act, self.colsep, txt2))
+        txt3 = str('[%7s] %s%8s%s %s' % (t_result, self.colsep, t_act, self.colsep, txt2))
+        llog = '%s %s%s' % (t_tm, self.colsep, txt3)
 
-        llog = '%s %s%s' % (t_tm, self.colsep, txt)
+        txt = str('[%7s] %s%8s%s %s' % (self.colorize_result(t_result), self.colsep, t_act, self.colsep, self.colorize_text(t_result,txt2)))
 
         if not self.log_show_testtype:
-            txt = str('[%7s] %s %s' % (t_result, self.colsep, txt2))
+            txt = str('[%7s] %s %s' % (self.colorize_result(t_result), self.colsep, self.colorize_text(t_result,txt2)))
 
         if self.log_show_comments or self.log_show_test_comment:
             if not t_comment or (self.log_show_test_comment and not self.log_show_comments and t_act != 'BEGIN'):
