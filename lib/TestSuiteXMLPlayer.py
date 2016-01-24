@@ -953,7 +953,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         #           print "---------------------------------------------------------------------------------------------------------------------"
 
         self.tsi.ntab = False
-        self.tsi.log("", 'BEGIN', "'%s'" % self.tsi.colorize_test_name(t_name), t_comment, False)
+        self.tsi.log("", 'BEGIN', "'%s'" % t_name, t_comment, False)
         i_res = []
         tm_start = time.time()
         tm_finish = tm_start
@@ -980,7 +980,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             ttime = tm_finish - tm_start
             td = datetime.timedelta(0, ttime)
             self.tsi.ntab = False
-            self.tsi.log(tres[res.Result], 'FINISH', "'%s' /%s/" % (self.tsi.colorize_test_finish(t_name), td),"", False)
+            self.tsi.log(tres[res.Result], 'FINISH', "'%s' /%s/" % (t_name, td),"", False)
             # чисто визуальное отделение нового теста
             if self.tsi.printlog == True and self.tsi.nrecur <= 0:
                 print "---------------------------------------------------------------------------------------------------------------------"
