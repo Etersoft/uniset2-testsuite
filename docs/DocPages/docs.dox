@@ -334,13 +334,13 @@
 \code
 	<test num="2" name="Test N22" ignore_failed="1">
 		<check test="outlink" file="exttestfile.xml" link="num=1"/>
-		<check test="outlink" file="exttestfile.xml" link="ALL" ignore_run_list="1"/>
+		<check test="outlink" file="exttestfile.xml" link="ALL" ignore_runlist="1"/>
 	</test>
 \endcode
    Специальное слово \b \a "ALL" означает ссылку на весь файл (все тесты). Т.е сценарий в файле \a exttestfile.xml будет
    "проигрываться" полностью (а не конкретный тест).
 
-	\b ignore_run_list - [0,1] игнорировать (или нет) список запускаемых процессов (\<RunList>)
+	\b ignore_runlist - [0,1] игнорировать (или нет) список запускаемых процессов (\<RunList>)
    
 \subsection uts_Check_HOLD 9. HOLD.. Проверка постоянства условия в течение заданного времени
 
