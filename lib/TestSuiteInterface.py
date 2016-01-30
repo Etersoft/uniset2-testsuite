@@ -323,6 +323,12 @@ class TestSuiteInterface():
         return txt
         # return self.colorize_test_name(txt)
 
+    def colorize_test_outlink(self, txt):
+        if self.no_coloring_output:
+            return txt
+
+        return "\033[1;36m%s\033[1;m"%txt
+
     def colorize_text(self, t_result, t_test, txt):
 
         # раскрашиваем только t_FAILED
@@ -335,6 +341,8 @@ class TestSuiteInterface():
         if t_test == 'FINISH':
             return self.colorize_test_finish(txt)
 
+        if t_test == 'OUTLINK':
+            return self.colorize_test_outlink(txt)
         return txt
 
     def colorize_result(self, t_result):
