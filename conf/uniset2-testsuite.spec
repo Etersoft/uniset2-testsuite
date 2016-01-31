@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.1
-Release: eter8
+Release: eter9
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,10 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Mon Feb 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter9
+- show real value (ID=val) for test: >=,>,<=,<
+- coloring outlinks
+
 * Sun Jan 24 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter8
 - added coloring output
 

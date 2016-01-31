@@ -787,7 +787,7 @@ class TestSuiteInterface():
             while t_tick >= 0:
                 v = ui.getValue(s_id)
                 if (cond == '>=' and v >= val) or (cond == '>' and v > val):
-                    self.log(t_PASSED, 'GREAT', '%s%s%d' % (s_id, cond, val), t_comment, False)
+                    self.log(t_PASSED, 'GREAT', '%s=%s %s %d' % (s_id, v, cond, val), t_comment, False)
                     return True
 
                 time.sleep(t_sleep)
@@ -828,7 +828,7 @@ class TestSuiteInterface():
                 time.sleep(t_sleep)
                 t_tick -= 1
 
-            self.log(t_PASSED, 'GREAT', 'HOLD %s%s%d' % (s_id, cond, val), t_comment, False)
+            self.log(t_PASSED, 'GREAT', 'HOLD %s=%s %s %d' % (s_id, v, cond, val), t_comment, False)
             return True
 
         except UException, e:
@@ -857,7 +857,7 @@ class TestSuiteInterface():
             while t_tick >= 0:
                 v = ui.getValue(s_id)
                 if (cond == '<=' and v <= val) or (cond == '<' and v < val):
-                    self.log(t_PASSED, 'LESS', '%s%s%d' % (s_id, cond, val), t_comment, False)
+                    self.log(t_PASSED, 'LESS', '%s=%s %s %d' % (s_id, v, cond, val), t_comment, False)
                     return True
 
                 time.sleep(t_sleep)
@@ -897,7 +897,7 @@ class TestSuiteInterface():
                 time.sleep(t_sleep)
                 t_tick -= 1
 
-            self.log(t_PASSED, 'LESS', 'HOLD %s%s%d' % (s_id, cond, val), t_comment, False)
+            self.log(t_PASSED, 'LESS', 'HOLD %s=%s %s %d' % (s_id, v, cond, val), t_comment, False)
             return True
 
         except UException, e:
