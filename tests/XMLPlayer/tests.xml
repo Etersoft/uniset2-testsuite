@@ -13,6 +13,11 @@
         <test ignore_failed="1" name="Test global replace">
             <check file="test4_replace.xml" link="num=3" replace="RESFILE:global.replace.test.txt" test="outlink"/>
         </test>
+
+        <test name="Other dir outlink" num="6">
+            <check file="testdir/test-outlink-otherdir.xml" link="ALL" test="outlink"/>
+        </test>
+
         <!--
     <test name="ignore test" ignore="1">
         <check test="outlink" file="test3.xml" link="ALL"/>

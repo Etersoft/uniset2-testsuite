@@ -4,6 +4,7 @@
 import datetime
 import copy
 import string
+import os
 
 from ProcessMonitor import *
 import TestSuitePlayer
@@ -42,6 +43,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         TestSuitePlayer.TestSuitePlayer.__init__(self, testsuiteinterface)
 
+        self.rootworkdir = os.getcwd()
         # список мониторов (ключ в словаре - название xml-файла)
         self.pmonitor = dict()
 
@@ -84,6 +86,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.default_timeout = 5000
         self.default_check_pause = 300
         self.junit = ""
+
+    #def __del__(self):
+        #os.chdir(self.rootworkdir)
 
     def add_result(self, res):
         pass
@@ -503,42 +508,52 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             t_ignore_runlist = to_int(self.replace(node.prop("ignore_runlist")))
             t_xml = self.xmllist.get(t_file)
+            t_dir = os.getcwd()
+            t_prevdir = os.getcwd()
             if t_xml == None:
                 # если в списке ещё нет, запоминаем..
                 try:
                     t_xml = self.loadXML(t_file)
+                    t_dir = os.path.dirname(os.path.realpath(t_file))
                 except UException, e:
                     self.tsi.log(t_FAILED, "OUTLINK", "Can`t open file='%s'." % (t_file), t_comment, True)
                     return t_FAILED
 
             self.set_ignore_runlist(t_xml, t_ignore_runlist)
 
-            if t_link == "ALL":
-                self.tsi.log(" ", "OUTLINK", "go to file='%s' play ALL" % (t_file), t_comment, False)
-                self.tsi.nrecur += 1
-                res = self.play_xml(t_xml,r_list)
-                self.tsi.nrecur -= 1
-                # возвращаем обобщённый результат
-                # см. play_xml
-                return res[0]
-
-            else:
-                t_node = self.find_test(t_xml, t_name, t_field)
-                if t_node is not None:
-                    logfile = self.tsi.get_logfile()
-                    self.tsi.log(" ", "OUTLINK", "go to file='%s' %s='%s'" % (t_file, t_field, t_name), t_comment, False)
+            try:
+                os.chdir(t_dir)
+                if t_link == "ALL":
+                    self.tsi.log(" ", "OUTLINK", "go to file='%s' play ALL" % (t_file), t_comment, False)
                     self.tsi.nrecur += 1
-                    # т.к. вызываем только один тест из всего xml, приходиться самостоятельно добавлять global_replace
-                    self.add_to_global_replace(t_xml.global_replace_list)
-                    res = self.play_test(t_xml, t_node, logfile, r_list)
+                    res = self.play_xml(t_xml, r_list)
                     self.tsi.nrecur -= 1
-                    self.del_from_global_replace(t_xml.global_replace_list)
+                    # возвращаем обобщённый результат
+                    # см. play_xml
                     return res[0]
+
                 else:
-                    self.del_from_replace(r_list)
-                    self.tsi.log(t_FAILED, "OUTLINK",
-                                 "Not found in file='%s' test (%s='%s')" % (t_file, t_field, t_name), t_comment, True)
-                    return t_FAILED
+                    t_node = self.find_test(t_xml, t_name, t_field)
+                    if t_node is not None:
+                        logfile = self.tsi.get_logfile()
+                        self.tsi.log(" ", "OUTLINK", "go to file='%s' %s='%s'" % (t_file, t_field, t_name), t_comment,
+                                     False)
+                        self.tsi.nrecur += 1
+                        # т.к. вызываем только один тест из всего xml, приходиться самостоятельно добавлять global_replace
+                        self.add_to_global_replace(t_xml.global_replace_list)
+                        res = self.play_test(t_xml, t_node, logfile, r_list)
+                        self.tsi.nrecur -= 1
+                        self.del_from_global_replace(t_xml.global_replace_list)
+                        return res[0]
+                    else:
+                        self.del_from_replace(r_list)
+                        self.tsi.log(t_FAILED, "OUTLINK",
+                                     "Not found in file='%s' test (%s='%s')" % (t_file, t_field, t_name), t_comment, True)
+                        return t_FAILED
+
+            finally:
+                os.chdir(t_prevdir)
+
 
         self.tsi.log(t_FAILED, "TestSuiteXMLPlayer", "(check_item): Unknown item type='%s'" % test, t_comment, True)
         return t_FAILED

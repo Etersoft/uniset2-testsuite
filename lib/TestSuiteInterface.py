@@ -40,6 +40,8 @@ class TestSuiteInterface():
         self.params = Params_inst()
         self.log_numstr = 0
         self.log_show_numline = False
+        self.printlog = False
+        self.printactlog = False
         self.ignore_nodes = False
         self.rcheck = re.compile(r"([\w@\ :]+)([!><]*[=]*)([-\d\ ]+)")
         self.beg_time = time.time()
@@ -815,6 +817,7 @@ class TestSuiteInterface():
         if t_out > 0:
             t_tick -= 1
 
+        v = val
         try:
             if self.log_flush:
                 sys.stdout.flush()
@@ -884,6 +887,7 @@ class TestSuiteInterface():
         if t_out > 0:
             t_tick -= 1
 
+        v = val
         try:
             if self.log_flush:
                 sys.stdout.flush()
