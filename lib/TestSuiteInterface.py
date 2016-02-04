@@ -366,12 +366,16 @@ class TestSuiteInterface():
         if self.log_show_comments or self.log_show_test_comment:
             if not t_comment or (self.log_show_test_comment and not self.log_show_comments and t_test != 'BEGIN'):
                 t_comment = ""
+                
             try:
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
             except TypeError, UnicodeDecodeError:
                 pass
 
-            txt = '%s %s %s' % ( self.colorize_text(t_result,t_test,t_comment.ljust(self.col_comment_width)[0:self.col_comment_width]), self.colsep, txt)
+            try:
+                txt = '%s %s %s' % ( self.colorize_text(t_result,t_test,t_comment.ljust(self.col_comment_width)[0:self.col_comment_width]), self.colsep, txt)
+            except TypeError, UnicodeDecodeError:
+                pass
 
         etm = self.elapsed_time_str()
         llog = '%s %s %s' % (etm, self.colsep, llog)
@@ -412,12 +416,16 @@ class TestSuiteInterface():
         if self.log_show_comments or self.log_show_test_comment:
             if not t_comment or (self.log_show_test_comment and not self.log_show_comments and t_act != 'BEGIN'):
                 t_comment = ""
+
             try:
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
             except TypeError, UnicodeDecodeError:
                 pass
 
-            txt = '%s %s %s' % (self.colorize_text(t_result,t_act,t_comment.ljust(self.col_comment_width)[0:self.col_comment_width]), self.colsep, txt)
+            try:
+                txt = '%s %s %s' % (self.colorize_text(t_result,t_act,t_comment.ljust(self.col_comment_width)[0:self.col_comment_width]), self.colsep, txt)
+            except TypeError, UnicodeDecodeError:
+                pass
 
         etm = self.elapsed_time_str()
         llog = '%s %s %s' % (etm, self.colsep, llog)

@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.1
-Release: eter10
+Release: eter11
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Thu Feb 04 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter11
+- minor fixes
+
 * Mon Feb 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter10
 - add chdir for outlinks..
 - minor fixes
