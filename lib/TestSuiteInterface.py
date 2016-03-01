@@ -366,15 +366,18 @@ class TestSuiteInterface():
         if self.log_show_comments or self.log_show_test_comment:
             if not t_comment or (self.log_show_test_comment and not self.log_show_comments and t_test != 'BEGIN'):
                 t_comment = ""
-                
-            try:
-                t_comment = unicode(t_comment, "UTF-8", errors='replace')
-            except TypeError, UnicodeDecodeError:
-                pass
 
             try:
+                t_comment = unicode(t_comment, "UTF-8", errors='replace')
+            except UnicodeDecodeError:
+                pass
+            except TypeError:
+                pass
+            try:
                 txt = '%s %s %s' % ( self.colorize_text(t_result,t_test,t_comment.ljust(self.col_comment_width)[0:self.col_comment_width]), self.colsep, txt)
-            except TypeError, UnicodeDecodeError:
+            except UnicodeDecodeError:
+                pass
+            except TypeError:
                 pass
 
         etm = self.elapsed_time_str()
@@ -419,12 +422,16 @@ class TestSuiteInterface():
 
             try:
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
-            except TypeError, UnicodeDecodeError:
+            except UnicodeDecodeError:
+                pass
+            except TypeError:
                 pass
 
             try:
                 txt = '%s %s %s' % (self.colorize_text(t_result,t_act,t_comment.ljust(self.col_comment_width)[0:self.col_comment_width]), self.colsep, txt)
-            except TypeError, UnicodeDecodeError:
+            except UnicodeDecodeError:
+                pass
+            except TypeError:
                 pass
 
         etm = self.elapsed_time_str()
@@ -455,7 +462,9 @@ class TestSuiteInterface():
         try:
             if t_comment!=None and len(t_comment): 
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
-        except TypeError, UnicodeDecodeError:
+        except UnicodeDecodeError:
+            pass
+        except TypeError:
             pass
         
         self.print_log(t_result, t_test, txt, t_comment)
@@ -470,7 +479,9 @@ class TestSuiteInterface():
         try:
             if t_comment!=None and len(t_comment): 
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
-        except TypeError, UnicodeDecodeError:
+        except UnicodeDecodeError:
+            pass
+        except TypeError:
             pass
 
         self.print_actlog(t_result, t_act, txt, t_comment)

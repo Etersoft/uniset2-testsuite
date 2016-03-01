@@ -19,6 +19,8 @@ class ChildProcess():
         self.ignore_run_failed = to_int(xmlnode.prop('ignore_run_failed'))
         self.after_run_pause = to_int(xmlnode.prop('after_run_pause')) / 1000.0
         self.silent_mode = to_int(xmlnode.prop('silent_mode'))
+        self.logfilename = xmlnode.prop('logfile')
+        self.logfile = None
         self.popen = None
         self.name = to_str(xmlnode.prop('name'))
         if self.name == "":
@@ -38,6 +40,11 @@ class ChildProcess():
             sout = nul_f
             serr = nul_f
 
+        if self.logfilename != None:
+            self.logfile = open(self.logfilename, 'w')
+            sout = self.logfile
+            serr = self.logfile
+
         self.popen = Popen(self.cmd, preexec_fn=os.setsid, cwd=self.chdir, stdout=sout, stderr=serr)
         self.runing = True
         if self.after_run_pause > 0:
@@ -48,6 +55,9 @@ class ChildProcess():
             # self.popen.terminate()
             os.killpg(self.popen.pid, signal.SIGTERM)
             self.popen.wait()
+            if self.logfile != None:
+                self.logfile.close()
+
         self.runing = False
 
     def kill(self):
@@ -55,6 +65,9 @@ class ChildProcess():
             # self.popen.kill()
             os.killpg(self.popen.pid, signal.SIGKILL)
             self.popen.wait()
+            if self.logfile != None:
+                self.logfile.close()
+
         self.runing = False
 
 

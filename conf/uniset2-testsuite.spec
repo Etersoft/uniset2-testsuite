@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.1
-Release: eter11
+Release: eter12
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Tue Mar 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter12
+- add 'logfile' option for <RunList> items..
+
 * Thu Feb 04 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter11
 - minor fixes
 
