@@ -1,8 +1,10 @@
+# This spec is backported to ALTLinux p7 automatically by rpmbph script. Do not edit it.
+#
 %def_enable doc
 
 Name: uniset2-testsuite
 Version: 2.2
-Release: alt1
+Release: alt0.M70P.1
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +99,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Fri Mar 04 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt0.M70P.1
+- backport to ALTLinux p7 (by rpmbph script)
+
 * Fri Mar 04 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt1
 - rebuild for ALTLinux (rename eter --> alt)
 
