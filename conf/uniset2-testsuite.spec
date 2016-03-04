@@ -1,8 +1,8 @@
 %def_enable doc
 
 Name: uniset2-testsuite
-Version: 2.1
-Release: eter12
+Version: 2.2
+Release: alt1
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Fri Mar 04 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt1
+- rebuild for ALTLinux (rename eter --> alt)
+
 * Tue Mar 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.1-eter12
 - add 'logfile' option for <RunList> items..
 
