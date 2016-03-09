@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.2
-Release: alt1
+Release: alt2
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -97,6 +97,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Thu Mar 10 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt2
+- add <Success> and <Failure> section to run scripts at the end of the test
+
 * Fri Mar 04 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt1
 - rebuild for ALTLinux (rename eter --> alt)
 

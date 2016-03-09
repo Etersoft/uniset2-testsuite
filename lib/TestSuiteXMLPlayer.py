@@ -825,6 +825,31 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         except IOError:
             pass
 
+    def fini_success(self):
+        self.run_fini_scripts("Success")
+
+    def fini_failure(self):
+        self.run_fini_scripts("Failure")
+
+    def run_fini_scripts(self, section):
+
+        snode = self.xml.findNode(self.xml.getDoc(),section)[0]
+        if snode == None:
+            return
+
+        node = self.xml.firstNode(snode.children)
+        while node != None:
+            try:
+                #cp = ChildProcess(node)
+                #cp.run(True)
+                print "%s: run %s"%(section,node.prop("script"))
+                self.tsi.runscript( node.prop("script") )
+            except (OSError, KeyboardInterrupt), e:
+                #print 'run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (cp.name, cp.cmd, e.errno, e.strerror)
+                pass
+
+            node = self.xml.nextNode(node)
+
     def play_all(self, xml=None):
         if xml == None:
             xml = self.xml
@@ -836,19 +861,28 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         tm_start = 0
 
         pmonitor = self.get_pmonitor(xml)
+        resOK = False
         try:
             pmonitor.start()
             while testnode != None:
                 tm_start = time.time()
                 results.append(self.play_test(xml, testnode, logfile))
                 testnode = xml.nextNode(testnode)
+
+            resOK = True
         except TestSuiteException, e:
             ttime = e.getFinishTime - tm_start
             results.append(
                 [t_FAILED, to_str(self.replace(testnode.prop('name'))), ttime, e.getError, xml.getFileName()])
+            resOK = False
             raise e
 
         finally:
+            if resOK == True:
+                self.fini_success()
+            else:
+                self.fini_failure()
+
             self.print_result_report(results)
             pmonitor.stop()
 
@@ -910,10 +944,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         tm_start = time.time()
         pmonitor = self.get_pmonitor(xml)
+        resOK = False
         try:
             pmonitor.start()
             results.append(self.play_test(xml, tnode, logfile))
             pmonitor.stop()
+            resOK = True
         except TestSuiteException, ex:
             ttime = ex.getFinishTime - tm_start
             results.append(
@@ -921,6 +957,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             raise ex
 
         finally:
+            if resOK == True:
+                self.fini_success()
+            else:
+                self.fini_failure()
+
             self.print_result_report(results)
             pmonitor.stop()
 
@@ -1189,7 +1230,6 @@ if __name__ == "__main__":
     finally:
         #         sys.stdin = sys.__stdin__
         pass
-
     #    if sys.stdin.closed == False:
     #       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 

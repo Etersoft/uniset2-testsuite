@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
-    <TestList>
+	<Success>
+		<item script="./success.sh param1 param2"/>
+		<item script="./success.sh param3 param4"/>
+	</Success>
+	<Failure>
+		<item script="./failure.sh param1 param2"/>
+		<item script="./failure.sh param3 param4"/>
+	</Failure>
+	<TestList>
         <test name="Test run script">
             <action name="script" script="exit 1"/>
         </test>
         <test name="Test run script 2">
             <action name="script" script="echo 'sdfsdfsdfs'; touch /tmp/tt" show_output="0"/>
+        </test>
+        <test name="Fail test">
+            <check test="asdasd=1"/>
         </test>
     </TestList>
 </TestScenario>

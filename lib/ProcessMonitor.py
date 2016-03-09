@@ -30,7 +30,7 @@ class ChildProcess():
         self.chdir = xmlnode.prop('chdir')
         self.runing = False
 
-    def run(self):
+    def run(self, waitfinish = False):
         # print "run child process: " + self.name
         #        print "*************** cmd: " + str(self.cmd)
         sout = None
@@ -49,6 +49,9 @@ class ChildProcess():
         self.runing = True
         if self.after_run_pause > 0:
             time.sleep(self.after_run_pause)
+
+        if waitfinish == True:
+            self.popen.wait()
 
     def stop(self):
         if self.popen and self.popen.poll() == None:
@@ -70,6 +73,9 @@ class ChildProcess():
 
         self.runing = False
 
+    def wait(self):
+        if self.popen and self.popen.poll() == None:
+            self.popen.wait()
 
 # ---------------------------------------------------------
 def waitncpid(w_pid, timeout_sec=-1):

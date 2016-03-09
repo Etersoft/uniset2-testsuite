@@ -1050,3 +1050,4 @@ class TestSuiteInterface():
 
     def set_show_test_comment(self, show_test_comment):
         self.log_show_test_comment = show_test_comment
+
