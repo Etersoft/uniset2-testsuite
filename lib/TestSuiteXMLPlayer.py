@@ -47,8 +47,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         # список мониторов (ключ в словаре - название xml-файла)
         self.pmonitor = dict()
 
-        self.mcheck = re.compile(r"([\w@\ #$%\]\[\{\}]{1,})=([-\d\ ]{1,})")
-        self.rless = re.compile(r"([\w@\ #$%\]\[\{\}]{1,})(<{1,})([-\ =\d]{1,})")
+        self.mcheck = re.compile(r"([\w@\ #$%_\]\[\{\}]{1,})=([-\d\ ]{1,})")
+        self.rless = re.compile(r"([\w@\ #$%_\]\[\{\}]{1,})(<{1,})([-\ =\d]{1,})")
 
         # список запущенных reset-потоков
         self.reset_thread_event = threading.Event()
@@ -842,7 +842,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             try:
                 #cp = ChildProcess(node)
                 #cp.run(True)
-                print "%s: run %s"%(section,node.prop("script"))
                 self.tsi.runscript( node.prop("script") )
             except (OSError, KeyboardInterrupt), e:
                 #print 'run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (cp.name, cp.cmd, e.errno, e.strerror)
