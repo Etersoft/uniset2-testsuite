@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.2
-Release: alt3
+Release: alt4
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -101,6 +101,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Sat Mar 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt4
+- added support 'ignore' flag for 'check' and 'action'
+
 * Mon Mar 21 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt3
 - fixed bug in requires
 

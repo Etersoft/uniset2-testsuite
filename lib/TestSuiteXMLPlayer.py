@@ -393,13 +393,18 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         t_comment = self.replace(node.prop('comment'))
 
         if tname == None:
-           self.tsi.actlog(t_FAILED, "<check..>", "FAILED: BAD STRUCTUTE! NOT FOUND test=''..", "",True)
+           self.tsi.log(t_FAILED, "<check..>", "FAILED: BAD STRUCTUTE! NOT FOUND test=''..", "",True)
            return t_FAILED
+
+        t_ignore = to_int(self.replace(node.prop('ignore')))
+        if t_ignore:
+            self.tsi.log(t_IGNORE, tname, "%s"%str(node), t_comment, False)
+            return t_IGNORE
 
         cfig = self.get_config_name(node)
         ui = self.get_current_ui(cfig)
         if ui == None:
-            self.tsi.actlog(t_FAILED, tname, "FAILED: Unknown CONFIG..", t_comment, True)
+            self.tsi.log(t_FAILED, tname, "FAILED: Unknown CONFIG..", t_comment, True)
             return t_FAILED
 
         s_id = None
@@ -410,7 +415,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if test != 'LINK' and test != 'OUTLINK':
             clist = self.tsi.rcheck.findall(tname)
             if len(clist) == 0:
-                self.tsi.actlog(t_FAILED, "?????", "FAILED: Unknown test='%s'.." % tname, "", True)
+                self.tsi.log(t_FAILED, "?????", "FAILED: Unknown test='%s'.." % tname, "", True)
                 return t_FAILED
 
             if len(clist) == 1:
@@ -644,6 +649,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         s_id = None
         s_val = None
+
+        t_ignore = to_int(self.replace(node.prop('ignore')))
+        if t_ignore:
+           self.tsi.actlog(t_IGNORE, act, "%s"%str(node), t_comment, False)
+           return t_IGNORE
 
         if act == 'SET':
             tname = to_str(self.replace(node.prop("set")))
