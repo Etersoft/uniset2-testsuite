@@ -1,8 +1,8 @@
 %def_enable doc
 
 Name: uniset2-testsuite
-Version: 2.2
-Release: alt4
+Version: 2.3
+Release: alt1
 Summary: UniSet test suite
 Group: Development/Python
 License: GPL
@@ -101,6 +101,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Sat Mar 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt1
+- added support 'compare' test (compare sensor1 and sensor2) 
+
 * Sat Mar 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt4
 - added support 'ignore' flag for 'check' and 'action'
 

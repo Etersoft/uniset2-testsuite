@@ -77,6 +77,7 @@ class SimpleEditor(gtk.HBox):
         ubox.add(self.uniset_box)
 
         self.rcheck = re.compile(r"([\w@\ ]{1,})([!><]{0,}[=]{0,})([\d\ ]{1,})")
+        self.rcompare = re.compile(r"([\w@\ ]{1,})([!><]{0,}[=]{0,})([\w@\ ]{1,})")
 
     def get_etype(self):
         return self.etype

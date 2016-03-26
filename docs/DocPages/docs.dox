@@ -21,6 +21,7 @@
 		- \ref uts_Check_LINK
 		- \ref uts_Check_OUTLINK
 		- \ref uts_Check_HOLD
+   - \ref uts_Compare
    - \ref uts_TestParams
    - \ref uts_Templates
    - \ref uts_Nodes
@@ -201,9 +202,10 @@
    
    Каждый тест заключается в теги \<test>...\</test>. Все тесты проигрываются последовательно.
 
-   Все взможные действия деляться на два вида
-   - \b "action" - это действия по имитации действий
+   Возможные действия деляться на три вида
+   - \b "action" - 'выставление датчика'
    - \b "check"  - это проверка реакции тестируемой системы
+   - \b "compare"  - сравнение состояния двух датчиков между собой
    
    \subsection uts_Actions "Действия"(actions)
    
@@ -357,6 +359,24 @@
 \endcode
 \warning Если указаны поля timeout=".." и holdtime=".." то (действует) имеет больший приоритет \b holdtime.
 
+   \section uts_Compare "Сравнение"(compare)
+   Проверка \b compare позвояет сравнивать значения двух датчиков между собой. При этом доступны следующие виды проверок:
+   - \b >,\b >\b=  - больше, больше либо равно
+   - \b <,\b <\b=  - меньше, меньше либо равно
+   - \b =,\b !\b=  - равно, не равно
+   
+   Записываются они точно также как \i check только со специальным словом \b compare и во второй половине сравнения ставится идентификатор
+   или название датчика.
+\code
+   <comapre test="101>Sensor2"/>
+   <comapre test="Sensor1!=Sensor2" check_pause="500" timeout="4000"/>
+   <comapre test="101>=Sensor2"/>
+   <comapre test="Sensor1=Sensor2" holdtime="5000"/>
+   <comapre test="Sensor1<=203" holdtime="1000"/>
+\endcode 
+	\note В данном случае "203" - это идентификатор датчика!
+	\note \b compare так же можно применять для сценариев типа \b modbus. В таком случае сравниваются значения двух регистров.
+ 
    
    \section uts_TestParams Параметры тестов
    
