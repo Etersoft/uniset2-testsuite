@@ -3,12 +3,12 @@
 %def_enable doc
 
 Name: uniset2-testsuite
-Version: 2.2
-Release: alt0.M70P.1
+Version: 2.3
+Release: alt1.M70P.2
 Summary: UniSet test suite
 Group: Development/Python
-License: GPL
-Url: http://wiki.office.etersoft.ru/asu/
+License: LGPL
+Url: http://github.com/Etersoft/uniset2-testsuite
 Source: %name-%version.tar
 # Automatically added by buildreq on Thu Oct 02 2014
 # optimized out: pkg-config python-base python-devel python-modules
@@ -81,10 +81,14 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %python_sitelibdir/%name/*
 %exclude %python_sitelibdir/%name/gui*Player*
 %exclude %python_sitelibdir/%name/Gtk*
+%exclude %python_sitelibdir/%name/ScenarioParamEditor*
+%exclude %python_sitelibdir/%name/dlg*
 
 %files gui
 %python_sitelibdir/%name/guiTestSuitePlayer-gtk.py
 %python_sitelibdir/%name/GtkProcessMonitor.py
+%python_sitelibdir/%name/ScenarioParamEditor*
+%python_sitelibdir/%name/dlg*
 %_bindir/uniset2-testsuite-gtkplayer
 %dir %_datadir/%name/player/
 %dir %_datadir/%name/player/editors
@@ -99,8 +103,25 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
-* Fri Mar 04 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt0.M70P.1
+* Sun Mar 27 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt1.M70P.2
 - backport to ALTLinux p7 (by rpmbph script)
+
+* Sat Mar 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt2
+- fixed URL in spec
+- GPL --> LGPL
+- update README
+
+* Sat Mar 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt1
+- added support 'compare' test (compare sensor1 and sensor2) 
+
+* Sat Mar 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt4
+- added support 'ignore' flag for 'check' and 'action'
+
+* Mon Mar 21 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt3
+- fixed bug in requires
+
+* Thu Mar 10 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt2
+- add <Success> and <Failure> section to run scripts at the end of the test
 
 * Fri Mar 04 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt1
 - rebuild for ALTLinux (rename eter --> alt)

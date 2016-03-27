@@ -15,6 +15,7 @@
         </test>
 
         <test name="Other dir outlink" num="6">
+            <check ignore="1" file="testdir/test-outlink-otherdir.xml" link="ALL" test="outlink"/>
             <check file="testdir/test-outlink-otherdir.xml" link="ALL" test="outlink"/>
         </test>
 
@@ -94,6 +95,7 @@
         <test ignore_failed="1" name="Test N2">
             <check id="101=0,100=1,109@LocalHostNode=10" test="multicheck"/>
             <action set="100=0" reset_time="300" rval="1"/>
+            <action ignore="1" msleep="500"/>
             <action msleep="1000"/>
             <check check_pause="1000" test="Test_DI=1" timeout="19"/>
             <action set="101=0"/>

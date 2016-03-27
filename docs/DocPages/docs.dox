@@ -21,6 +21,7 @@
 		- \ref uts_Check_LINK
 		- \ref uts_Check_OUTLINK
 		- \ref uts_Check_HOLD
+   - \ref uts_Compare
    - \ref uts_TestParams
    - \ref uts_Templates
    - \ref uts_Nodes
@@ -30,6 +31,7 @@
    - \ref uts_multiInterface_Scenario
    - \ref uts_RunList
    - \ref uts_RunParam
+   - \ref uts_FiniScripts
    - \ref uts_Editor
 
 	\section uts_Common Общая часть
@@ -200,9 +202,10 @@
    
    Каждый тест заключается в теги \<test>...\</test>. Все тесты проигрываются последовательно.
 
-   Все взможные действия деляться на два вида
-   - \b "action" - это действия по имитации действий
+   Возможные действия деляться на три вида
+   - \b "action" - 'выставление датчика'
    - \b "check"  - это проверка реакции тестируемой системы
+   - \b "compare"  - сравнение состояния двух датчиков между собой
    
    \subsection uts_Actions "Действия"(actions)
    
@@ -265,7 +268,8 @@
   - 7. link
   - 8. outlink
   - 9. "проверка постоянства" (проверка выполнения заданного условия в течение времени)
-  
+
+ \note Для всех проверок обрабатывается флаг \b ignore="1" - пропустить данную проверку.
  \note Для всех видов тестов (кроме link,outlink) разрешено использование полей \b timeout и \b check_pause.
    - \b timeout - задаёт время ожидания в мсек (не действует если указано поле holdtime!)
    - \b check_pause - задаёт паузу между проверками значения.
@@ -355,6 +359,24 @@
 \endcode
 \warning Если указаны поля timeout=".." и holdtime=".." то (действует) имеет больший приоритет \b holdtime.
 
+   \section uts_Compare "Сравнение"(compare)
+   Проверка \b compare позвояет сравнивать значения двух датчиков между собой. При этом доступны следующие виды проверок:
+   - \b >,\b >\b=  - больше, больше либо равно
+   - \b <,\b <\b=  - меньше, меньше либо равно
+   - \b =,\b !\b=  - равно, не равно
+   
+   Записываются они точно также как \i check только со специальным словом \b compare и во второй половине сравнения ставится идентификатор
+   или название датчика.
+\code
+   <comapre test="101>Sensor2"/>
+   <comapre test="Sensor1!=Sensor2" check_pause="500" timeout="4000"/>
+   <comapre test="101>=Sensor2"/>
+   <comapre test="Sensor1=Sensor2" holdtime="5000"/>
+   <comapre test="Sensor1<=203" holdtime="1000"/>
+\endcode 
+	\note В данном случае "203" - это идентификатор датчика!
+	\note \b compare так же можно применять для сценариев типа \b modbus. В таком случае сравниваются значения двух регистров.
+ 
    
    \section uts_TestParams Параметры тестов
    
@@ -537,11 +559,20 @@
         </aliases>
     </Config>
 	<TestList logfile="result.multitest.txt" logfile_trunc="1">
-		<test ignore_failed="1" name="Test N21" num="1">
-			<action set="Test_DI =1" config="c1"/>
-			<check test="Test_DI=1" config="c1"/>
-			<check test="0x10!=0" config="c2"/>
-		</test>
+     <test name="Test simple read" ignore_failed="1">
+            <check test="0x10!=0"/>
+            <check test="0x24:0x04!=0"/>
+            <check test="0x24!=0"/>
+            <check test="0x1@0x02:0x02!=0" config="c2"/>
+            <check test="0x24:0x06!=0"/>
+        </test>
+        <test name="Test simple write" ignore_failed="1">
+            <action set="0x25=10"/>
+            <action set="0x25:0x10=10"/>
+            <action set="16=10"/>
+            <action set="0x25@0x02=10" config="c2"/>
+            <action set="0x25@0x02:0x05=10" config="c2"/>
+        </test>
 	</TestList>
 </TestScenario>
 \endcode
@@ -589,7 +620,7 @@
   \b name - можно задать альтернативное имя скрипту (для вывода в логах). Иначе используется название программы.
   
   Следует иметь в виду. Если используется ссылка на другой xml-файл (outlink) и там есть секция \<RunList>, она будет
-  исполнена, а по завершении - проессы будут остановлены.
+  исполнена, а по завершении - процессы будут остановлены.
   
   
   \sa \ref pgTstMake
@@ -599,6 +630,28 @@
   можно увидеть запустив
   - для консольного плеера:  uniset-testsuite-xmlplayer [-h | --help]
   - для графического плеера (uniset-testsuite-gtkplayer): все параметры настраиваются в меню "Параметры".
+
+  \section uts_FiniScripts Запуск скриптов при завершении
+    В системе имеется возможность запускать указанные программы по завершении тестирования. При этом имеется две
+  возможности. Запуск в случае успешного завершения и запуск в случае "неуспешного" завершения.
+  Для настройки какие программы запускать, предназначены две секции:
+  \code
+  <?xml version="1.0" encoding="utf-8"?>
+  <TestScenario>
+    <Success>
+        <item script="./success.sh param1 param2"/>
+        <item script="./success.sh param3 param4"/>
+    </Success>
+    <Failure>
+        <item script="./failure.sh param1 param2"/>
+        <item script="./failure.sh param3 param4"/>
+    </Failure>
+  ....
+  ...
+  </TestScenatio>
+  \endcode
+  \note При этом следует иметь ввиду, что если у Вас имеется много тестов и при этом у них стоит ignore_failure="1",
+   то такой сценарий будет считаться завершённым успешно, даже если все тесты пройдут с результатом [FAILED]
 
   \section uts_Editor Редактор
      Самое простое это напрямую редактировать xml-файлы сценариев в любом удобном текстовом редакторе.

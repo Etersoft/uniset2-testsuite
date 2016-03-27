@@ -47,8 +47,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         # список мониторов (ключ в словаре - название xml-файла)
         self.pmonitor = dict()
 
-        self.mcheck = re.compile(r"([\w@\ #$%\]\[\{\}]{1,})=([-\d\ ]{1,})")
-        self.rless = re.compile(r"([\w@\ #$%\]\[\{\}]{1,})(<{1,})([-\ =\d]{1,})")
+        self.mcheck = re.compile(r"([\w@\ #$%_\]\[\{\}]{1,})=([-\d\ ]{1,})")
+        self.rless = re.compile(r"test=\"([\w@\ #$%_\ :\]\[\{\}]{1,})(<{1,})([-\ \w:=@#$%_]{0,})\"")
 
         # список запущенных reset-потоков
         self.reset_thread_event = threading.Event()
@@ -116,7 +116,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 txt = fdoc.read()
                 fdoc.close()
                 # Заменяем символы '<', для создания и загрузки корректного xml
-                txt = self.rless.sub(r'\1&lt;\3', txt)
+                txt = self.rless.sub(r'test="\1&lt;\3"', txt)
                 xml = UniXML(txt, True)
                 # если UniXML создан из текста, а не файла (см. выше)
                 # тогда надо искуственно инициализировать fname, потому-что
@@ -308,6 +308,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         str1 = list_to_str(lst)
         return get_int_list(str1)
 
+    def str_to_strlist(self, str_val, ui):
+        lst = get_str_list(str_val)
+        lst = self.replace_list(lst)
+        str1 = list_to_str(lst)
+        return get_str_list(str1)
+
     def replace_list(self, slist):
         res = []
         for v in slist:
@@ -387,19 +393,116 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         ui = self.get_current_ui(cfig)
         return self.tsi.getValue(self.replace(node.prop("id")), ui)
 
+    def compare_item(self, node, xml):
+
+        tname = self.replace(node.prop('test'));
+        t_comment = self.replace(node.prop('comment'))
+
+        if tname == None:
+           self.tsi.log(t_FAILED, "<check..>", "FAILED: BAD STRUCTUTE! NOT FOUND test=''..", "",True)
+           return t_FAILED
+
+        t_ignore = to_int(self.replace(node.prop('ignore')))
+        if t_ignore:
+            self.tsi.log(t_IGNORE, 'IGNORE', "%s"%str(node), t_comment, False)
+            return t_IGNORE
+
+        cfig = self.get_config_name(node)
+        ui = self.get_current_ui(cfig)
+        if ui == None:
+            self.tsi.log(t_FAILED, tname, "FAILED: Unknown CONFIG..", t_comment, True)
+            return t_FAILED
+
+        s_id = []
+
+        test = tname.upper()
+        clist = self.tsi.rcompare.findall(tname)
+        if len(clist) == 0:
+           self.tsi.log(t_FAILED, "?????", "FAILED: Unknown test='%s'.." % tname, "", True)
+           return t_FAILED
+
+        if len(clist) == 1:
+           test = clist[0][1].upper()
+           s_id.append(self.replace(clist[0][0]))
+           s_id.append(self.replace(clist[0][2]))
+        elif len(clist) > 1:
+           test = 'MULTICHECK'
+
+        t_out = to_int(self.replace(node.prop("timeout")))
+        if t_out <= 0:
+            t_out = self.default_timeout
+
+        t_check = to_int(self.replace(node.prop("check_pause")))
+        if t_check <= 0:
+            t_check = self.default_check_pause
+
+        t_hold = to_int(self.replace(node.prop("holdtime")))
+        if test == "=":
+            if t_hold > 0:
+                return (t_PASSED if self.tsi.holdEqual(s_id, None, t_hold, t_check, t_comment, ui) else t_FAILED)
+            else:
+                return (t_PASSED if self.tsi.isEqual(s_id, None, t_out, t_check, t_comment, ui) else t_FAILED)
+
+        if test == "!=":
+            if t_hold > 0:
+                return (t_PASSED if self.tsi.holdNotEqual(s_id, None, t_hold, t_check, t_comment, ui) else t_FAILED)
+            else:
+                return (t_PASSED if self.tsi.isNotEqual(s_id, None, t_out, t_check, t_comment, ui) else t_FAILED)
+
+        if test == ">=" or test == ">":
+            if t_hold > 0:
+                return (t_PASSED if self.tsi.holdGreat(s_id, None, t_hold, t_check, t_comment, ui, test) else t_FAILED)
+            else:
+                return (t_PASSED if self.tsi.isGreat(s_id, None, t_out, t_check, t_comment, ui, test) else t_FAILED)
+
+        if test == "<=" or test == "<":
+            if t_hold > 0:
+                return (t_PASSED if self.tsi.holdLess(s_id, None, t_hold, t_check, t_comment, ui, test) else t_FAILED)
+            else:
+                return (t_PASSED if self.tsi.isLess(s_id, None, t_out, t_check, t_comment, ui, test) else t_FAILED)
+
+        if test == "MULTICHECK":
+            self.tsi.log(" ", "MULTICHECK", "...", False)
+            s_set = to_str(self.replace(node.prop("test")))
+            if s_set == "":
+                self.tsi.log(t_FAILED, "(TestSuiteXMLPlayer)", "MULTICHECK: undefined ID list (id='...')", t_comment, True)
+                return t_FAILED
+
+            # для реализации механизма шаблонов
+            # сперва разбиваем список на эелементы, подменяем каждый из них
+            # собираем обратно, и уже разбираем как полагается (с разбивкой на id и val)
+            slist = self.str_to_strlist(s_set, ui)
+            res = True
+            for s in slist:
+                s_id.append(self.replace(s[0]))
+                s_id.append(self.replace(s[1]))
+                if t_hold > 0:
+                    res = self.tsi.holdEqual(s_id, None, t_hold, t_check, t_comment, ui)
+                else:
+                    res = self.tsi.isEqual(s_id, None, t_out, t_check, t_comment, ui)
+            return (t_PASSED if res else t_FAILED)
+
+        self.tsi.log(t_FAILED, "TestSuiteXMLPlayer", "(compare_item): Unknown item type='%s'"%str(node), t_comment, True)
+        return t_FAILED
+
     def check_item(self, node, xml):
 
         tname = self.replace(node.prop('test'));
         t_comment = self.replace(node.prop('comment'))
 
         if tname == None:
-           self.tsi.actlog(t_FAILED, "<check..>", "FAILED: BAD STRUCTUTE! NOT FOUND test=''..", "",True)
+           self.tsi.log(t_FAILED, "<check..>", "FAILED: BAD STRUCTUTE! NOT FOUND test=''..", "",True)
            return t_FAILED
+
+        t_ignore = to_int(self.replace(node.prop('ignore')))
+        if t_ignore:
+            self.tsi.log(t_IGNORE, 'IGNORE', "%s"%str(node), t_comment, False)
+            return t_IGNORE
 
         cfig = self.get_config_name(node)
         ui = self.get_current_ui(cfig)
         if ui == None:
-            self.tsi.actlog(t_FAILED, tname, "FAILED: Unknown CONFIG..", t_comment, True)
+            self.tsi.log(t_FAILED, tname, "FAILED: Unknown CONFIG..", t_comment, True)
             return t_FAILED
 
         s_id = None
@@ -410,7 +513,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if test != 'LINK' and test != 'OUTLINK':
             clist = self.tsi.rcheck.findall(tname)
             if len(clist) == 0:
-                self.tsi.actlog(t_FAILED, "?????", "FAILED: Unknown test='%s'.." % tname, "", True)
+                self.tsi.log(t_FAILED, "?????", "FAILED: Unknown test='%s'.." % tname, "", True)
                 return t_FAILED
 
             if len(clist) == 1:
@@ -645,6 +748,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         s_id = None
         s_val = None
 
+        t_ignore = to_int(self.replace(node.prop('ignore')))
+        if t_ignore:
+           self.tsi.actlog(t_IGNORE, act, "%s"%str(node), t_comment, False)
+           return t_IGNORE
+
         if act == 'SET':
             tname = to_str(self.replace(node.prop("set")))
             clist = self.tsi.rcheck.findall(tname)
@@ -825,6 +933,30 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         except IOError:
             pass
 
+    def fini_success(self):
+        self.run_fini_scripts("Success")
+
+    def fini_failure(self):
+        self.run_fini_scripts("Failure")
+
+    def run_fini_scripts(self, section):
+
+        snode = self.xml.findNode(self.xml.getDoc(),section)[0]
+        if snode == None:
+            return
+
+        node = self.xml.firstNode(snode.children)
+        while node != None:
+            try:
+                #cp = ChildProcess(node)
+                #cp.run(True)
+                self.tsi.runscript( node.prop("script") )
+            except (OSError, KeyboardInterrupt), e:
+                #print 'run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (cp.name, cp.cmd, e.errno, e.strerror)
+                pass
+
+            node = self.xml.nextNode(node)
+
     def play_all(self, xml=None):
         if xml == None:
             xml = self.xml
@@ -836,19 +968,28 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         tm_start = 0
 
         pmonitor = self.get_pmonitor(xml)
+        resOK = False
         try:
             pmonitor.start()
             while testnode != None:
                 tm_start = time.time()
                 results.append(self.play_test(xml, testnode, logfile))
                 testnode = xml.nextNode(testnode)
+
+            resOK = True
         except TestSuiteException, e:
             ttime = e.getFinishTime - tm_start
             results.append(
                 [t_FAILED, to_str(self.replace(testnode.prop('name'))), ttime, e.getError, xml.getFileName()])
+            resOK = False
             raise e
 
         finally:
+            if resOK == True:
+                self.fini_success()
+            else:
+                self.fini_failure()
+
             self.print_result_report(results)
             pmonitor.stop()
 
@@ -910,10 +1051,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         tm_start = time.time()
         pmonitor = self.get_pmonitor(xml)
+        resOK = False
         try:
             pmonitor.start()
             results.append(self.play_test(xml, tnode, logfile))
             pmonitor.stop()
+            resOK = True
         except TestSuiteException, ex:
             ttime = ex.getFinishTime - tm_start
             results.append(
@@ -921,6 +1064,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             raise ex
 
         finally:
+            if resOK == True:
+                self.fini_success()
+            else:
+                self.fini_failure()
+
             self.print_result_report(results)
             pmonitor.stop()
 
@@ -930,6 +1078,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             return self.action_item(inode)
         elif inode.name == "check":
             return self.check_item(inode, xml)
+        elif inode.name == "compare":
+            return self.compare_item(inode, xml)
 
         return t_UNKNOWN
 
@@ -1189,7 +1339,6 @@ if __name__ == "__main__":
     finally:
         #         sys.stdin = sys.__stdin__
         pass
-
     #    if sys.stdin.closed == False:
     #       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
