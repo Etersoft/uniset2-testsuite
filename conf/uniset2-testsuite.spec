@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.3
-Release: alt2
+Release: alt3
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -101,6 +101,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Sat Jun 18 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt3
+- added support --print-calltrace
+
 * Sat Mar 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt2
 - fixed URL in spec
 - GPL --> LGPL

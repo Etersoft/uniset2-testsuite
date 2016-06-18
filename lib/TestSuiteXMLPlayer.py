@@ -61,6 +61,15 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         # спискок со списками замен (получаемых из replace="..") с учётом добавления (зоны видимости)
         self.replace_stack = list()
 
+        # список пар [level,testname, xmlfile]
+        # level - уровень вложенности вызова
+        # testname - название теста (или файла если это outlink)
+        # xmlfile - имя файла теста
+        self.call_stack = list()
+
+        # текущий уровень вложенности
+        self.call_level = 0
+
         # загружаем основной файл
         self.global_ignore_runlist = ignore_runlist
         # словарь флагов игнорирование запуска <RunList>
@@ -92,6 +101,30 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def add_result(self, res):
         pass
+
+    def print_calltrace(self):
+
+        tname_width = 40
+        ttab="=== TESTFILE ==="
+
+        print "%s| %s"%(self.tsi.colorize_test_begin(ttab.ljust(tname_width)),self.tsi.colorize_test_begin("=== TEST CALL TRACE ==="))
+
+        for t_name,t_level,t_fname,t_comment in self.call_stack:
+            tab=""
+            for i in range(0,t_level):
+                tab="%s.   "%(tab)
+
+            if not self.tsi.log_show_test_comment:
+                t_comment=""
+            else:
+                t_comment = " | %s "% self.tsi.format_comment(t_comment)
+
+            # if not self.show_xmlfile:
+            #     t_fname = ""
+
+            print "%s%s| %s%s"%(t_fname.ljust(tname_width), t_comment, tab, t_name)
+
+        print ""
 
     def set_keyboard_interrupt(self, callback):
         self.keyb_inttr_callback = callback
@@ -584,6 +617,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             #self.add_to_replace(r_list)
 
             t_node = self.find_test(xml, t_name, t_field)
+
             if t_node != None:
                 logfile = self.tsi.get_logfile()
                 self.tsi.log(" ", "LINK", "go to %s='%s'" % (t_field, t_name), t_comment, False)
@@ -625,12 +659,14 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.set_ignore_runlist(t_xml, t_ignore_runlist)
 
             try:
+                self.call_level += 1;
                 os.chdir(t_dir)
                 if t_link == "ALL":
                     self.tsi.log(" ", "OUTLINK", "go to file='%s' play ALL" % (t_file), t_comment, False)
                     self.tsi.nrecur += 1
                     res = self.play_xml(t_xml, r_list)
                     self.tsi.nrecur -= 1
+                    self.call_level -= 1;
                     # возвращаем обобщённый результат
                     # см. play_xml
                     return res[0]
@@ -646,6 +682,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                         self.add_to_global_replace(t_xml.global_replace_list)
                         res = self.play_test(t_xml, t_node, logfile, r_list)
                         self.tsi.nrecur -= 1
+                        self.call_level -= 1;
                         self.del_from_global_replace(t_xml.global_replace_list)
                         return res[0]
                     else:
@@ -1090,6 +1127,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         t_name = to_str(self.replace(testnode.prop('name')))
         t_comment = to_str(self.replace(testnode.prop('comment')))
 
+        self.call_stack.append([t_name,self.call_level,xml.getFileName(),t_comment])
+
         t_ignore = to_int(self.replace(testnode.prop('ignore')))
         if t_ignore:
             self.tsi.log(t_IGNORE, t_IGNORE, "'%s'" % t_name, t_comment, False)
@@ -1220,6 +1259,8 @@ if __name__ == "__main__":
     #    old_settings = termios.tcgetattr(sys.stdin)
 
     ts = TestSuiteInterface()
+    global_player = None
+    print_calltrace = False
     try:
 
         if ts.checkArgParam('--help', False) == True or ts.checkArgParam('-h', False) == True:
@@ -1250,6 +1291,7 @@ if __name__ == "__main__":
             print '--default-check-pause msec    - Default <check check_pause=\'..\' ../>.\''
             print '--junit filename          - Save report file. JUnit format.'
             print '--no-coloring-output      - Disable colorization output'
+            print '--print-calltrace         - Display test call trace with test file name. If test-suite FAILED.'
             exit(0)
 
         testfile = ts.getArgParam('--testfile', "")
@@ -1287,6 +1329,7 @@ if __name__ == "__main__":
         col_comment_width = ts.getArgInt("--col-comment-width", 50)
         junit = ts.getArgParam("--junit", "")
         coloring_out = ts.checkArgParam('--no-coloring-output', False)
+        print_calltrace = ts.checkArgParam('--print-calltrace', False)
 
         cf = conflist.split(',')
         ts.init_testsuite(cf, show_log, show_actlog)
@@ -1305,6 +1348,9 @@ if __name__ == "__main__":
         player.default_timeout = tout
         player.default_check_pause = check_pause
         player.junit = junit
+
+        global_player = player
+
 
         #       poller = select.poll()
         #       poller.register(sys.stdin, select.POLLIN)
@@ -1327,6 +1373,9 @@ if __name__ == "__main__":
         else:
             player.play_all()
 
+        # if print_calltrace:
+        #     player.print_calltrace()
+
         exit(0)
 
     except TestSuiteException, e:
@@ -1338,7 +1387,8 @@ if __name__ == "__main__":
 
     finally:
         #         sys.stdin = sys.__stdin__
-        pass
+        if not global_player is None and print_calltrace:
+            global_player.print_calltrace()
     #    if sys.stdin.closed == False:
     #       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 

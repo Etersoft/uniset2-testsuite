@@ -351,6 +351,23 @@ class TestSuiteInterface():
     def colorize_result(self, t_result):
         return self.colorize(t_result,"%7s"%t_result)
 
+    def format_comment(self, txt):
+        try:
+            t_comment = unicode(txt, "UTF-8", errors='replace')
+        except UnicodeDecodeError:
+            pass
+        except TypeError:
+            pass
+
+        try:
+            t_comment = '%s' % t_comment.ljust(self.col_comment_width)[0:self.col_comment_width]
+        except UnicodeDecodeError:
+            pass
+        except TypeError:
+            pass
+
+        return t_comment
+
     def print_log(self, t_result, t_test, txt, t_comment):
 
         self.log_numstr += 1
