@@ -102,15 +102,16 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def add_result(self, res):
         pass
 
-    def print_calltrace(self):
+    def print_calltrace(self, call_limit):
 
         tname_width = 40
+        call_limit = abs(call_limit)
         ttab = "=== TESTFILE ==="
 
         print "%s| %s" % (
-        self.tsi.colorize_test_begin(ttab.ljust(tname_width)), self.tsi.colorize_test_begin("=== TEST CALL TRACE ==="))
+        self.tsi.colorize_test_begin(ttab.ljust(tname_width)), self.tsi.colorize_test_begin("=== TEST CALL TRACE (limit: %d) ==="%call_limit))
 
-        for t_name, t_level, t_fname, t_comment in self.call_stack:
+        for t_name, t_level, t_fname, t_comment in self.call_stack[-call_limit::]:
             tab = ""
             for i in range(0, t_level):
                 tab = "%s.   " % (tab)
@@ -1303,6 +1304,7 @@ if __name__ == "__main__":
             print '--junit filename          - Save report file. JUnit format.'
             print '--no-coloring-output      - Disable colorization output'
             print '--print-calltrace         - Display test call trace with test file name. If test-suite FAILED.'
+            print '--print-calltrace-limit N - How many recent calls to print. Default: 20.'
             exit(0)
 
         testfile = ts.getArgParam('--testfile', "")
@@ -1341,6 +1343,7 @@ if __name__ == "__main__":
         junit = ts.getArgParam("--junit", "")
         coloring_out = ts.checkArgParam('--no-coloring-output', False)
         print_calltrace = ts.checkArgParam('--print-calltrace', False)
+        print_calltrace_limit = ts.getArgInt('--print-calltrace-limit', 20)
 
         cf = conflist.split(',')
         ts.init_testsuite(cf, show_log, show_actlog)
@@ -1398,7 +1401,7 @@ if __name__ == "__main__":
     finally:
         #         sys.stdin = sys.__stdin__
         if not global_player is None and print_calltrace:
-            global_player.print_calltrace()
+            global_player.print_calltrace(print_calltrace_limit)
     # if sys.stdin.closed == False:
     #       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 

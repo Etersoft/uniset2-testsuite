@@ -498,7 +498,9 @@ class TestSuiteInterface():
         except TypeError:
             pass
 
-        self.print_log(t_result, t_test, txt, t_comment)
+        if self.print_log is not None:
+            self.print_log(t_result, t_test, txt, t_comment)
+
         if self.log_callback:
             self.log_callback(t_result, t_test, txt, t_comment, throw)
 
@@ -515,7 +517,9 @@ class TestSuiteInterface():
         except TypeError:
             pass
 
-        self.print_actlog(t_result, t_act, txt, t_comment)
+        if self.print_actlog is not None:
+            self.print_actlog(t_result, t_act, txt, t_comment)
+
         if self.actlog_callback:
             self.actlog_callback(t_result, t_act, txt, t_comment, throw)
 
