@@ -510,7 +510,7 @@ class TestSuiteInterface():
         if self.actlog_callback:
             self.actlog_callback(t_result, t_act, txt, t_comment, throw)
 
-        if self.ignorefailed is False and throw is True:
+        if self.ignorefailed == False and throw == True:
             raise TestSuiteException(txt)
 
     def get_ui(self, cf):

@@ -269,7 +269,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         except KeyError, ValueError:
             pass
 
-        if ignore_rlist is True:
+        if ignore_rlist == True:
             return self.null_pm
 
         try:
@@ -934,7 +934,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     beg = True
                     t_name = r[logid.Txt]
                     t_stack = []
-                elif r[logid.TestType] == 'FINISH' and beg is True:
+                elif r[logid.TestType] == 'FINISH' and beg == True:
                     t_info = self.tsi.re_tinfo.findall(r[logid.Txt])
                     t_r = t_info[0]
                     t_sec = int(t_r[1]) * 60 * 60 + int(t_r[1]) * 60 + int(t_r[3])
@@ -943,7 +943,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     testlist.append([t_name, r[logid.Result], t_time, r[logid.Txt], t_stack, l])
                     beg = False
                     t_stack = []
-                elif beg is True:
+                elif beg == True:
                     t_stack.append([r, l])
 
             repfile = open(repfilename, "w")
@@ -1032,7 +1032,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             raise e
 
         finally:
-            if resOK is True:
+            if resOK == True:
                 self.fini_success()
             else:
                 self.fini_failure()
@@ -1112,7 +1112,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             raise ex
 
         finally:
-            if resOK is True:
+            if resOK == True:
                 self.fini_success()
             else:
                 self.fini_failure()
@@ -1197,7 +1197,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.tsi.ntab = False
             self.tsi.log(tres[res.Result], 'FINISH', "'%s' /%s/" % (t_name, td), "", False)
             # чисто визуальное отделение нового теста
-            if self.tsi.printlog is True and self.tsi.nrecur <= 0:
+            if self.tsi.printlog == True and self.tsi.nrecur <= 0:
                 print "---------------------------------------------------------------------------------------------------------------------"
 
         return [tres[res.Result], t_name, ttime, tres[res.Error], xml.getFileName()]
@@ -1400,7 +1400,7 @@ if __name__ == "__main__":
 
     finally:
         #         sys.stdin = sys.__stdin__
-        if not global_player is None and print_calltrace:
+        if global_player is not None and print_calltrace:
             global_player.print_calltrace(print_calltrace_limit)
     # if sys.stdin.closed == False:
     #       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)

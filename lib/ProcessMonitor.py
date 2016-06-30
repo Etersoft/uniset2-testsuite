@@ -146,10 +146,11 @@ class MonitorThread(threading.Thread):
                 err = '[FAILED]: (ProcessMonitor): run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (p.name, p.cmd, e.errno, e.strerror)
                 if p.ignore_run_failed == False and self.term_flag == False:
                     print err
-                    print '(ProcessMonitor): ..terminate all..'
+                    print '(ProcessMonitor): ..terminate all..[%d]'%len(self.plist)
                     for pp in self.plist:
                         if pp.popen:
                             p_pid = pp.popen.pid
+                            print "PID: %d"%p_pid
                             pp.stop()
                             waitncpid(p_pid)
 
