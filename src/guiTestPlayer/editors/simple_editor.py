@@ -153,7 +153,7 @@ class SimpleEditor(gtk.HBox):
                     s_id = clist[0][0]
                     s_val = to_int(clist[0][2])
                     # elif len(clist) > 1:
-                    #                   test = 'MULTICHECK'
+                #                   test = 'MULTICHECK'
             else:
                 test = "set"
                 s_id = ""

@@ -7,7 +7,6 @@ from subprocess import Popen
 
 from TestSuiteGlobal import *
 
-
 # ---------------------------------------------------------
 class ChildProcess():
     def __init__(self, xmlnode):
@@ -31,7 +30,7 @@ class ChildProcess():
         self.chdir = xmlnode.prop('chdir')
         self.runing = False
 
-    def run(self, waitfinish=False):
+    def run(self, waitfinish = False):
         # print "run child process: " + self.name
         #        print "*************** cmd: " + str(self.cmd)
         sout = None
@@ -41,7 +40,7 @@ class ChildProcess():
             sout = nul_f
             serr = nul_f
 
-        if self.logfilename is not None:
+        if self.logfilename != None:
             self.logfile = open(self.logfilename, 'w')
             sout = self.logfile
             serr = self.logfile
@@ -55,21 +54,21 @@ class ChildProcess():
             self.popen.wait()
 
     def stop(self):
-        if self.popen and self.popen.poll() is None:
+        if self.popen and self.popen.poll() == None:
             # self.popen.terminate()
             os.killpg(self.popen.pid, signal.SIGTERM)
             self.popen.wait()
-            if self.logfile is not None:
+            if self.logfile != None:
                 self.logfile.close()
 
         self.runing = False
 
     def kill(self):
-        if self.popen and self.popen.poll() is None:
+        if self.popen and self.popen.poll() == None:
             # self.popen.kill()
             os.killpg(self.popen.pid, signal.SIGKILL)
             self.popen.wait()
-            if self.logfile is not None:
+            if self.logfile != None:
                 self.logfile.close()
 
         self.runing = False
@@ -77,7 +76,6 @@ class ChildProcess():
     def wait(self):
         if self.popen and self.popen.poll() == None:
             self.popen.wait()
-
 
 # ---------------------------------------------------------
 def waitncpid(w_pid, timeout_sec=-1):
@@ -89,13 +87,13 @@ def waitncpid(w_pid, timeout_sec=-1):
     while True:
         try:
             # print "******* wait terminate child pid=%d"%w_pid
-            # os.kill(w_pid, 0)
+            #os.kill(w_pid, 0)
             os.waitpid(w_pid, 0)
             time.sleep(1)
             if timeout_sec > 0:
                 if tick <= 0:
                     break
-                tick -= 1
+                tick = tick - 1
 
         except OSError, KeyboardInterrupt:
             break
@@ -145,9 +143,8 @@ class MonitorThread(threading.Thread):
                 p.run()
                 clist.append(p.popen)
             except (OSError, KeyboardInterrupt), e:
-                err = '[FAILED]: (ProcessMonitor): run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (
-                p.name, p.cmd, e.errno, e.strerror)
-                if p.ignore_run_failed is False and self.term_flag is False:
+                err = '[FAILED]: (ProcessMonitor): run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (p.name, p.cmd, e.errno, e.strerror)
+                if p.ignore_run_failed == False and self.term_flag == False:
                     print err
                     print '(ProcessMonitor): ..terminate all..'
                     for pp in self.plist:
@@ -167,11 +164,11 @@ class MonitorThread(threading.Thread):
             for p in self.plist:
                 if p.runing and p.popen.poll() is not None:
                     p.runing = False
-                    if p.ignore_terminated is False and self.term_flag is False:
+                    if p.ignore_terminated == False and self.term_flag == False:
                         err = '[FAILED]:(ProcessMonitor):  Process \'%s\' terminated..(retcode=%d)' % (
-                            p.name, p.popen.poll())
+                        p.name, p.popen.poll())
                         print err
-                        # raise TestSuiteException(err)
+                        #raise TestSuiteException(err)
                         print '(ProcessMonitor): ..terminate all..'
                         for pp in self.plist:
                             if pp.popen:
@@ -183,10 +180,10 @@ class MonitorThread(threading.Thread):
                         os.kill(self.parent_pid, signal.SIGTERM)
                         return
 
-                if self.term_flag is True or self.active is False:
+                if self.term_flag == True or self.active == False:
                     break
 
-            if self.term_flag is True or self.active is False:
+            if self.term_flag == True or self.active == False:
                 break
 
             time.sleep(self.check_sec)
