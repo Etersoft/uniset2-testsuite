@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+    <RunList after_run_pause="2000">
+        <item after_run_pause="0" chdir="../../Utils/SharedMemory/" name="SharedMemory" script="./start_fg.sh" silent_mode="1"/>
+    </RunList>
+    <TestList>
+        <test name="0.1">
+            <check file="failtrace_passed_test.xml" link="ALL" test="outlink"/>
+        </test>
+        <test name="0.2">
+            <check file="failtrace_fail_level1.xml" link="ALL" test="outlink"/>
+        </test>
+    </TestList>
+</TestScenario>

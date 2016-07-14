@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.3
-Release: alt5
+Release: alt6
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -101,6 +101,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Thu Jul 14 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt6
+- fixed trace call format (build only 'fail trace path')
+
 * Fri Jul 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt5
 - fixed a critical bug  of the previous commit
 

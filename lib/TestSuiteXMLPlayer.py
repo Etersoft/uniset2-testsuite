@@ -33,6 +33,18 @@ class res():
     Error = 3
     File = 4
 
+class StackItem():
+
+    def __init__(self,t_name, t_level, t_fname, t_comment, t_result=t_UNKNOWN, t_prev=None):
+        self.t_level = t_level
+        self.t_fname = t_fname
+        self.t_name = t_name
+        self.t_comment = t_comment
+        self.t_result = t_result
+        self.t_prev = t_prev
+
+    def __repr__(self):
+        return "[%d, '%s', '%s', '%s', '%s', %s]"%(self.t_level,self.t_fname,self.t_name,self.t_comment,self.t_result,str(self.t_prev))
 
 # result[TEST RESULT, TEST NAME, TEST TIME, TEST ERR, TEST FILE]
 # ------------------------------------------ 
@@ -102,7 +114,44 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def add_result(self, res):
         pass
 
+    def build_failtrace(self, call_trace):
+
+        if len(call_trace) == 0:
+            return list()
+
+        # идём в обратном порядке
+        # от последнего вызова (это тот на котором вывалился тест) до первого
+        # Смысл: построить дерево вызовов от провалившегося до первого уровня
+        # пропуская успешные (т.е. строится дерево вызовов приведшее до провалившегося теста)
+        # -----
+        # т.к. у нас сохранены ссылки на предыдущие вызовы... то просто идём по ним
+        failtrace = list()
+        stackItem = call_trace[-1]
+        failtrace.append(stackItem)
+        curlevel = stackItem.t_level
+        print "BEGIN LEVEL: %d "%curlevel
+
+        while stackItem != None:
+
+            stackItem = stackItem.t_prev
+
+            if stackItem == None:
+                break
+
+            if stackItem.t_level < curlevel:
+                failtrace.append(stackItem)
+                curlevel = stackItem.t_level
+
+            if stackItem.t_level == 0:
+                break
+
+        return failtrace[::-1]
+
     def print_calltrace(self, call_limit):
+
+        # выводим только дерево вызовов до неуспешного теста
+        # для этого надо построить дерево от последнего вызова до первого
+        failtrace = self.build_failtrace(self.call_stack)
 
         tname_width = 40
         call_limit = abs(call_limit)
@@ -111,20 +160,19 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         print "%s| %s" % (
         self.tsi.colorize_test_begin(ttab.ljust(tname_width)), self.tsi.colorize_test_begin("=== TEST CALL TRACE (limit: %d) ==="%call_limit))
 
-        for t_name, t_level, t_fname, t_comment in self.call_stack[-call_limit::]:
+        for stackItem in failtrace[-call_limit::]:
             tab = ""
-            for i in range(0, t_level):
+            for i in range(0, stackItem.t_level):
                 tab = "%s.   " % (tab)
 
-            if not self.tsi.log_show_test_comment:
-                t_comment = ""
-            else:
-                t_comment = " | %s " % self.tsi.format_comment(t_comment)
+            t_comment = ""
+            if self.tsi.log_show_test_comment:
+                t_comment = " | %s " % self.tsi.format_comment(stackItem.t_comment)
 
             # if not self.show_xmlfile:
             #     t_fname = ""
 
-            print "%s%s| %s%s" % (t_fname.ljust(tname_width), t_comment, tab, t_name)
+            print "%s%s| %s%s" % (stackItem.t_fname.ljust(tname_width), t_comment, tab, stackItem.t_name)
 
         print ""
 
@@ -1040,6 +1088,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.print_result_report(results)
             pmonitor.stop()
 
+        return resOK
+
     def play_xml(self, xml, spec_replace_list=[]):
 
         logfile = self.tsi.get_logfile()
@@ -1120,6 +1170,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.print_result_report(results)
             pmonitor.stop()
 
+        return resOK
+
     def play_item(self, inode, xml):
         self.check_keyboard_interrupt()
         if inode.name == "action":
@@ -1138,13 +1190,21 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         t_name = to_str(self.replace(testnode.prop('name')))
         t_comment = to_str(self.replace(testnode.prop('comment')))
 
-        self.call_stack.append([t_name, self.call_level, xml.getFileName(), t_comment])
+        self.call_stack.append(StackItem(t_name, self.call_level, xml.getFileName(), t_comment))
+        # сохраняем ссылку на свой тест и предыдущий
+        lastStackItem = self.call_stack[-1]
+        prevStackItem = None
+        if len(self.call_stack) > 1:
+            prevStackItem= self.call_stack[-2]
 
         t_ignore = to_int(self.replace(testnode.prop('ignore')))
         if t_ignore:
             self.tsi.log(t_IGNORE, t_IGNORE, "'%s'" % t_name, t_comment, False)
             ret = [t_IGNORE, t_name, 0, "", xml.getFileName()]
             self.del_from_test_replace(spec_replace_list)
+            # сохраняем ещё ссылку на предыдущий элемент
+            lastStackItem.t_result = t_IGNORE
+            lastStackItem.t_prev = prevStackItem
             return ret
 
         curnode = self.begin(testnode)
@@ -1196,6 +1256,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             td = datetime.timedelta(0, ttime)
             self.tsi.ntab = False
             self.tsi.log(tres[res.Result], 'FINISH', "'%s' /%s/" % (t_name, td), "", False)
+
+            lastStackItem.t_result = tres[res.Result]
+            lastStackItem.t_prev = prevStackItem
             # чисто визуальное отделение нового теста
             if self.tsi.printlog == True and self.tsi.nrecur <= 0:
                 print "---------------------------------------------------------------------------------------------------------------------"
@@ -1273,6 +1336,7 @@ if __name__ == "__main__":
     ts = TestSuiteInterface()
     global_player = None
     print_calltrace = False
+    global_result = None
     try:
 
         if ts.checkArgParam('--help', False) == True or ts.checkArgParam('-h', False) == True:
@@ -1382,9 +1446,9 @@ if __name__ == "__main__":
 
         #       player.set_keyboard_interrupt( check_key_press )
         if testname != "":
-            player.play_by_name(player.xml, testname, testname_prop)
+            global_result = player.play_by_name(player.xml, testname, testname_prop)
         else:
-            player.play_all()
+            global_result = player.play_all()
 
         # if print_calltrace:
         #     player.print_calltrace()
@@ -1400,7 +1464,7 @@ if __name__ == "__main__":
 
     finally:
         #         sys.stdin = sys.__stdin__
-        if global_player is not None and print_calltrace:
+        if global_player is not None and print_calltrace and global_result != True:
             global_player.print_calltrace(print_calltrace_limit)
     # if sys.stdin.closed == False:
     #       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)

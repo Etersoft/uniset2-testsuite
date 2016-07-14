@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+    <TestList>
+        <test name="simple test">
+            <check test="23101@3001=0"/>
+        </test>
+        <test name="simple test2">
+            <check test="23101@3001=0"/>
+        </test>
+    </TestList>
+</TestScenario>

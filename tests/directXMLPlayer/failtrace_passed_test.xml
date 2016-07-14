@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+    <TestList>
+        <test name="PASSED TEST">
+        	<check test="101@3001=0"/>
+        </test>
+    </TestList>
+</TestScenario>
