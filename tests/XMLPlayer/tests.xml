@@ -110,12 +110,15 @@
             <action msleep="1000"/>
             <check test="101=0"/>
         </test>
-        <test name="Test N4">
+        <test name="Test N4" lname="t4">
             <action set="104=0" reset_time="300" rval="1"/>
             <check test="101=0"/>
             <check test="101!=0"/>
             <action msleep="1000"/>
             <check test="101=0"/>
+        </test>
+        <test name="Test N5 (fail test)" lname="t5">
+            <check test="101wedwe=0"/>
         </test>
     </TestList>
 </TestScenario>

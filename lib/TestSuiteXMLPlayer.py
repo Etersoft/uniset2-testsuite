@@ -1039,16 +1039,18 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         snode = self.xml.findNode(self.xml.getDoc(), section)[0]
         if snode is None:
+            #print "<%s> section not found in '%s'"%(section,self.xml.getFileName())
             return
 
         node = self.xml.firstNode(snode.children)
+
         while node is not None:
             try:
                 # cp = ChildProcess(node)
                 # cp.run(True)
                 self.tsi.runscript(node.prop("script"))
             except (OSError, KeyboardInterrupt), e:
-                # print 'run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (cp.name, cp.cmd, e.errno, e.strerror)
+                #print 'run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (cp.name, cp.cmd, e.errno, e.strerror)
                 pass
 
             node = self.xml.nextNode(node)
@@ -1364,6 +1366,7 @@ if __name__ == "__main__":
     ts = TestSuiteInterface()
     global_player = None
     print_calltrace = False
+    print_calltrace_limit = 20
     global_result = None
     try:
 
