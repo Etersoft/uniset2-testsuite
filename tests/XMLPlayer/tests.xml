@@ -77,12 +77,12 @@
         <test name="Other configures test" num="6">
             <check file="test6_configures.xml" link="ALL" test="outlink"/>
         </test>
-        <test ignore_failed="1" name="Test 'great'">
+        <test ignore_failed="1" name="Test 'great'" tname="great">
             <action set="109=10"/>
             <check test="109>=5"/>
             <check test="109>=10"/>
         </test>
-        <test ignore_failed="1" name="Test 'less'">
+        <test ignore_failed="1" name="Test 'less'" tname="less">
             <action set="109=10"/>
             <check test="109<=11"/>
             <check test="109<=10"/>

@@ -8,6 +8,7 @@ import os
 
 from ProcessMonitor import *
 import TestSuitePlayer
+from TestSuiteInterface import *
 
 
 class keys():
@@ -1136,23 +1137,29 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         return None
 
-    def play_by_name(self, xml, tname, propname='name'):
+    def play_by_name(self, xml, tlist):
 
         logfile = self.tsi.get_logfile()
         b = self.begin_tests(xml)
         testnode = b[0]
         results = []
-        tnode = self.find_test(xml, tname, propname)
-        if tnode is None:
-            self.tsi.log(t_FAILED, '(TestSuiteXMLPlayer)', 'Can`t find test=\'%s\'' % tname, "", True)
-            return
 
-        tm_start = time.time()
+        # Сперва проверим что все тесты существуют..
+        for tprop,tname in tlist:
+            tnode = self.find_test(xml, tname, tprop)
+            if tnode is None:
+                self.tsi.log(t_FAILED, '(TestSuiteXMLPlayer)', 'Can`t find test %s=\'%s\'' % (tprop,tname), "", True)
+                return
+
         pmonitor = self.get_pmonitor(xml)
         resOK = False
         try:
             pmonitor.start()
-            results.append(self.play_test(xml, tnode, logfile))
+            for tprop,tname in tlist:
+                tm_start = time.time()
+                tnode = self.find_test(xml, tname, tprop)
+                results.append(self.play_test(xml, tnode, logfile))
+
             pmonitor.stop()
             resOK = True
         except TestSuiteException, ex:
@@ -1323,10 +1330,29 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
                 time.sleep(0.5)
 
+    @staticmethod
+    def get_tests_list(tname):
+        '''
+        :param tname: строка в виде prop=test1,prop2=test2,...
+        :return: список пар [prop,testname]
+        '''
+
+        retlist = list()
+
+        tlist = tname.strip().split(',')
+        if len(tlist) == 0:
+            return retlist
+
+        for t in tlist:
+            p = t.strip().split('=')
+            if len(p) > 1:
+                retlist.append(p)
+            else:
+                retlist.append(["name",p[0]])
+
+        return retlist
 
 if __name__ == "__main__":
-
-    from TestSuiteInterface import *
 
     #    import os
     #    import termios
@@ -1359,8 +1385,7 @@ if __name__ == "__main__":
             print ''
             print '--col-comment-width val   - Width for column "comment"'
             print ''
-            print '--test-name TestName      - Run only \'TestName\' test. \'TestName\' can be specified as a \'prop=name\'.'
-            print '                            By default, the search goes on name=\'TestName\''
+            print '--test-name test1,prop2=test2,prop3=test3,...- Run tests from list. By default prop=name'
             print '--ignore-run-list         - Ignore <RunList>'
             print '--ignore-nodes            - Do not use \'@node\''
             print '--default-timeout msec        - Default <check timeout=\'..\' ../>.\''
@@ -1391,12 +1416,6 @@ if __name__ == "__main__":
             show_log = False
 
         testname = ts.getArgParam("--test-name", "")
-        testname_prop = ""
-
-        p = testname.strip().split('=')
-        if len(p) > 1:
-            testname = p[1]
-            testname_prop = p[0]
 
         ignore_runlist = ts.checkArgParam("--ignore-run-list", False)
         showtimestamp = ts.checkArgParam("--show-timestamp", False)
@@ -1427,6 +1446,8 @@ if __name__ == "__main__":
         player.default_check_pause = check_pause
         player.junit = junit
 
+        testlist = player.get_tests_list(testname)
+
         global_player = player
 
         #       poller = select.poll()
@@ -1445,8 +1466,8 @@ if __name__ == "__main__":
         #               pass
 
         #       player.set_keyboard_interrupt( check_key_press )
-        if testname != "":
-            global_result = player.play_by_name(player.xml, testname, testname_prop)
+        if len(testlist) > 0:
+            global_result = player.play_by_name(player.xml, testlist)
         else:
             global_result = player.play_all()
 
