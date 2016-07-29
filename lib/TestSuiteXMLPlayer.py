@@ -1338,6 +1338,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         '''
 
         retlist = list()
+        if len(tname) == 0:
+            return retlist
 
         tlist = tname.strip().split(',')
         if len(tlist) == 0:
@@ -1415,8 +1417,6 @@ if __name__ == "__main__":
             show_actlog = False
             show_log = False
 
-        testname = ts.getArgParam("--test-name", "")
-
         ignore_runlist = ts.checkArgParam("--ignore-run-list", False)
         showtimestamp = ts.checkArgParam("--show-timestamp", False)
         ignore_nodes = ts.checkArgParam("--ignore-nodes", False)
@@ -1446,6 +1446,7 @@ if __name__ == "__main__":
         player.default_check_pause = check_pause
         player.junit = junit
 
+        testname = ts.getArgParam("--test-name", "")
         testlist = player.get_tests_list(testname)
 
         global_player = player
@@ -1466,6 +1467,7 @@ if __name__ == "__main__":
         #               pass
 
         #       player.set_keyboard_interrupt( check_key_press )
+
         if len(testlist) > 0:
             global_result = player.play_by_name(player.xml, testlist)
         else:
