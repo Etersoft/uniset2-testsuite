@@ -1381,7 +1381,7 @@ if __name__ == "__main__":
             print '--show-result-report      - Show result report '
             print '--show-result-only        - Show only result report (ignore --show-action-log, --show-test-log)'
             print ''
-            print '--show-commets            - Display all comments (test,check,action)'
+            print '--show-comments           - Display all comments (test,check,action)'
             print '--show-numline            - Display line numbers'
             print '--show-timestamp          - Display the time'
             print '--show-test-comment       - Display test comment'
