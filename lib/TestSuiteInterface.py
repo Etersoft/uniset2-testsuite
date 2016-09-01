@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import uniset2
 import subprocess
 
 # \todo может потом перейти на использование colorama
@@ -53,6 +54,7 @@ class TestSuiteInterface():
         self.nrecur = 0
         self.ntab = False
         self.no_coloring_output = False
+        self.supplierID = uniset2.DefaultSupplerID
 
         # "CHECK : 00:00:05 [  0.016] : 2015-03-14 02:46:06 :[ PASSED] :  FINISH: 'Global replace' /0:00:00.000837/"
         self.re_log = re.compile(
@@ -240,6 +242,9 @@ class TestSuiteInterface():
         self.ignore_nodes = state
         for key, ui in self.ui_list.items():
             ui.set_ignore_nodes(state)
+
+    def set_supplier_id(self, supID):
+        self.supplierID = supID
 
     def set_notimestamp(self, state):
         self.notimestamp = state
@@ -1080,7 +1085,7 @@ class TestSuiteInterface():
             if ui is None:
                 ui = self.default_ui
 
-            ui.setValue(s_id, s_val)
+            ui.setValue(s_id, s_val,self.supplierID)
             self.actlog(t_PASSED, 'SETVALUE', '%s=%d' % (s_id, s_val), t_comment, False)
             return True
         except UException, e:

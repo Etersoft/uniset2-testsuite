@@ -4,6 +4,7 @@
 import datetime
 import copy
 import string
+import uniset2
 import os
 
 from ProcessMonitor import *
@@ -186,6 +187,13 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def get_begin_test_node(self, xml):
         return xml.begnode
+
+    def set_supplier_name(self, supName):
+        ui = self.tsi.get_default_ui()
+        supID = ui.getObjectID(supName)
+        if supID == DefaultID:
+            raise SystemError("Not found Object ID for '%s'"%supName)
+        self.tsi.set_supplier_id(supID)
 
     def getXML(self, fname):
         if fname in self.xmllist:
@@ -1399,6 +1407,7 @@ if __name__ == "__main__":
             print '--no-coloring-output      - Disable colorization output'
             print '--print-calltrace         - Display test call trace with test file name. If test-suite FAILED.'
             print '--print-calltrace-limit N - How many recent calls to print. Default: 20.'
+            print '--supplier-name name      - ObjectName for testsuite under which the value is stored in the SM. Default: AdminID.'
             exit(0)
 
         testfile = ts.getArgParam('--testfile', "")
@@ -1430,6 +1439,7 @@ if __name__ == "__main__":
         coloring_out = ts.checkArgParam('--no-coloring-output', False)
         print_calltrace = ts.checkArgParam('--print-calltrace', False)
         print_calltrace_limit = ts.getArgInt('--print-calltrace-limit', 20)
+        supplier_name = ts.getArgParam("--supplier-name","")
 
         cf = conflist.split(',')
         ts.init_testsuite(cf, show_log, show_actlog)
@@ -1448,6 +1458,8 @@ if __name__ == "__main__":
         player.default_timeout = tout
         player.default_check_pause = check_pause
         player.junit = junit
+        if len(supplier_name) > 0:
+            player.set_supplier_name(supplier_name)
 
         testname = ts.getArgParam("--test-name", "")
         testlist = player.get_tests_list(testname)
