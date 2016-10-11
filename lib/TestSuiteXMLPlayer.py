@@ -491,7 +491,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         t_comment = self.replace(node.prop('comment'))
 
         if tname is None:
-            self.tsi.log(t_FAILED, "<check..>", "FAILED: BAD STRUCTUTE! NOT FOUND test=''..", "", True)
+            self.tsi.log(t_FAILED, "<check..>", "FAILED: BAD TEST STRUCTURE! NOT FOUND test=''..", "", True)
             return t_FAILED
 
         t_ignore = to_int(self.replace(node.prop('ignore')))
@@ -585,7 +585,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         t_comment = self.replace(node.prop('comment'))
 
         if tname is None:
-            self.tsi.log(t_FAILED, "<check..>", "FAILED: BAD STRUCTUTE! NOT FOUND test=''..", "", True)
+            self.tsi.log(t_FAILED, "<check..>", "FAILED: BAD TEST STRUCTURE! NOT FOUND test=''..", "", True)
             return t_FAILED
 
         t_ignore = to_int(self.replace(node.prop('ignore')))
@@ -708,16 +708,17 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             t_ignore_runlist = to_int(self.replace(node.prop("ignore_runlist")))
             t_xml = self.xmllist.get(t_file)
             t_dir = os.getcwd()
-            t_prevdir = os.getcwd()
+            t_prevdir = t_dir
+            
             if t_xml is None:
                 # если в списке ещё нет, запоминаем..
                 try:
                     t_xml = self.loadXML(t_file)
-                    t_dir = os.path.dirname(os.path.realpath(t_file))
                 except UException, e:
                     self.tsi.log(t_FAILED, "OUTLINK", "Can`t open file='%s'." % (t_file), t_comment, True)
                     return t_FAILED
 
+            t_dir = os.path.dirname(os.path.realpath(t_file))
             self.set_ignore_runlist(t_xml, t_ignore_runlist)
 
             try:

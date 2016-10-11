@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.3
-Release: alt9
+Release: alt10
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -101,6 +101,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Tue Oct 11 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt10
+- fixed bug 'change directory' for 'outlink'
+
 * Thu Sep 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt9
 - added support --supplier-name 
 

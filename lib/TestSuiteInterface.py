@@ -526,7 +526,7 @@ class TestSuiteInterface():
             return self.ui_list[cf]
 
         except KeyError, ValueError:
-            self.log(t_FAILED, '(get_ui): Unknown cf=\'%s\'' % cf, "", True)
+            self.log(t_FAILED, 'UI','(get_ui): Unknown cf=\'%s\'' % cf, "", True)
 
         return None
 
