@@ -35,7 +35,8 @@ def get_replace_list(raw_str):
 
 
 class TestSuiteException(Exception):
-    def __init__(self, e="", test_time=-1):
+    def __init__( self, e="", test_time=-1, item=dict() ):
+        self.failed_item = item
         self.err = e
         self.ftime = test_time
         if test_time == -1:
