@@ -25,6 +25,8 @@ def make_default_result():
     result['filename'] = ''
     result['prev'] = None
     result['item_type'] = '' # action,check,test
+    result['tag'] = '' # первый тег на котором "сработал" фильтр
+    result['tags'] = '' # теги
 
     return result
 

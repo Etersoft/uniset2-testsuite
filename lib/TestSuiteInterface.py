@@ -383,7 +383,20 @@ class TestSuiteInterface():
 
         return t_comment
 
-    def print_log(self, t_result, t_test, txt, t_comment):
+    def print_log(self, item):
+
+        t_comment = item['comment']
+        t_test = item['type']
+        txt = item['text']
+        t_result = item['result']
+        try:
+            if t_comment != None and len(t_comment)>0:
+                t_comment = unicode(t_comment, "UTF-8", errors='replace')
+        except UnicodeDecodeError:
+            pass
+        except TypeError:
+            pass
+
 
         self.log_numstr += 1
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -441,7 +454,21 @@ class TestSuiteInterface():
             if self.log_flush:
                 sys.stdout.flush()
 
-    def print_actlog(self, t_result, t_act, txt, t_comment):
+    def print_actlog(self, act):
+
+        t_comment = act['comment']
+        t_act = act['type']
+        txt = act['text']
+        t_result = act['result']
+
+        try:
+            if t_comment != None and len(t_comment)>0:
+                t_comment = unicode(t_comment, "UTF-8", errors='replace')
+        except UnicodeDecodeError:
+            pass
+        except TypeError:
+            pass
+
         self.log_numstr += 1
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
         txt2 = self.set_tab_space(txt)
@@ -500,57 +527,31 @@ class TestSuiteInterface():
 
     def setResult(self, item, throw=False):
 
-        t_comment = item['comment']
-        t_test = item['type']
-        txt = item['text']
-        t_result = item['result']
-
-        try:
-            if t_comment != None and len(t_comment)>0:
-                t_comment = unicode(t_comment, "UTF-8", errors='replace')
-        except UnicodeDecodeError:
-            pass
-        except TypeError:
-            pass
-
         if self.print_log is not None:
-            self.print_log(t_result, t_test, txt, t_comment)
+            self.print_log(item)
 
         if self.log_callback:
-            self.log_callback(t_result, t_test, txt, t_comment)
+            self.log_callback(item)
 
         if self.isCheckScenarioMode() and self.checkScenarioMode_ignorefailed:
             return
 
         if False == self.ignorefailed and True == throw:
-            raise TestSuiteException(txt, item=item)
+            raise TestSuiteException(item['text'], item=item)
 
     def setActionResult(self, act, throw=False):
 
-        t_comment = act['comment']
-        t_act = act['type']
-        txt = act['text']
-        t_result = act['result']
-
-        try:
-            if t_comment != None and len(t_comment)>0:
-                t_comment = unicode(t_comment, "UTF-8", errors='replace')
-        except UnicodeDecodeError:
-            pass
-        except TypeError:
-            pass
-
         if self.print_actlog is not None:
-            self.print_actlog(t_result, t_act, txt, t_comment)
+            self.print_actlog(act)
 
         if self.actlog_callback:
-            self.actlog_callback(t_result, t_act, txt, t_comment)
+            self.actlog_callback(act)
 
         if self.isCheckScenarioMode() and self.checkScenarioMode_ignorefailed:
             return
 
         if self.ignorefailed == False and throw == True:
-            raise TestSuiteException(txt, item=act)
+            raise TestSuiteException(item['text'], item=act)
 
     def get_ui(self, cf):
         try:

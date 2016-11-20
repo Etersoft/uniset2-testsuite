@@ -9,24 +9,9 @@ from ProcessMonitor import *
 import TestSuitePlayer
 from TestSuiteInterface import *
 
-
 class keys():
     pause = ' '  # break
     step = 's'  # on 'step by step' mode
-
-class tt():  # test type
-    Unknwn = 0
-    Check = 1
-    Action = 2
-    Test = 3
-    Outlink = 4
-    Link = 5
-
-# RESULT FORMAT:
-# ------------------------------------------
-# result[TEST RESULT, TEST NAME, TEST TIME, TEST ERR, TEST FILE]
-# ------------------------------------------ 
-# TEST RESULT: t_NONE, t_FAILED, .... view TestSuiteGlobal.py
 
 class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def __init__(self, testsuiteinterface, xmlfile, ignore_runlist=False):
@@ -86,6 +71,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.default_check_pause = 300
         self.junit = ""
 
+        # список разрешающих запуск теста тегов
         self.tags = list()
 
         # def __del__(self):
@@ -324,6 +310,17 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def set_ignore_runlist(self, xml, ignore_flag):
         self.ignore_rlist[xml.getFileName()] = ignore_flag
+
+    def set_tags(self, tags):
+
+        if len(tags) == 0:
+            return
+
+        taglist = tags.split('#')
+        if len(taglist) == 1:
+            self.tags = taglist
+        else:
+            self.tags = taglist[1:]
 
     def add_to_global_replace(self, lst):
 
@@ -872,6 +869,31 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def get_config_name(self, node):
         return to_str(self.replace(node.prop("config")))
 
+    def check_tag(self, tag):
+
+        # если нет тегов, то значит все TRUE
+        if len(self.tags) == 0:
+            return True
+
+        taglist = tag.split('#')
+        for t in taglist:
+            if t in self.tags:
+                return True
+        return False
+
+    def firstTag(self, tag):
+        ''' возвращает первый тег который прошёл проверку'''
+
+        if len(self.tags) == 0:
+            return ''
+
+        taglist = tag.split('#')
+        for t in taglist:
+            if t in self.tags:
+                return '#'+t
+
+        return ''
+
     def action_item(self, node):
         """
         processing 'action'
@@ -1169,6 +1191,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             pmonitor.start()
             while testnode is not None:
                 tm_start = time.time()
+
+                # если заданы теги то игнорируем тесты не проходящие проверку
+                if len(self.tags) > 0 and not self.check_tag(to_str(self.replace(testnode.prop('tags')))):
+                    testnode = xml.nextNode(testnode)
+                    continue
+
                 results.append(self.play_test(xml, testnode, logfile))
                 testnode = xml.nextNode(testnode)
 
@@ -1209,6 +1237,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.add_to_global_replace(xml.global_replace_list)
         self.add_to_test_replace(spec_replace_list)
 
+        item = make_default_result()
+        item['name'] = to_str(self.replace(testnode.prop('name')))
+
         try:
             pmonitor.start()
             while testnode is not None:
@@ -1217,15 +1248,13 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 testnode = xml.nextNode(testnode)
 
         except TestSuiteException, e:
-            item = make_default_result()
-            item['name'] = to_str(self.replace(testnode.prop('name')))
             item['time'] = e.getFinishTime - tm_start
             item['result'] = t_FAILED
             item['text'] = e.getError
             item['xmlnode'] = testnode
             item['filename'] = xml.getFileName()
             results.append(item)
-            r = self.get_cumulative_result(results)
+            results['result'] = self.get_cumulative_result(results['items'])
             raise e
 
         finally:
@@ -1234,8 +1263,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.del_from_test_replace(spec_replace_list)
         self.del_from_global_replace(xml.global_replace_list)
         ret = self.get_cumulative_result(results)
-        item = make_default_result()
-        item['name'] = ''
         item['time'] = time.time() - tm_all_start
         item['result'] = ret['result']
         item['text'] = ret['text']
@@ -1280,6 +1307,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             for tprop, tname in tlist:
                 tm_start = time.time()
                 tnode = self.find_test(xml, tname, tprop)
+
+                # если заданы теги то игнорируем тесты не проходящие проверку
+                if len(self.tags) > 0 and not self.check_tag(to_str(self.replace(tnode.prop('tags')))):
+                    continue
+
                 results.append(self.play_test(xml, tnode, logfile))
 
             resOK = True
@@ -1329,6 +1361,13 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         result['filename'] = xml.getFileName()
         result['call_level'] = self.call_level
         result['xmlnode'] = testnode
+        result['tags'] = to_str(self.replace(testnode.prop('tags')))
+        result['tag'] = self.firstTag(result['tags'])
+
+        testname = "'%s'" % result['name']
+
+        if len(tags) > 0:
+            testname = '%s [%s]'%(testname,result['tag'])
 
         self.call_stack.append(result)
 
@@ -1339,10 +1378,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             prevStackItem = self.call_stack[-2]
 
         t_ignore = to_int(self.replace(testnode.prop('ignore')))
+
         if t_ignore:
             result['result'] = t_IGNORE
             result['time'] = 0
-            result['text'] = "'%s'" % result['name']
+            result['text'] = testname
             result['type'] = t_IGNORE
             self.tsi.setResult(result, False)
             self.del_from_test_replace(spec_replace_list)
@@ -1371,7 +1411,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         #           print "---------------------------------------------------------------------------------------------------------------------"
 
         self.tsi.ntab = False
-        info = make_info_result("'%s'" % result['name'],'BEGIN')
+        info = make_info_result(testname,'BEGIN')
         info['comment'] = result['comment']
         self.tsi.setResult(info, False)
         tm_start = time.time()
@@ -1537,17 +1577,18 @@ if __name__ == "__main__":
             print '--col-comment-width val   - Width for column "comment"'
             print ''
             print '--test-name test1,prop2=test2,prop3=test3,...  - Run tests from list. By default prop=name'
-            print '--ignore-run-list              - Ignore <RunList>'
-            print '--ignore-nodes                 - Do not use \'@node\''
-            print '--default-timeout msec         - Default <check timeout=\'..\' ../>.\''
-            print '--default-check-pause msec     - Default <check check_pause=\'..\' ../>.\''
-            print '--junit filename               - Disable colorization output'
-            print '--print-calltrace              - Display test call trace with test file name. If test-suite FAILED.'
-            print '--print-calltrace-limit N      - How many recent calls to print. Default: 20.'
-            print '--supplier-name name           - ObjectName for testsuite under which the value is stored in the SM. Default: AdminID.'
+            print '--ignore-run-list                - Ignore <RunList>'
+            print '--ignore-nodes                   - Do not use \'@node\''
+            print '--default-timeout msec           - Default <check timeout=\'..\' ../>.\''
+            print '--default-check-pause msec       - Default <check check_pause=\'..\' ../>.\''
+            print '--junit filename                 - Disable colorization output'
+            print '--print-calltrace                - Display test call trace with test file name. If test-suite FAILED.'
+            print '--print-calltrace-limit N        - How many recent calls to print. Default: 20.'
+            print '--supplier-name name             - ObjectName for testsuite under which the value is stored in the SM. Default: AdminID.'
             print ''
-            print "--check-scenario               - Enable 'check scenario mode'. Ignore for all tests result. Only check parameters"
-            print "--check-scenario-ignore-failed - Enable 'check scenario mode'. Ignore for all tests result and checks"
+            print "--check-scenario                 - Enable 'check scenario mode'. Ignore for all tests result. Only check parameters"
+            print "--check-scenario-ignore-failed   - Enable 'check scenario mode'. Ignore for all tests result and checks"
+            print "--play-tags '#tag1#tag2#tag3..'  - Play tests only with the specified tag"
             print ''
             exit(0)
 
@@ -1583,6 +1624,7 @@ if __name__ == "__main__":
         supplier_name = ts.getArgParam("--supplier-name", "")
         check_scenario = ts.getArgParam("--check-scenario",False)
         check_scenario_ignorefailed = ts.getArgParam("--check-scenario-ignore-failed", False)
+        tags = ts.getArgParam("--play-tags", "")
 
         cf = conflist.split(',')
         ts.init_testsuite(cf, show_log, show_actlog)
@@ -1608,6 +1650,7 @@ if __name__ == "__main__":
         player.default_timeout = tout
         player.default_check_pause = check_pause
         player.junit = junit
+        player.set_tags(tags)
         if len(supplier_name) > 0:
             player.set_supplier_name(supplier_name)
 
