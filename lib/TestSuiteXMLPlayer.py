@@ -24,29 +24,6 @@ class tt():  # test type
     Outlink = 4
     Link = 5
 
-def make_test_result():
-    result = dict()
-    result['name'] = ''
-    result['comment'] = ''
-    result['call_level'] = None
-    result['result'] = t_NONE
-    result['text'] = ''
-    result['items'] = []
-    result['xmlnode'] = None
-    result['filename'] = ''
-    result['prev'] = None
-    result['item_type'] = '' # action,check,test
-
-    return result
-
-def make_fail_result(text, type='(TestSuiteXMLPlayer)'):
-
-    fail = make_test_result()
-    fail['result'] = t_FAILED
-    fail['text'] = text
-    fail['type'] = type
-    return fail
-
 # RESULT FORMAT:
 # ------------------------------------------
 # result[TEST RESULT, TEST NAME, TEST TIME, TEST ERR, TEST FILE]
@@ -132,7 +109,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         stackItem = call_trace[-1]
         failtrace.append(stackItem)
         curlevel = stackItem['call_level']
-        print "BEGIN LEVEL: %d " % curlevel
+        # print "BEGIN LEVEL: %d " % curlevel
 
         while stackItem != None:
 
@@ -225,14 +202,18 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.initProcessMonitor(xml)
             return xml
 
+        except IOError, e:
+            err = "IOError: %s"%str(e)
+            self.tsi.setResult(make_fail_result("FAILED load xmlfile '%s' err: '%s'" % (xmlfile, err), "(TestSuiteXMLPlayer:loadXML)"), False)
+            raise TestSuiteException(err)
         except UniXMLException, e:
-            self.tsi.log( make_fail_result("FAILED load xmlfile=%s err='%s'" % (xmlfile, e.getError()),"(TestSuiteXMLPlayer:loadXML)"),False)
+            self.tsi.setResult(make_fail_result("FAILED load xmlfile '%s' err: '%s'" % (xmlfile, e.getError()), "(TestSuiteXMLPlayer:loadXML)"), False)
             raise TestSuiteException(e.getError())
 
     def initConfig(self, xml):
         rnode = xml.findNode(xml.getDoc(), "TestList")[0]
         if rnode is None:
-            self.tsi.log(make_fail_result("<TestList> not found?!","(TestSuiteXMLPlayer)"), True)
+            self.tsi.setResult(make_fail_result("<TestList> not found?!", "(TestSuiteXMLPlayer)"), True)
             raise TestSuiteException("<TestList> not found?!")
 
         scenario_type = to_str(rnode.prop("type"))
@@ -263,7 +244,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 if to_str(node.prop("default")) != "":
                     self.tsi.set_default_ui(ui)
             else:
-                self.tsi.log(make_fail_result("Unknown scenario type='%s' Must be 'uniset' or 'modbus'" % c_type,"(TestSuiteXMLPlayer:initConfig)"),True)
+                self.tsi.setResult(make_fail_result("Unknown scenario type='%s' Must be 'uniset' or 'modbus'" % c_type, "(TestSuiteXMLPlayer:initConfig)"), True)
                 raise TestSuiteException(
                     "(TestSuiteXMLPlayer:initConfig): Unknown scenario type='%s' Must be 'uniset' or 'modbus'" % c_type)
 
@@ -289,7 +270,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             xml.begnode = xml.begnode.children
             self.begin_tests(xml)
         else:
-            self.tsi.log(make_fail_result("Can`t find begin node <TestList>"), True)
+            self.tsi.setResult(make_fail_result("Can`t find begin node <TestList>"), True)
 
     def initProcessMonitor(self, xml):
 
@@ -487,7 +468,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def compare_item(self, node, xml):
 
-        ret = make_test_result()
+        ret = make_default_result()
         tname = self.replace(node.prop('test'))
         t_comment = self.replace(node.prop('comment'))
 
@@ -495,7 +476,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         ret['comment'] = t_comment
 
         if tname is None:
-            self.tsi.log(make_fail_result("FAILED: BAD TEST STRUCTURE! NOT FOUND test=''.."), True)
+            self.tsi.setResult(make_fail_result("FAILED: BAD TEST STRUCTURE! NOT FOUND test=''.."), True)
             return ret
 
         t_ignore = to_int(self.replace(node.prop('ignore')))
@@ -503,7 +484,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             ret['result'] = t_IGNORE
             ret['text'] = "%s" % str(node)
             ret['type'] = 'IGNORE'
-            self.tsi.log(ret, False)
+            self.tsi.setResult(ret, False)
             return ret
 
         cfig = self.get_config_name(node)
@@ -512,7 +493,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             ret['result'] = t_FAILED
             ret['text'] = "FAILED: Unknown CONFIG.."
             ret['type'] = tname
-            self.tsi.log(ret, True)
+            self.tsi.setResult(ret, True)
             return ret
 
         s_id = []
@@ -522,7 +503,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if len(clist) == 0:
             ret['result'] = t_FAILED
             ret['text'] = "FAILED: Unknown test='%s'.." % tname
-            self.tsi.log(ret, True)
+            self.tsi.setResult(ret, True)
             return ret
 
         if len(clist) == 1:
@@ -570,12 +551,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             return ret
 
         if test == "MULTICHECK":
-            self.tsi.log(" ", "MULTICHECK", "...", False)
+            self.tsi.setResult(" ", "MULTICHECK", "...", False)
             s_set = to_str(self.replace(node.prop("test")))
             if s_set == "":
                 ret['result'] = t_FAILED
                 ret['text'] = "MULTICHECK: undefined ID list (id='...')"
-                self.tsi.log(ret,True)
+                self.tsi.setResult(ret, True)
                 return ret
 
             # для реализации механизма шаблонов
@@ -594,12 +575,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         ret['result'] = t_FAILED
         ret['text'] = "(compare_item): Unknown item type='%s'" % str(node)
-        self.tsi.log(ret,True)
+        self.tsi.setResult(ret, True)
         return ret
 
     def check_item(self, node, xml):
 
-        result = make_test_result()
+        result = make_default_result()
         tname = self.replace(node.prop('test'))
         t_comment = self.replace(node.prop('comment'))
 
@@ -611,14 +592,14 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if tname is None:
             result['text'] = "FAILED: BAD TEST STRUCTURE! NOT FOUND test=''.."
             result['result'] = t_FAILED
-            self.tsi.log(result, True)
+            self.tsi.setResult(result, True)
             return result
 
         t_ignore = to_int(self.replace(node.prop('ignore')))
         if t_ignore:
             result['text'] = 'IGNORE', "%s" % str(node)
             result['result'] = t_IGNORE
-            self.tsi.log(result, False)
+            self.tsi.setResult(result, False)
             return result
 
         cfig = self.get_config_name(node)
@@ -626,7 +607,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if ui is None:
             result['text'] = "FAILED: Unknown CONFIG.."
             result['result'] = t_FAILED
-            self.tsi.log(result, True)
+            self.tsi.setResult(result, True)
             return result
 
         s_id = None
@@ -639,7 +620,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if len(clist) == 0:
                 result['result'] = t_FAILED
                 result['text'] = "FAILED: Unknown test='%s'.." % tname
-                self.tsi.log(result, True)
+                self.tsi.setResult(result, True)
                 return result
 
             if len(clist) == 1:
@@ -688,12 +669,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             return result
 
         if test == "MULTICHECK":
-            self.tsi.log(" ", "MULTICHECK", "...", False)
+            self.tsi.setResult(" ", "MULTICHECK", "...", False)
             s_set = to_str(self.replace(node.prop("test")))
             if s_set == "":
                 result['text'] = "MULTICHECK: undefined ID list (id='...')"
                 result['result'] = t_FAILED
-                self.tsi.log(result,True)
+                self.tsi.setResult(result, True)
                 return result
 
             # для реализации механизма шаблонов
@@ -720,18 +701,16 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             if t_node is not None:
                 logfile = self.tsi.get_logfile()
-                info = make_test_result()
+                info = make_info_result("go to %s='%s'" % (t_field, t_name),'LINK')
                 info['comment'] = t_comment
-                info['text'] = "go to %s='%s'" % (t_field, t_name)
-                info['type'] = 'LINK'
-                self.tsi.log(info, False)
+                self.tsi.setResult(info, False)
                 res = self.play_test(xml, t_node, logfile, r_list)
                 self.del_from_replace(r_list)
                 return res
 
             result['result'] = t_FAILED
             result['text'] = "Not found test (%s='%s')" % (t_field, t_name)
-            self.tsi.log(result, True)
+            self.tsi.setResult(result, True)
             return result
 
         if test == "OUTLINK":
@@ -740,7 +719,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if t_file == "":
                 result['result'] = t_FAILED
                 result['text'] = "Unknown file. Use file=''"
-                self.tsi.log(result, True)
+                self.tsi.setResult(result, True)
                 return result
 
             t_link = to_str(self.replace(node.prop("link")))
@@ -762,7 +741,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 except UException, e:
                     result['result'] = t_FAILED
                     result['text'] = "Can`t open file='%s'." % (t_file)
-                    self.tsi.log(result, True)
+                    self.tsi.setResult(result, True)
+                    return result
+                except TestSuiteException, e:
+                    result['result'] = t_FAILED
+                    result['text'] = "Can`t open file='%s'." % (t_file)
+                    self.tsi.setResult(result, True)
                     return result
 
             t_dir = os.path.dirname(os.path.realpath(t_file))
@@ -772,11 +756,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 self.call_level += 1
                 os.chdir(t_dir)
                 if t_link == "ALL":
-                    info = make_test_result()
+                    info = make_default_result()
                     info['text'] = "go to file='%s' play ALL" % (t_file)
                     info['comment'] = t_comment
                     info['type'] = 'OUTLINK'
-                    self.tsi.log(info, False)
+                    self.tsi.setResult(info, False)
                     self.tsi.nrecur += 1
                     res = self.play_xml(t_xml, r_list)
                     self.tsi.nrecur -= 1
@@ -787,11 +771,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     t_node = self.find_test(t_xml, t_name, t_field)
                     if t_node is not None:
                         logfile = self.tsi.get_logfile()
-                        info = make_test_result()
+                        info = make_default_result()
                         info['text'] = "go to file='%s' %s='%s'" % (t_file, t_field, t_name)
                         info['comment'] = t_comment
                         info['type'] = 'OUTLINK'
-                        self.tsi.log(info, False)
+                        self.tsi.setResult(info, False)
                         self.tsi.nrecur += 1
                         # т.к. вызываем только один тест из всего xml, приходиться самостоятельно добавлять global_replace
                         self.add_to_global_replace(t_xml.global_replace_list)
@@ -804,7 +788,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                         result['result'] = t_FAILED
                         result['text'] = "Not found in file='%s' test (%s='%s')" % (t_file, t_field, t_name)
                         self.del_from_replace(r_list)
-                        self.tsi.log(result, True)
+                        self.tsi.setResult(result, True)
                         return result
 
             finally:
@@ -812,7 +796,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         result['result'] = t_FAILED
         result['text'] = "(check_item): Unknown item type='%s'" % test
-        self.tsi.log(result, True)
+        self.tsi.setResult(result, True)
         return result
 
     @staticmethod
@@ -863,11 +847,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 for t, t in self.reset_thread_dict.items():
                     if t.isAlive():
                         break_flag = False
-                        alog = make_test_result()
+                        alog = make_default_result()
                         alog['comment'] = ''
                         alog['text'] = "waiting for finish reset value thread '%s'" % (t.getName())
                         alog['type'] = 'WAIT'
-                        self.tsi.actlog(alog,False)
+                        self.tsi.setActionResult(alog, False)
                         # t.join() # join - опасен тем, что можно застрять навечно..
             finally:
                 self.reset_thread_event.set()
@@ -892,7 +876,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         :param node: xmlnode of current item of test
         :return: result [t_XXXX]
         """
-        result = make_test_result()
+        result = make_default_result()
 
         result['item_type'] = 'action'
         result['type'] = 'SET'
@@ -911,7 +895,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if ui is None:
             result['text'] = 'FAILED: Unknown CONFIG..'
             result['result'] = t_FAILED
-            self.tsi.actlog(result, True)
+            self.tsi.setActionResult(result, True)
             return result
 
         s_id = None
@@ -921,7 +905,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if t_ignore:
             result['text'] = '%s' % str(node)
             result['result'] = t_IGNORE
-            self.tsi.actlog(result, False)
+            self.tsi.setActionResult(result, False)
             return result
 
         if result['type'] == 'SET':
@@ -930,7 +914,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if len(clist) == 0:
                 result['text'] = "FAILED: Unknown set='%s'.." % tname
                 result['result'] = t_FAILED
-                self.tsi.actlog(result, True)
+                self.tsi.setActionResult(result, True)
                 return result
 
             if len(clist) == 1:
@@ -960,7 +944,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if result['type'] == "MULTISET":
             result['result'] = t_UNKNOWN
             result['text'] = to_str(self.replace(node.prop("set"))) # '...'
-            self.tsi.actlog(result, False)
+            self.tsi.setActionResult(result, False)
             # для реализации механизма шаблонов
             # сперва разбиваем список на эелементы, подменяем каждый из них
             # собираем обратно, и уже разбираем как полагается (с разбивкой на id и val)
@@ -991,22 +975,22 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         result['result'] = t_FAILED
         result['text'] = '(action_item): Unknown action command=\'%s\'' % result['type']
         result['type'] = 'UNKNOWN'
-        self.tsi.actlog(result, True)
+        self.tsi.setActionResult(result, True)
         return result
 
     def on_reset_timer(self, s_id, s_val, s_msec, ui):
 
-        act = make_test_result()
+        act = make_default_result()
         act['type'] = 'RESET'
         act['text'] = str('%10s: msec=%d id=%s val=%d' % ("on_reset_timer:", s_msec, s_id, s_val))
-        self.tsi.actlog(act,False)
+        self.tsi.setActionResult(act, False)
         try:
             self.tsi.setValue(s_id, s_val, "", ui)
             act['result'] = t_PASSED
         except TestSuiteException, e:
             act['result'] = t_FAILED
             act['text'] = "FAILED: %s" % e.getError
-            self.tsi.actlog(act, False)
+            self.tsi.setActionResult(act, False)
         finally:
             if sys.version_info[1] == 5:
                 self.del_reset_thread(threading.currentThread().getName())
@@ -1019,11 +1003,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if tnode is not None:
             return tnode.children
 
-        fail = make_test_result()
+        fail = make_default_result()
         fail['text'] = 'Can`t find children items for <test>'
         fail['type'] = '(TestSuiteXMLPlayer)'
         fail['result'] = t_FAILED
-        self.tsi.log(fail, True)
+        self.tsi.setResult(fail, True)
         return None
 
     def begin_tests(self, xml):
@@ -1033,11 +1017,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             firstnode = testnode.children
             return [testnode, firstnode]
 
-        fail = make_test_result()
+        fail = make_default_result()
         fail['text'] = 'Can`t find begin node <test>'
         fail['type'] = '(TestSuiteXMLPlayer)'
         fail['result'] = t_FAILED
-        self.tsi.log(fail, True)
+        self.tsi.setResult(fail, True)
         return [None, None]
 
     def print_result_report(self, results):
@@ -1064,8 +1048,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             ttime = 0
             for res in results:
                 td = datetime.timedelta(0, res['time'])
-                print '%s. [%s] - %s /%s/' % (
-                    string.rjust(str(i), 3), self.tsi.colorize_result(res['result']), res['name'], td)
+                print '%s. [%s] - %40s |%s|' % (
+                    string.rjust(str(i), 3), self.tsi.colorize_result(res['result']), string.ljust(res['name'],45), td)
                 i = i + 1
                 ttime = ttime + res['time']
 
@@ -1154,7 +1138,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         node = self.xml.firstNode(snode.children)
 
-        result = make_test_result()
+        result = make_default_result()
         while node is not None:
             try:
                 # cp = ChildProcess(node)
@@ -1188,7 +1172,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             resOK = True
         except TestSuiteException, e:
             ttime = e.getFinishTime - tm_start
-            res = make_test_result()
+            res = make_default_result()
             res['xmlnode'] = testnode
             res['result'] = t_FAILED
             res['name'] = to_str(self.replace(testnode.prop('name')))
@@ -1230,7 +1214,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 testnode = xml.nextNode(testnode)
 
         except TestSuiteException, e:
-            item = make_test_result()
+            item = make_default_result()
             item['name'] = to_str(self.replace(testnode.prop('name')))
             item['time'] = e.getFinishTime - tm_start
             item['result'] = t_FAILED
@@ -1247,7 +1231,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.del_from_test_replace(spec_replace_list)
         self.del_from_global_replace(xml.global_replace_list)
         ret = self.get_cumulative_result(results)
-        item = make_test_result()
+        item = make_default_result()
         item['name'] = ''
         item['time'] = time.time() - tm_all_start
         item['result'] = ret['result']
@@ -1278,11 +1262,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         for tprop, tname in tlist:
             tnode = self.find_test(xml, tname, tprop)
             if tnode is None:
-                fail = make_test_result()
+                fail = make_default_result()
                 fail['text'] = 'Can`t find test %s=\'%s\'' % (tprop, tname)
                 fail['type'] = '(TestSuiteXMLPlayer)'
                 fail['result'] = t_FAILED
-                self.tsi.log(fail, True)
+                self.tsi.setResult(fail, True)
                 return
 
         pmonitor = self.get_pmonitor(xml)
@@ -1297,7 +1281,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             resOK = True
         except TestSuiteException, ex:
-            item = make_test_result()
+            item = make_default_result()
             item['name'] = to_str(self.replace(testnode.prop('name')))
             item['time'] = e.getFinishTime - tm_start
             item['result'] = t_FAILED
@@ -1327,7 +1311,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         elif inode.name == "compare":
             return self.compare_item(inode, xml)
 
-        ret = make_test_result()
+        ret = make_default_result()
         ret['result'] = t_UNKNOWN
         ret['text'] = "UNKNOWN ACTION TYPE"
         return ret
@@ -1336,7 +1320,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         self.add_to_test_replace(spec_replace_list)
 
-        result = make_test_result()
+        result = make_default_result()
         result['name'] = to_str(self.replace(testnode.prop('name')))
         result['comment'] = to_str(self.replace(testnode.prop('comment')))
         result['filename'] = xml.getFileName()
@@ -1357,7 +1341,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             result['time'] = 0
             result['text'] = "'%s'" % result['name']
             result['type'] = t_IGNORE
-            self.tsi.log(result, False)
+            self.tsi.setResult(result, False)
             self.del_from_test_replace(spec_replace_list)
             # сохраняем ещё ссылку на предыдущий элемент
             result['prev'] = prevStackItem
@@ -1384,11 +1368,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         #           print "---------------------------------------------------------------------------------------------------------------------"
 
         self.tsi.ntab = False
-        info = make_test_result()
-        info['type'] = 'BEGIN'
-        info['text'] = "'%s'" % result['name']
+        info = make_info_result("'%s'" % result['name'],'BEGIN')
         info['comment'] = result['comment']
-        self.tsi.log(info, False)
+        self.tsi.setResult(info, False)
         tm_start = time.time()
         tm_finish = tm_start
         try:
@@ -1402,6 +1384,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 curnode = xml.nextNode(curnode)
 
         except TestSuiteException, e:
+            result['result'] = t_FAILED
             result['items'].append(e.failed_item)
             tm_finish = e.getFinishTime
             # ttime = tm_finish - tm_start
@@ -1418,11 +1401,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             td = datetime.timedelta(0, ttime)
             result['time'] = ttime
             self.tsi.ntab = False
-            info = make_test_result()
+            info = make_default_result()
             info['type'] = 'FINISH'
             info['text'] = "'%s' /%s/" % (result['name'], td)
             info['result'] = tres['result']
-            self.tsi.log(info, False)
+            self.tsi.setResult(info, False)
 
             result['result'] = tres['result']
             result['text'] = tres['text']
@@ -1457,10 +1440,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             else:
                 u_res += 1
 
-            if tres.__class__.__name__ == 'list':
-                l_err = tres['text']  # просто фиксируем последнюю ошибку (пока-что)
-                t_res += tres['time']
-
         if w_res > 0:
             c_res = t_WARNING
         elif f_res > 0 and p_res == 0 and i_res == 0:
@@ -1469,9 +1448,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             c_res = t_PASSED
         elif i_res > 0 and p_res == 0 and f_res == 0:
             c_res = t_IGNORE
+        elif f_res > 0:
+            c_res = t_WARNING
 
-        # print "cumulative: RES=%s (f_res=%d p_res=%d i_res=%d w_res=%d unknown=%d) for %s"%(c_res,f_res,p_res,i_res,w_res,u_res,str(results))
-        ret = make_test_result()
+        # print "cumulative: RES=%s (f_res=%d p_res=%d i_res=%d w_res=%d unknown=%d) for %s"%(c_res,f_res,p_res,i_res,w_res,u_res,str(tres))
+        ret = make_default_result()
         ret['result'] = c_res
         ret['text'] = l_err
         ret['time'] = t_res
@@ -1542,6 +1523,7 @@ if __name__ == "__main__":
             print '--show-action-log         - Show actions log'
             print '--show-result-report      - Show result report '
             print '--show-result-only        - Show only result report (ignore --show-action-log, --show-test-log)'
+            print '--show-filename-in-report - Show filename in result report'
             print ''
             print '--show-comments           - Display all comments (test,check,action)'
             print '--show-numline            - Display line numbers'
@@ -1549,19 +1531,21 @@ if __name__ == "__main__":
             print '--show-test-comment       - Display test comment'
             print '--show-test-type          - Display the test type'
             print '--hide-time               - Hide elasped time'
-            print ''
             print '--col-comment-width val   - Width for column "comment"'
             print ''
-            print '--test-name test1,prop2=test2,prop3=test3,...- Run tests from list. By default prop=name'
-            print '--ignore-run-list         - Ignore <RunList>'
-            print '--ignore-nodes            - Do not use \'@node\''
-            print '--default-timeout msec        - Default <check timeout=\'..\' ../>.\''
-            print '--default-check-pause msec    - Default <check check_pause=\'..\' ../>.\''
-            print '--junit filename          - Save report file. JUnit format.'
-            print '--no-coloring-output      - Disable colorization output'
-            print '--print-calltrace         - Display test call trace with test file name. If test-suite FAILED.'
-            print '--print-calltrace-limit N - How many recent calls to print. Default: 20.'
-            print '--supplier-name name      - ObjectName for testsuite under which the value is stored in the SM. Default: AdminID.'
+            print '--test-name test1,prop2=test2,prop3=test3,...  - Run tests from list. By default prop=name'
+            print '--ignore-run-list              - Ignore <RunList>'
+            print '--ignore-nodes                 - Do not use \'@node\''
+            print '--default-timeout msec         - Default <check timeout=\'..\' ../>.\''
+            print '--default-check-pause msec     - Default <check check_pause=\'..\' ../>.\''
+            print '--junit filename               - Disable colorization output'
+            print '--print-calltrace              - Display test call trace with test file name. If test-suite FAILED.'
+            print '--print-calltrace-limit N      - How many recent calls to print. Default: 20.'
+            print '--supplier-name name           - ObjectName for testsuite under which the value is stored in the SM. Default: AdminID.'
+            print ''
+            print "--check-scenario               - Enable 'check scenario mode'. Ignore for all tests result. Only check parameters"
+            print "--check-scenario-ignore-failed - Enable 'check scenario mode'. Ignore for all tests result and checks"
+            print ''
             exit(0)
 
         testfile = ts.getArgParam('--testfile', "")
@@ -1594,6 +1578,8 @@ if __name__ == "__main__":
         print_calltrace = ts.checkArgParam('--print-calltrace', False)
         print_calltrace_limit = ts.getArgInt('--print-calltrace-limit', 20)
         supplier_name = ts.getArgParam("--supplier-name", "")
+        check_scenario = ts.getArgParam("--check-scenario",False)
+        check_scenario_ignorefailed = ts.getArgParam("--check-scenario-ignore-failed", False)
 
         cf = conflist.split(',')
         ts.init_testsuite(cf, show_log, show_actlog)
@@ -1606,6 +1592,13 @@ if __name__ == "__main__":
         ts.set_col_comment_width(col_comment_width)
         ts.set_show_test_comment(show_test_comment)
         ts.no_coloring_output = coloring_out
+        ts.set_check_scenario_mode(check_scenario)
+        if check_scenario_ignorefailed:
+            ts.set_check_scenario_mode(True)
+            ts.set_check_scenario_mode_ignore_failed(True)
+
+        if check_scenario or check_scenario_ignorefailed:
+            ignore_runlist = True
 
         player = TestSuiteXMLPlayer(ts, testfile, ignore_runlist)
         player.show_result_report = show_result

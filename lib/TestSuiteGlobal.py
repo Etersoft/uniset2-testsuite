@@ -13,6 +13,34 @@ t_PAUSE = 'PAUSE'
 t_WARNING = 'WARNING'
 t_UNKNOWN = 'UNKNOWN'
 
+def make_default_result():
+    result = dict()
+    result['name'] = ''
+    result['comment'] = ''
+    result['call_level'] = None
+    result['result'] = t_NONE
+    result['text'] = ''
+    result['items'] = []
+    result['xmlnode'] = None
+    result['filename'] = ''
+    result['prev'] = None
+    result['item_type'] = '' # action,check,test
+
+    return result
+
+def make_fail_result(text, type='(TestSuiteXMLPlayer)'):
+
+    fail = make_default_result()
+    fail['result'] = t_FAILED
+    fail['text'] = text
+    fail['type'] = type
+    return fail
+
+def make_info_result(text, type='(TestSuiteXMLPlayer)'):
+    info = make_default_result()
+    info['type'] = type
+    info['text'] = text
+    return info
 
 # Получение списка пар [key,val] из строки "key1:val1,key2:val2,.."
 def get_replace_list(raw_str):

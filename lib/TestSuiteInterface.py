@@ -55,6 +55,8 @@ class TestSuiteInterface():
         self.ntab = False
         self.no_coloring_output = False
         self.supplierID = uniset2.DefaultSupplerID
+        self.checkScenarioMode = False
+        self.checkScenarioMode_ignorefailed = False
 
         # "CHECK : 00:00:05 [  0.016] : 2015-03-14 02:46:06 :[ PASSED] :  FINISH: 'Global replace' /0:00:00.000837/"
         self.re_log = re.compile(
@@ -111,7 +113,7 @@ class TestSuiteInterface():
                     self.add_uniset_config(s[1], s[0])
 
         except UException, e:
-            self.log(t_FAILED, '(init_testsuite): ' + str(e.getError()), "", True)
+            self.setResult(make_fail_result('(init_testsuite): ' + str(e.getError())),True)
             raise e
 
     def get_config_list(self):
@@ -129,9 +131,7 @@ class TestSuiteInterface():
 
         if alias in self.ui_list:
             if not already_ignore:
-                self.log(t_FAILED,
-                         '(add_uniset_config): %s already added..(Ignore add \'%s@%s\')' % (alias, alias, xmlfile), "",
-                         True)
+                self.setResult(make_fail_result('(add_uniset_config): %s already added..(Ignore add \'%s@%s\')' % (alias, alias, xmlfile)),True)
                 return None
             return self.ui_list[alias]
 
@@ -145,23 +145,13 @@ class TestSuiteInterface():
     def add_modbus_config(self, mbslave, alias, already_ignore=True):
         if alias in self.ui_list:
             if not already_ignore:
-                item = dict()
-                item['result'] = t_FAILED
-                item['text'] = '(add_modbus_config): %s already added..(Ignore add \'%s@%s\')' % (alias, alias, mbslave)
-                item['type'] = ''
-                item['comment'] = ''
-                self.log(item,True)
+                self.setResult(make_fail_result('(add_modbus_config): %s already added..(Ignore add \'%s@%s\')' % (alias, alias, mbslave)), True)
                 return None
             return self.ui_list[alias]
 
         ip, port = get_mbslave_param(mbslave)
         if ip is None:
-            item = dict()
-            item['result'] = t_FAILED
-            item['text'] = '(add_modbus_config): Failed get ip:port!  mbslave=\'%s\'' % (mbslave)
-            item['type'] = ''
-            item['comment'] = ''
-            self.log(item, True)
+            self.setResult(make_fail_result('(add_modbus_config): Failed get ip:port!  mbslave=\'%s\'' % (mbslave)), True)
             return None
 
         ui = UInterface()
@@ -177,12 +167,7 @@ class TestSuiteInterface():
     def set_default_config(self, xmlfile, already_ignore=True):
         if xmlfile in self.ui_list:
             if not already_ignore:
-                item = dict()
-                item['result'] = t_FAILED
-                item['text'] = '(set_default_config): %s already added..(Ignore add..)' % (xmlfile)
-                item['type'] = ''
-                item['comment'] = ''
-                self.log(item, True)
+                self.setResult(make_fail_result('(set_default_config): %s already added..(Ignore add..)' % (xmlfile)), True)
                 return False
 
             ui = UInterface()
@@ -270,6 +255,15 @@ class TestSuiteInterface():
 
     def start_time(self):
         self.beg_time = time.time()
+
+    def isCheckScenarioMode(self):
+        return self.checkScenarioMode
+
+    def set_check_scenario_mode(self, set):
+        self.checkScenarioMode = set
+
+    def set_check_scenario_mode_ignore_failed(self, set):
+        self.checkScenarioMode_ignorefailed = set
 
     def set_notime(self, state):
         self.log_hide_time = state
@@ -370,6 +364,7 @@ class TestSuiteInterface():
         return self.colorize(t_result,"%7s"%t_result)
 
     def format_comment(self, txt):
+        t_comment = txt
         try:
             t_comment = unicode(txt, "UTF-8", errors='replace')
         except UnicodeDecodeError:
@@ -493,7 +488,7 @@ class TestSuiteInterface():
             if self.log_flush:
                 sys.stdout.flush()
 
-    def log(self, item, throw=False):
+    def setResult(self, item, throw=False):
 
         t_comment = item['comment']
         t_test = item['type']
@@ -512,12 +507,15 @@ class TestSuiteInterface():
             self.print_log(t_result, t_test, txt, t_comment)
 
         if self.log_callback:
-            self.log_callback(t_result, t_test, txt, t_comment, throw)
+            self.log_callback(t_result, t_test, txt, t_comment)
+
+        if self.isCheckScenarioMode() and self.checkScenarioMode_ignorefailed:
+            return
 
         if False == self.ignorefailed and True == throw:
-            raise TestSuiteException(txt)
+            raise TestSuiteException(txt,item=item)
 
-    def actlog(self, act, throw=False):
+    def setActionResult(self, act, throw=False):
 
         t_comment = act['comment']
         t_act = act['type']
@@ -536,10 +534,13 @@ class TestSuiteInterface():
             self.print_actlog(t_result, t_act, txt, t_comment)
 
         if self.actlog_callback:
-            self.actlog_callback(t_result, t_act, txt, t_comment, throw)
+            self.actlog_callback(t_result, t_act, txt, t_comment)
+
+        if self.isCheckScenarioMode() and self.checkScenarioMode_ignorefailed:
+            return
 
         if self.ignorefailed == False and throw == True:
-            raise TestSuiteException(txt,-1,act)
+            raise TestSuiteException(txt,item=act)
 
     def get_ui(self, cf):
         try:
@@ -549,19 +550,24 @@ class TestSuiteInterface():
             return self.ui_list[cf]
 
         except KeyError, ValueError:
-            self.log(t_FAILED, 'UI','(get_ui): Unknown cf=\'%s\'' % cf, "", True)
+            self.setResult(make_fail_result('(get_ui): Unknown cf=\'%s\'' % cf,'UI'), True)
 
         return None
 
     def getValue(self, s_id, ui=None):
+
         if ui is None:
             ui = self.default_ui
+
+        if self.isCheckScenarioMode():
+            ret,err = ui.validateParam(s_id)
+            if ret == False:
+                raise UValidateError(err) # raise TestSuiteException(err)
+            return 0
 
         return ui.getValue(s_id)
 
     def isTrue(self, s_id, t_out, t_check, item, ui=None):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'TRUE'
 
@@ -580,10 +586,10 @@ class TestSuiteInterface():
             if self.log_flush:
                 sys.stdout.flush()
             while t_tick >= 0:
-                if ui.getValue(s_id) == True:
+                if self.getValue(s_id,ui) == True or self.isCheckScenarioMode():
                     item['result'] = t_PASSED
                     item['text'] = '%s=true' % s_id
-                    self.log(item, False)
+                    self.setResult(item, False)
                     return True
 
                 time.sleep(t_sleep)
@@ -591,18 +597,16 @@ class TestSuiteInterface():
 
             item['result'] = t_FAILED
             item['text'] = '%s!=true timeout=%d msec' % (s_id, t_out)
-            self.log(item, True)
+            self.setResult(item, True)
 
         except UException, e:
             item['result'] = t_FAILED
             item['text'] = '(%s=true) error: %s' % (s_id, e.getError())
-            self.log(item, True)
+            self.setResult(item, True)
 
         return False
 
     def holdTrue(self, s_id, t_out, t_check, item, ui=None):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'TRUE'
         t_tick = round(t_out / t_check)
@@ -620,10 +624,10 @@ class TestSuiteInterface():
             if self.log_flush:
                 sys.stdout.flush()
             while t_tick >= 0:
-                if ui.getValue(s_id) == False:
+                if self.getValue(s_id,ui) == False or self.isCheckScenarioMode():
                     item['result'] = t_FAILED
                     item['text'] = 'HOLD %s=true holdtime=%d msec' % (s_id, t_out)
-                    self.log(item, True)
+                    self.setResult(item, True)
                     return False
 
                 time.sleep(t_sleep)
@@ -631,19 +635,17 @@ class TestSuiteInterface():
 
             item['result'] = t_PASSED
             item['text'] = 'HOLD %s=true holdtime=%d' % (s_id, t_out)
-            self.log(item, False)
+            self.setResult(item, False)
             return True
 
         except UException, e:
             item['result'] = t_FAILED
             item['text'] = 'HOLD (%s=true) error: %s' % (s_id, e.getError())
-            self.log(item, True)
+            self.setResult(item, True)
 
         return False
 
     def isFalse(self, s_id, t_out, t_check, item, ui=None):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'FALSE'
 
@@ -662,10 +664,10 @@ class TestSuiteInterface():
                 sys.stdout.flush()
             while t_tick >= 0:
 
-                if ui.getValue(s_id) == 0:
+                if self.getValue(s_id,ui) == 0 or self.isCheckScenarioMode():
                     item['result'] = t_PASSED
                     item['text'] = '%s=false' % s_id
-                    self.log(item, False)
+                    self.setResult(item, False)
                     return True
 
                 time.sleep(t_sleep)
@@ -673,18 +675,16 @@ class TestSuiteInterface():
 
             item['result'] = t_FAILED
             item['text'] = '%s!=false timeout=%d msec' % (s_id, t_out)
-            self.log(item, True)
+            self.setResult(item, True)
 
         except UException, e:
             item['result'] = t_FAILED
             item['text'] = '(%s=false) error: %s' % (s_id, e.getError())
-            self.log(item, True)
+            self.setResult(item, True)
 
         return False
 
     def holdFalse(self, s_id, t_out, t_check, item, ui=None):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'FALSE'
         t_tick = round(t_out / t_check)
@@ -702,10 +702,10 @@ class TestSuiteInterface():
                 sys.stdout.flush()
             while t_tick >= 0:
 
-                if ui.getValue(s_id) == True:
+                if ui.getValue(s_id) == True and self.isCheckScenarioMode() == False:
                     item['result'] = t_FAILED
                     item['text'] = 'HOLD %s!=false holdtime=%d msec' % (s_id, t_out)
-                    self.log(item, True)
+                    self.setResult(item, True)
                     return False
 
                 time.sleep(t_sleep)
@@ -713,19 +713,17 @@ class TestSuiteInterface():
 
             item['result'] = t_PASSED
             item['text'] = 'HOLD %s=false holdtime=%d msec' % s_id
-            self.log(item, False)
+            self.setResult(item, False)
             return True
 
         except UException, e:
             item['result'] = t_FAILED
             item['text'] = 'HOLD (%s=false) error: %s' % (s_id, e.getError())
-            self.log(item, True)
+            self.setResult(item, True)
 
         return False
 
     def isEqual(self, s_id, val, t_out, t_check, item, ui=None):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'EQUAL'
         t_tick = round(t_out / t_check)
@@ -747,19 +745,19 @@ class TestSuiteInterface():
             v = 0  # ui.getValue(s_id)
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = ui.getValue(s_id[0])
-                    v2 = ui.getValue(s_id[1])
-                    if v1 == v2:
+                    v1 = self.getValue(s_id[0],ui)
+                    v2 = self.getValue(s_id[1],ui)
+                    if v1 == v2 or self.isCheckScenarioMode():
                         item['result'] = t_PASSED
                         item['text'] = '%s(%d)=%s(%d)' % (s_id[0], v1, s_id[1], v2)
-                        self.log(item, False)
+                        self.setResult(item, False)
                         return True
                 else:
-                    v = ui.getValue(s_id)
-                    if v == val:
+                    v = self.getValue(s_id,ui)
+                    if v == val or self.isCheckScenarioMode():
                         item['result'] = t_PASSED
                         item['text'] = '%s=%d' % (s_id, val)
-                        self.log(item, False)
+                        self.setResult(item, False)
                         return True
 
                 time.sleep(t_sleep)
@@ -767,13 +765,13 @@ class TestSuiteInterface():
 
             item['result'] = t_FAILED
             item['text'] = '%s=%d' % (s_id, val)
-            self.log(item, False)
+            self.setResult(item, False)
             if len(s_id) == 2:
                 item['text'] = '%s(%d)=%s(%d) timeout=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
             else:
                 item['text'] = '%s=%d != %d timeout=%d msec' % (s_id, v, val, t_out)
 
-            self.log(item,True)
+            self.setResult(item, True)
 
         except UException, e:
             if len(s_id) == 2:
@@ -781,14 +779,12 @@ class TestSuiteInterface():
             else:
                 item['text'] = '(%s=%d) error: %s' % (s_id, val, e.getError())
             item['result'] = t_FAILED
-            self.log(item, True)
+
+            self.setResult(item, True)
 
         return False
 
     def holdEqual(self, s_id, val, t_out, t_check, item, ui=None):
-
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'EQUAL'
         t_tick = round(t_out / t_check)
@@ -809,20 +805,29 @@ class TestSuiteInterface():
 
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = ui.getValue(s_id[0])
-                    v2 = ui.getValue(s_id[1])
+                    v1 = self.getValue(s_id[0],ui)
+                    v2 = self.getValue(s_id[1],ui)
                     if v1 != v2:
+                        if self.isCheckScenarioMode() == True:
+                            break
+
                         item['result'] = t_FAILED
                         item['text'] = 'HOLD %s(%d) != %s(%d) holdtime=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
-                        self.log(item, True)
+                        self.setResult(item, True)
                         return False
                 else:
-                    v1 = ui.getValue(s_id)
+                    v1 = self.getValue(s_id,ui)
                     if v1 != val:
+                        if self.isCheckScenarioMode() == False:
+                            break;
+
                         item['result'] = t_FAILED
                         item['text'] = 'HOLD %s=%d != %d holdtime=%d msec' % (s_id, v1, val, t_out)
-                        self.log(item, True)
+                        self.setResult(item, True)
                         return False
+
+                if self.isCheckScenarioMode():
+                    break
 
                 time.sleep(t_sleep)
                 t_tick -= 1
@@ -833,7 +838,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD %s=%d  holdtime=%d' % (s_id, val, t_out)
 
-            self.log(item, False)
+            self.setResult(item, False)
             return True
 
         except UException, e:
@@ -842,13 +847,12 @@ class TestSuiteInterface():
                 item['text'] = 'HOLD %s(%d) != %s(%d) holdtime=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
             else:
                 item['text'] = 'HOLD (%s=%d) error: %s' % (s_id, val, e.getError())
-            self.log(item, True)
+
+            self.setResult(item, True)
 
         return False
 
     def isNotEqual(self, s_id, val, t_out, t_check, item, ui=None):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'NOTEQUAL'
 
@@ -872,19 +876,19 @@ class TestSuiteInterface():
             v = 0  # ui.getValue(s_id)
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = ui.getValue(s_id[0])
-                    v2 = ui.getValue(s_id[1])
-                    if v1 != v2:
+                    v1 = self.getValue(s_id[0],ui)
+                    v2 = self.getValue(s_id[1],ui)
+                    if v1 != v2 or self.isCheckScenarioMode():
                         item['result'] = t_PASSED
                         item['text'] = '%s(%d)!=%s(%d)' % (s_id[0], v1, s_id[1], v2)
-                        self.log(item, False)
+                        self.setResult(item, False)
                         return True
                 else:
-                    v = ui.getValue(s_id)
-                    if v != val:
+                    v = self.getValue(s_id,ui)
+                    if v != val or self.isCheckScenarioMode():
                         item['result'] = t_PASSED
                         item['text'] = '%s!=%d' % (s_id, val)
-                        self.log(item, False)
+                        self.setResult(item, False)
                         return True
 
                 time.sleep(t_sleep)
@@ -896,7 +900,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '%s=%d != %d timeout=%d msec' % (s_id, v, val, t_out)
 
-            self.log(item, True)
+            self.setResult(item, True)
 
         except UException, e:
             item['result'] = t_FAILED
@@ -905,13 +909,11 @@ class TestSuiteInterface():
             else:
                 item['text'] = '(%s=%d) error: %s' % (s_id, val, e.getError())
 
-            self.log(item, True)
+            self.setResult(item, True)
 
         return False
 
     def holdNotEqual(self, s_id, val, t_out, t_check, item, ui=None):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'NOTEQUAL'
 
@@ -935,20 +937,23 @@ class TestSuiteInterface():
             v = 0  # ui.getValue(s_id)
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = ui.getValue(s_id[0])
-                    v2 = ui.getValue(s_id[1])
-                    if v1 == v2:
+                    v1 = self.getValue(s_id[0],ui)
+                    v2 = self.getValue(s_id[1],ui)
+                    if v1 == v2 and self.isCheckScenarioMode() == False:
                         item['result'] = t_FAILED
                         item['text'] = 'HOLD %s(%d) != %s(%d) holdtime=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
-                        self.log(item, True)
+                        self.setResult(item, True)
                         return False
                 else:
                     v = ui.getValue(s_id)
                     if v == val:
                         item['result'] = t_FAILED
                         item['text'] = 'HOLD %s=%d != %d holdtime=%d msec' % (s_id, v, val, t_out)
-                        self.log(item, True)
+                        self.setResult(item, True)
                         return False
+
+                if self.isCheckScenarioMode():
+                    break
 
                 time.sleep(t_sleep)
                 t_tick -= 1
@@ -959,7 +964,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD %s!=%d holdtime=%d' % (s_id, val, t_out)
 
-            self.log(item, False)
+            self.setResult(item, False)
             return True
 
         except UException, e:
@@ -968,13 +973,12 @@ class TestSuiteInterface():
                 item['text'] = 'HOLD %s(%d) != %s(%d) holdtime=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
             else:
                 item['text'] = '(%s=%d) error: %s' % (s_id, val, e.getError())
-            self.log(item, True)
+
+            self.setResult(item, True)
 
         return False
 
     def isGreat(self, s_id, val, t_out, t_check, item, ui=None, cond='>='):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'GREAT'
         t_tick = round(t_out / t_check)
@@ -997,19 +1001,19 @@ class TestSuiteInterface():
             while t_tick >= 0:
 
                 if len(s_id) == 2:
-                    v1 = ui.getValue(s_id[0])
-                    v2 = ui.getValue(s_id[1])
-                    if (cond == '>=' and v1 >= v2) or (cond == '>' and v1 > v2):
+                    v1 = self.getValue(s_id[0],ui)
+                    v2 = self.getValue(s_id[1],ui)
+                    if (cond == '>=' and v1 >= v2) or (cond == '>' and v1 > v2) or self.isCheckScenarioMode():
                         item['result'] = t_PASSED
                         item['text'] = '%s(%d) %s %s(%d)' % (s_id[0], v1, cond, s_id[1],v2)
-                        self.log(item, False)
+                        self.setResult(item, False)
                         return True
                 else:
-                    v = ui.getValue(s_id)
-                    if (cond == '>=' and v >= val) or (cond == '>' and v > val):
+                    v = self.getValue(s_id,ui)
+                    if (cond == '>=' and v >= val) or (cond == '>' and v > val) or self.isCheckScenarioMode():
                         item['result'] = t_PASSED
                         item['text'] = '%s=%s %s %d' % (s_id, v, cond, val)
-                        self.log(item, False)
+                        self.setResult(item, False)
                         return True
 
                 time.sleep(t_sleep)
@@ -1021,7 +1025,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '%s=%d not %s %d timeout=%d msec' % (s_id, v, cond, val, t_out)
 
-            self.log(item, True)
+            self.setResult(item, True)
 
         except UException, e:
             item['result'] = t_FAILED
@@ -1030,13 +1034,11 @@ class TestSuiteInterface():
             else:
                 item['text'] = '(%s%s%d) error: %s' % (s_id, cond, val, e.getError())
 
-            self.log(item, True)
+            self.setResult(item, True)
 
         return False
 
     def holdGreat(self, s_id, val, t_out, t_check, item, ui=None, cond='>='):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'GREAT'
         t_tick = round(t_out / t_check)
@@ -1057,20 +1059,23 @@ class TestSuiteInterface():
                 sys.stdout.flush()
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = ui.getValue(s_id[0])
-                    v2 = ui.getValue(s_id[1])
-                    if (cond == '>=' and v1 < v2) or (cond == '>' and v1 <= v2):
+                    v1 = self.getValue(s_id[0],ui)
+                    v2 = self.getValue(s_id[1],ui)
+                    if self.isCheckScenarioMode() == False and ((cond == '>=' and v1 < v2) or (cond == '>' and v1 <= v2)):
                         item['result'] = t_FAILED
                         item['text'] = 'HOLD %s(%d) not %s %s(%d) holdtime=%d msec' % (s_id[0], v1, cond, s_id[1],v2, t_out)
-                        self.log(item, True)
+                        self.setResult(item, True)
                         return False
                 else:
-                    v = ui.getValue(s_id)
-                    if (cond == '>=' and v < val) or (cond == '>' and v <= val):
+                    v = self.getValue(s_id,ui)
+                    if self.isCheckScenarioMode() == False and ((cond == '>=' and v < val) or (cond == '>' and v <= val)):
                         item['result'] = t_FAILED
                         item['text'] = 'HOLD %s=%d not %s %d holdtime=%d msec' % (s_id, v, cond, val, t_out)
-                        self.log(item, True)
+                        self.setResult(item, True)
                         return False
+
+                if self.isCheckScenarioMode():
+                    break
 
                 time.sleep(t_sleep)
                 t_tick -= 1
@@ -1081,7 +1086,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD %s=%s %s %d' % (s_id, v, cond, val)
 
-            self.log(item, False)
+            self.setResult(item, False)
             return True
 
         except UException, e:
@@ -1091,13 +1096,11 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD (%s%s%d) error: %s' % (s_id, cond, val, e.getError())
 
-            self.log(item, True)
+            self.setResult(item, True)
 
         return False
 
     def isLess(self, s_id, val, t_out, t_check, item, ui=None, cond='<='):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'LESS'
         t_tick = round(t_out / t_check)
@@ -1118,19 +1121,19 @@ class TestSuiteInterface():
                 sys.stdout.flush()
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = ui.getValue(s_id[0])
-                    v2 = ui.getValue(s_id[1])
-                    if (cond == '<=' and v1 <= v2) or (cond == '<' and v1 < v2):
+                    v1 = self.getValue(s_id[0],ui)
+                    v2 = self.getValue(s_id[1],ui)
+                    if self.isCheckScenarioMode() or (cond == '<=' and v1 <= v2) or (cond == '<' and v1 < v2):
                         item['result'] = t_PASSED
                         item['text'] = '%s(%d) %s %s(%d)' % (s_id[0], v1, cond, s_id[1],v2)
-                        self.log(item, False)
+                        self.setResult(item, False)
                         return True
                 else:
-                    v = ui.getValue(s_id)
-                    if (cond == '<=' and v <= val) or (cond == '<' and v < val):
+                    v = self.getValue(s_id,ui)
+                    if self.isCheckScenarioMode() or (cond == '<=' and v <= val) or (cond == '<' and v < val):
                         item['result'] = t_PASSED
                         item['text'] = '%s=%s %s %d' % (s_id, v, cond, val)
-                        self.log(item, False)
+                        self.setResult(item, False)
                         return True
 
                 time.sleep(t_sleep)
@@ -1142,7 +1145,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '%s=%d not %s %d timeout=%d msec' % (s_id, v, cond, val, t_out)
 
-            self.log(item, True)
+            self.setResult(item, True)
 
         except UException, e:
             item['result'] = t_FAILED
@@ -1151,13 +1154,11 @@ class TestSuiteInterface():
             else:
                 item['text'] = '(%s%s%d) error: %s' % (s_id, cond, val, e.getError())
 
-            self.log(item, True)
+            self.setResult(item, True)
 
         return False
 
     def holdLess(self, s_id, val, t_out, t_check, item, ui=None, cond='<='):
-        if ui is None:
-            ui = self.default_ui
 
         item['type'] = 'LESS'
         t_tick = round(t_out / t_check)
@@ -1178,20 +1179,23 @@ class TestSuiteInterface():
                 sys.stdout.flush()
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = ui.getValue(s_id[0])
-                    v2 = ui.getValue(s_id[1])
-                    if (cond == '<=' and v1 > v2) or (cond == '<' and v1 >= v2):
+                    v1 = self.getValue(s_id[0],ui)
+                    v2 = self.getValue(s_id[1],ui)
+                    if self.isCheckScenarioMode() == False and ((cond == '<=' and v1 > v2) or (cond == '<' and v1 >= v2)):
                         item['result'] = t_FAILED
                         item['text'] = '%s(%d) not %s %s(%d) holdtime=%d msec' % (s_id[0], v1, cond, s_id[1],v2,t_out)
-                        self.log(item, True)
+                        self.setResult(item, True)
                         return False
                 else:
-                    v = ui.getValue(s_id)
-                    if (cond == '<=' and v > val) or (cond == '<' and v >= val):
+                    v = self.getValue(s_id,ui)
+                    if self.isCheckScenarioMode() == False and ((cond == '<=' and v > val) or (cond == '<' and v >= val)):
                         item['result'] = t_FAILED
                         item['text'] = '%s=%d not %s %d holdtime=%d msec' % (s_id, v, cond, val, t_out)
-                        self.log(item, True)
+                        self.setResult(item, True)
                         return False
+
+                if self.isCheckScenarioMode():
+                    break
 
                 time.sleep(t_sleep)
                 t_tick -= 1
@@ -1202,7 +1206,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD %s=%s %s %d' % (s_id, v, cond, val)
 
-            self.log(item, False)
+            self.setResult(item, False)
             return True
 
         except UException, e:
@@ -1211,7 +1215,8 @@ class TestSuiteInterface():
                 item['text'] = 'HOLD  %s(%d)%s%s(%d) error: %s' % (s_id[0], v1, cond, s_id[1],v2,e.getError())
             else:
                 item['text'] = 'HOLD (%s%s%d) error: %s' % (s_id, cond, val, e.getError())
-            self.log(item, True)
+
+            self.setResult(item, True)
 
         return False
 
@@ -1222,24 +1227,36 @@ class TestSuiteInterface():
         act['type'] = 'SLEEP'
         act['text'] = 'sleep %d msec' % msec
         act['result'] = t_PASSED
-        self.actlog(act, False)
+        self.setActionResult(act, False)
         time.sleep((msec / 1000.))
 
     def setValue( self, s_id, s_val, act, ui=None, throwIfFail = True ):
+
         try:
-            if ui is None:
-                ui = self.default_ui
             act['text'] = '%s=%d' % (s_id, s_val)
             act['type'] = 'SETVALUE'
 
-            ui.setValue(s_id, s_val,self.supplierID)
+            if ui is None:
+                ui = self.default_ui
+
+            if self.isCheckScenarioMode():
+                ret, err = ui.validateParam(s_id)
+                if ret == False:
+                    act['result'] = t_FAILED
+                    act['text'] = err
+                    raise UValidateError(err) # TestSuiteException(err,-1,act)
+            else:
+                ui.setValue(s_id, s_val, self.supplierID)
+
             act['result'] = t_PASSED
-            self.actlog(act, False)
+            self.setActionResult(act, False)
             return True
+
         except UException, e:
             act['text'] = '(%s=%s) error: %s' % (s_id, s_val, e.getError())
             act['result'] = t_FAILED
-            self.actlog(act, throwIfFail)
+            self.setActionResult(act, throwIfFail)
+
         return False
 
     def runscript(self, script_name, act, silent=True, throwIfFailed = True):
@@ -1259,19 +1276,20 @@ class TestSuiteInterface():
             act['text'] = '%s' % script_name
 
             ret = subprocess.call(script_name, shell=True, stdin=None, stdout=sout, stderr=serr)
-            if ret:
+            if ret and self.isCheckScenarioMode() == False:
                 act['result'] = t_FAILED
-                self.actlog(act, throwIfFailed)
+                self.setActionResult(act, throwIfFailed)
                 return False
 
             act['result'] = t_PASSED
-            self.actlog(act, False)
+            self.setActionResult(act, False)
             return True
 
-        except UException, e:
+        except uniset2.pyUExceptions.UException, e:
             act['result'] = t_FAILED
             act['text'] = '\'%s\' error: %s' % (script_name, e.getError())
-            self.actlog(act, throwIfFailed)
+            self.setActionResult(act, throwIfFailed)
+
         return False
 
     def get_check_info(self, node, ui=None):
