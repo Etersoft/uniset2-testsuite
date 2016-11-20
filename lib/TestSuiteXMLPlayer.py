@@ -4,8 +4,6 @@
 import datetime
 import copy
 import string
-import uniset2
-import os
 
 from ProcessMonitor import *
 import TestSuitePlayer
@@ -88,6 +86,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.default_check_pause = 300
         self.junit = ""
 
+        self.tags = list()
+
         # def __del__(self):
         # os.chdir(self.rootworkdir)
 
@@ -164,6 +164,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if self.keyb_inttr_callback != None:
             self.keyb_inttr_callback()
 
+    @staticmethod
     def get_begin_test_node(self, xml):
         return xml.begnode
 
@@ -420,7 +421,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             return name
 
-        except KeyError, ValueError:
+        except KeyError:
+            pass
+        except ValueError:
             pass
 
         return None
@@ -459,12 +462,13 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         elif len(l) > 1:
             t_name = l[1]
 
-        return (t_name, t_field)
+        return t_name, t_field
 
-    def getValue(self, node, xml):
-        cfig = self.get_config_name(node)
-        ui = self.get_current_ui(cfig)
-        return self.tsi.getValue(self.replace(node.prop("id")), ui)
+    # пока функцию закоментировал, возможно она использовалась в GUI-плээре
+    # def getValue(self, node, xml):
+    #     cfig = self.get_config_name(node)
+    #     ui = self.get_current_ui(cfig)
+    #     return self.tsi.getValue(self.replace(node.prop("id")), ui)
 
     def compare_item(self, node, xml):
 
@@ -563,7 +567,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             # сперва разбиваем список на эелементы, подменяем каждый из них
             # собираем обратно, и уже разбираем как полагается (с разбивкой на id и val)
             slist = self.str_to_strlist(s_set, ui)
-            res = True
             for s in slist:
                 s_id.append(self.replace(s[0]))
                 s_id.append(self.replace(s[1]))
@@ -681,7 +684,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             # сперва разбиваем список на эелементы, подменяем каждый из них
             # собираем обратно, и уже разбираем как полагается (с разбивкой на id и val)
             slist = self.str_to_idlist(s_set, ui)
-            res = True
             for s in slist:
                 if t_hold > 0:
                     self.tsi.holdEqual(self.replace(s[0]), self.replace(s[1]), t_hold, t_check, result, ui)
@@ -701,7 +703,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             if t_node is not None:
                 logfile = self.tsi.get_logfile()
-                info = make_info_result("go to %s='%s'" % (t_field, t_name),'LINK')
+                info = make_info_result("go to %s='%s'" % (t_field, t_name), 'LINK')
                 info['comment'] = t_comment
                 self.tsi.setResult(info, False)
                 res = self.play_test(xml, t_node, logfile, r_list)
@@ -985,7 +987,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         act['text'] = str('%10s: msec=%d id=%s val=%d' % ("on_reset_timer:", s_msec, s_id, s_val))
         self.tsi.setActionResult(act, False)
         try:
-            self.tsi.setValue(s_id, s_val, "", ui)
+            self.tsi.setValue(s_id, s_val, act, ui)
             act['result'] = t_PASSED
         except TestSuiteException, e:
             act['result'] = t_FAILED
@@ -1143,9 +1145,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             try:
                 # cp = ChildProcess(node)
                 # cp.run(True)
-                self.tsi.runscript(node.prop("script"),result)
-            except (OSError, KeyboardInterrupt), e:
-                # print 'run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (cp.name, cp.cmd, e.errno, e.strerror)
+                self.tsi.runscript(node.prop("script"), result)
+            except OSError:
+                pass
+            except KeyboardInterrupt:
                 pass
 
             node = self.xml.nextNode(node)
@@ -1194,7 +1197,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         return resOK
 
-    def play_xml(self, xml, spec_replace_list=[]):
+    def play_xml(self, xml, spec_replace_list=list()):
 
         logfile = self.tsi.get_logfile()
         b = self.begin_tests(xml)
@@ -1316,7 +1319,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         ret['text'] = "UNKNOWN ACTION TYPE"
         return ret
 
-    def play_test(self, xml, testnode, logfile, spec_replace_list=[]):
+    def play_test(self, xml, testnode, logfile, spec_replace_list=list()):
 
         self.add_to_test_replace(spec_replace_list)
 
