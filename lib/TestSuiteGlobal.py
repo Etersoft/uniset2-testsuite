@@ -29,7 +29,6 @@ def make_default_item():
     item['tag'] = '' # первый тег на котором "сработал" фильтр
     item['tags'] = '' # теги
     item['nrecur'] = 0 # уровень рекурсии
-    item['ntab'] = False
     item['start_time'] = time.time()
 
     return item
@@ -82,6 +81,9 @@ class TestSuiteReporter():
     def makeReport(self, results):
         pass
 
+    def makeCallTrace(self, results, call_limit):
+        pass
+
     def start_tests(self, tm=None):
         if not tm:
             self.start_time = time.time()
@@ -95,7 +97,7 @@ class TestSuiteReporter():
             self.finish_time = tm
 
 class TestSuiteException(Exception):
-    def __init__( self, e="", test_time=-1, item=dict() ):
+    def __init__( self, e = "", test_time = -1, item = dict() ):
         self.failed_item = item
         self.err = e
         self.ftime = test_time

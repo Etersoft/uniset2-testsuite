@@ -39,10 +39,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         # спискок со списками замен (получаемых из replace="..") с учётом добавления (зоны видимости)
         self.replace_stack = list()
 
-        # список пар [level,testname, xmlfile]
-        # level - уровень вложенности вызова
-        # testname - название теста (или файла если это outlink)
-        # xmlfile - имя файла теста
+        # дерево тестов
+        self.results = []
         self.call_stack = list()
 
         # текущий уровень вложенности
@@ -72,7 +70,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         self.default_timeout = 5000
         self.default_check_pause = 300
-        self.junit = ""
 
         # список разрешающих запуск теста тегов
         self.tags = list()
@@ -83,75 +80,16 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def add_result(self, res):
         pass
 
-    def build_failtrace(self, call_trace):
-
-        if len(call_trace) == 0:
-            return list()
-
-        # идём в обратном порядке
-        # от последнего вызова (это тот на котором вывалился тест) до первого
-        # Смысл: построить дерево вызовов от провалившегося до первого уровня
-        # пропуская успешные (т.е. строится дерево вызовов приведшее до провалившегося теста)
-        # -----
-        # т.к. у нас сохранены ссылки на предыдущие вызовы... то просто идём по ним
-        failtrace = list()
-        stackItem = call_trace[-1]
-        failtrace.append(stackItem)
-        curlevel = stackItem['call_level']
-        # print "BEGIN LEVEL: %d " % curlevel
-
-        while stackItem != None:
-
-            stackItem = stackItem['prev']
-
-            if stackItem == None:
-                break
-
-            if stackItem['call_level'] < curlevel:
-                failtrace.append(stackItem)
-                curlevel = stackItem['call_level']
-
-            if stackItem['call_level'] == 0:
-                break
-
-        return failtrace[::-1]
-
-    def print_calltrace(self, call_limit):
-
-        # выводим только дерево вызовов до неуспешного теста
-        # для этого надо построить дерево от последнего вызова до первого
-        failtrace = self.build_failtrace(self.call_stack)
-
-        tname_width = 40
-        call_limit = abs(call_limit)
-        ttab = "=== TESTFILE ==="
-
-        print "%s| %s" % (
-            self.tsi.colorize_test_begin(ttab.ljust(tname_width)),
-            self.tsi.colorize_test_begin("=== TEST CALL TRACE (limit: %d) ===" % call_limit))
-
-        for stackItem in failtrace[-call_limit::]:
-            tab = ""
-            for i in range(0, stackItem['call_level']):
-                tab = "%s.   " % (tab)
-
-            t_comment = ''
-            if self.tsi.log_show_test_comment:
-                t_comment = " | %s " % self.tsi.format_comment(stackItem['comment'])
-
-            # if not self.show_xmlfile:
-            #     t_fname = ""
-
-            print "%s%s| %s%s" % (stackItem['filename'].ljust(tname_width), t_comment, tab, stackItem['name'])
-
-        print ""
-
     def set_keyboard_interrupt(self, callback):
         self.keyb_inttr_callback = callback
 
     def check_keyboard_interrupt(self):
         if self.keyb_inttr_callback != None:
             self.keyb_inttr_callback()
+
+    def print_call_trace(self, call_limits ):
+        # self.tsi.print_call_trace(self.results)
+        self.tsi.print_call_trace(self.call_stack)
 
     @staticmethod
     def get_begin_test_node(self, xml):
@@ -419,7 +357,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         return name
 
-    def replace_in(self, name, r_dict):
+    @staticmethod
+    def replace_in(name, r_dict):
         try:
             for k, v in r_dict:
                 name = name.replace(k, v)
@@ -478,13 +417,14 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def compare_item(self, node, xml):
 
         ret = make_default_item()
-        ret['ntab'] = True
 
         tname = self.replace(node.prop('test'))
         t_comment = self.replace(node.prop('comment'))
 
         ret['name'] = tname
         ret['comment'] = t_comment
+        ret['item_type'] = 'check'
+        ret['nrecur'] = self.tsi.nrecur
 
         if tname is None:
             self.tsi.setResult(make_fail_result("FAILED: BAD TEST STRUCTURE! NOT FOUND test=''.."), True)
@@ -594,12 +534,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         tname = self.replace(node.prop('test'))
         t_comment = self.replace(node.prop('comment'))
 
+        result['item_type'] = 'check'
         result['type'] = tname.upper()
         result['comment'] = t_comment
         result['xmlnode'] = node
         result['filename'] = xml.getFileName()
-        result['ntab'] = True
-
+        result['nrecur'] = self.tsi.nrecur
 
         if tname is None:
             result['text'] = "FAILED: BAD TEST STRUCTURE! NOT FOUND test=''.."
@@ -681,7 +621,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             return result
 
         if test == "MULTICHECK":
-            self.tsi.setResult(" ", "MULTICHECK", "...", False)
+            info = make_info_item("...",'MULTICHECK')
+            info['item_type'] = result['item_type']
+            info['nrecur'] = self.tsi.nrecur
+            self.tsi.setResult(info, False)
             s_set = to_str(self.replace(node.prop("test")))
             if s_set == "":
                 result['text'] = "MULTICHECK: undefined ID list (id='...')"
@@ -716,6 +659,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 logfile = ""
                 info = make_info_item("go to %s='%s'" % (t_field, t_name), 'LINK')
                 info['comment'] = t_comment
+                info['item_type'] = result['item_type']
+                info['nrecur'] = self.tsi.nrecur
                 self.tsi.setResult(info, False)
                 res = self.play_test(xml, t_node, logfile, r_list)
                 self.del_from_replace(r_list)
@@ -770,9 +715,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 os.chdir(t_dir)
                 if t_link == "ALL":
                     info = make_default_item()
-                    info['text'] = "go to file='%s' play ALL" % (t_file)
+                    info['text'] = "go to file='%s' play ALL" % t_file
                     info['comment'] = t_comment
                     info['type'] = 'OUTLINK'
+                    info['nrecur'] = self.tsi.nrecur
+                    info['item_type'] = result['item_type']
                     self.tsi.setResult(info, False)
                     self.tsi.nrecur += 1
                     res = self.play_xml(t_xml, r_list)
@@ -791,6 +738,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                         info['text'] = "go to file='%s' %s='%s'" % (t_file, t_field, t_name)
                         info['comment'] = t_comment
                         info['type'] = 'OUTLINK'
+                        info['nrecur'] = self.tsi.nrecur
+                        info['item_type'] = result['item_type']
                         self.tsi.setResult(info, False)
                         self.tsi.nrecur += 1
                         # т.к. вызываем только один тест из всего xml, приходиться самостоятельно добавлять global_replace
@@ -840,8 +789,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.reset_thread_event.clear()
         try:
             self.reset_thread_dict.pop(t_name)
-        except KeyError, ValueError:
+        except KeyError:
             pass
+        except ValueError:
+            pass
+
         finally:
             self.reset_thread_event.set()
 
@@ -867,6 +819,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                         alog['comment'] = ''
                         alog['text'] = "waiting for finish reset value thread '%s'" % (t.getName())
                         alog['type'] = 'WAIT'
+                        alog['nrecur'] = self.tsi.nrecur
                         self.tsi.setActionResult(alog, False)
                         # t.join() # join - опасен тем, что можно застрять навечно..
             finally:
@@ -924,7 +877,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         result['comment'] = to_str(self.replace(node.prop("comment")))
         result['xmlnode'] = node
         result['name'] = to_str(self.replace(node.prop("name")))
-        result['ntab'] = True
+        result['nrecur'] = self.tsi.nrecur
 
         # act = self.replace(node.prop("name")).upper()
         if to_str(node.prop("msleep")) != '':
@@ -1025,6 +978,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         act = make_default_item()
         act['type'] = 'RESET'
         act['text'] = str('%10s: msec=%d id=%s val=%d' % ("on_reset_timer:", s_msec, s_id, s_val))
+        act['nrecur'] = self.tsi.nrecur
+        act['item_type'] = 'action'
         self.tsi.setActionResult(act, False)
         try:
             self.tsi.setValue(s_id, s_val, act, ui)
@@ -1049,6 +1004,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         fail['text'] = 'Can`t find children items for <test>'
         fail['type'] = '(TestSuiteXMLPlayer)'
         fail['result'] = t_FAILED
+        fail['nrecur'] = self.tsi.nrecur
+        fail['item_type'] = 'test'
         self.tsi.setResult(fail, True)
         return None
 
@@ -1063,6 +1020,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         fail['text'] = 'Can`t find begin node <test>'
         fail['type'] = '(TestSuiteXMLPlayer)'
         fail['result'] = t_FAILED
+        fail['nrecur'] = self.tsi.nrecur
+        fail['item_type'] = 'test'
         self.tsi.setResult(fail, True)
         return [None, None]
 
@@ -1082,6 +1041,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         node = self.xml.firstNode(snode.children)
 
         result = make_default_item()
+        result['nrecur'] = self.tsi.nrecur
         while node is not None:
             try:
                 # cp = ChildProcess(node)
@@ -1094,6 +1054,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             node = self.xml.nextNode(node)
 
+    def print_call_trace(self, call_limits):
+        self.tsi.print_call_trace(self.results,call_limits)
+
     def play_all(self, xml=None):
         if xml is None:
             xml = self.xml
@@ -1103,7 +1066,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         logfile = ""
         b = self.begin_tests(xml)
         testnode = b[0]
-        results = []
+        self.results = []
         tm_start = 0
 
         pmonitor = self.get_pmonitor(xml)
@@ -1119,7 +1082,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     testnode = xml.nextNode(testnode)
                     continue
 
-                results.append(self.play_test(xml, testnode, logfile))
+                self.results.append(self.play_test(xml, testnode, logfile))
                 testnode = xml.nextNode(testnode)
 
             resOK = True
@@ -1132,7 +1095,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             res['time'] = ttime
             res['text'] = e.getError
             res['filename'] = xml.getFileName()
-            results.append(res)
+            res['nrecur'] = self.tsi.nrecur
+            res['item_type'] = 'test'
+            self.results.append(res)
             resOK = False
             raise e
 
@@ -1143,7 +1108,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 self.fini_failure()
 
             self.tsi.finish_tests()
-            self.tsi.print_result_report(results)
+            self.tsi.print_result_report(self.results)
             pmonitor.stop()
 
         return resOK
@@ -1155,7 +1120,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         logfile = ""
         b = self.begin_tests(xml)
         testnode = b[0]
-        results = []
         tm_start = 0
         tm_all_start = time.time()
         pmonitor = self.get_pmonitor(xml)
@@ -1165,22 +1129,25 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         item = make_default_item()
         item['name'] = to_str(self.replace(testnode.prop('name')))
         item['nrecur'] = self.tsi.nrecur
+        item['item_type'] = 'test'
 
         try:
             pmonitor.start()
             while testnode is not None:
                 tm_start = time.time()
-                results.append(self.play_test(xml, testnode, logfile))
+                item['items'].append(self.play_test(xml, testnode, logfile))
                 testnode = xml.nextNode(testnode)
 
         except TestSuiteException, e:
             item['time'] = e.getFinishTime - tm_start
-            item['result'] = t_FAILED
             item['text'] = e.getError
             item['xmlnode'] = testnode
             item['filename'] = xml.getFileName()
-            results.append(item)
-            results['result'] = self.get_cumulative_result(results['items'])
+            if e.failed_item:
+                item['items'].append(e.failed_item)
+
+            ret = self.get_cumulative_result(item['items'])
+            item['result'] = ret['result']
             raise e
 
         finally:
@@ -1188,7 +1155,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         self.del_from_test_replace(spec_replace_list)
         self.del_from_global_replace(xml.global_replace_list)
-        ret = self.get_cumulative_result(results)
+        ret = self.get_cumulative_result(item['items'])
         item['time'] = time.time() - tm_all_start
         item['result'] = ret['result']
         item['text'] = ret['text']
@@ -1214,7 +1181,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         logfile = ""
         b = self.begin_tests(xml)
         testnode = b[0]
-        results = []
+        self.results = []
 
         # Сперва проверим что все тесты существуют..
         for tprop, tname in tlist:
@@ -1224,6 +1191,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 fail['text'] = 'Can`t find test %s=\'%s\'' % (tprop, tname)
                 fail['type'] = '(TestSuiteXMLPlayer)'
                 fail['result'] = t_FAILED
+                fail['nrecur'] = self.tsi.nrecur
+                fail['item_type'] = 'test'
                 self.tsi.setResult(fail, True)
                 return
 
@@ -1241,7 +1210,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 if len(self.tags) > 0 and not self.check_tag(to_str(self.replace(tnode.prop('tags')))):
                     continue
 
-                results.append(self.play_test(xml, tnode, logfile))
+                self.results.append(self.play_test(xml, tnode, logfile))
 
             resOK = True
         except TestSuiteException, ex:
@@ -1252,7 +1221,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             item['text'] = ex.getError
             item['xmlnode'] = testnode
             item['filename'] = xml.getFileName()
-            results.append(item)
+            item['nrecur'] = self.tsi.nrecur
+            item['item_type'] = 'test'
+            self.results.append(item)
             raise ex
 
         finally:
@@ -1262,7 +1233,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 self.fini_failure()
 
             self.tsi.finish_tests()
-            self.tsi.print_result_report(results)
+            self.tsi.print_result_report(self.results)
             pmonitor.stop()
 
         return resOK
@@ -1279,6 +1250,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         ret = make_default_item()
         ret['result'] = t_UNKNOWN
         ret['text'] = "UNKNOWN ACTION TYPE"
+        ret['nrecur'] = self.tsi.nrecur
+        ret['item_type'] = 'check'
         return ret
 
     def play_test(self, xml, testnode, logfile, spec_replace_list=list()):
@@ -1294,11 +1267,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         result['tags'] = to_str(self.replace(testnode.prop('tags')))
         result['tag'] = self.firstTag(result['tags'])
         result['nrecur'] = self.tsi.nrecur
+        result['item_type'] = 'test'
 
         testname = "'%s'" % result['name']
 
         if len(tags) > 0:
-            testname = '%s [%s]'%(testname,result['tag'])
+            testname = '%s [%s]'%( testname, result['tag'] )
 
         self.call_stack.append(result)
 
@@ -1308,7 +1282,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if len(self.call_stack) > 1:
             prevStackItem = self.call_stack[-2]
 
-        t_ignore = to_int(self.replace(testnode.prop('ignore')))
+        t_ignore = to_int( self.replace( testnode.prop('ignore') ) )
 
         if t_ignore:
             result['result'] = t_IGNORE
@@ -1344,6 +1318,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         info = make_info_item(testname, 'BEGIN')
         info['comment'] = result['comment']
+        info['nrecur'] = self.tsi.nrecur
+        info['item_type'] = result['item_type']
         self.tsi.setResult(info, False)
         tm_start = time.time()
         tm_finish = tm_start
@@ -1377,6 +1353,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             info['type'] = 'FINISH'
             info['text'] = "'%s' /%s/" % (result['name'], td)
             info['result'] = tres['result']
+            info['nrecur'] = self.tsi.nrecur
+            info['item_type'] = result['item_type']
             self.tsi.setResult(info, False)
 
             result['result'] = tres['result']
@@ -1430,9 +1408,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         ret['time'] = t_res
         ret['file'] = ''
         ret['name'] = ''
+        ret['nrecur'] = self.tsi.nrecur
         return ret
 
-    def on_key_press(self, c):
+    @staticmethod
+    def on_key_press(c):
         # k = ord(c)
         if c == keys.pause:
             print '** PAUSE *** [..press again for continue..]\n'
@@ -1637,7 +1617,7 @@ if __name__ == "__main__":
     finally:
         #         sys.stdin = sys.__stdin__
         if global_player is not None and print_calltrace and global_result != True:
-            global_player.print_calltrace(print_calltrace_limit)
+            global_player.print_call_trace(print_calltrace_limit)
     # if sys.stdin.closed == False:
     #       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 

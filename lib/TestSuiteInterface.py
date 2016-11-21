@@ -30,22 +30,14 @@ class TestSuiteInterface():
         self.default_ui = None
         self.params = Params_inst()
         self.ignore_nodes = False
-        self.rcheck = re.compile(r"([\w@\ :]+)([!><]*[=]*)([-\d\ ]+)")
-        self.rcompare = re.compile(r"([\w@\ :]+)([!><]*[=]*)([\w@\ :]+)")
         self.nrecur = 0
         self.supplierID = uniset2.DefaultSupplerID
         self.checkScenarioMode = False
         self.checkScenarioMode_ignorefailed = False
         self.reporters = list()
 
-        # "CHECK : 00:00:05 [  0.016] : 2015-03-14 02:46:06 :[ PASSED] :  FINISH: 'Global replace' /0:00:00.000837/"
-        self.re_log = re.compile(
-            r"([\w]+)[^:]*:[ ]*(\d{2}:\d{2}:\d{2}) \[[ ]*([\d.]+)\] : (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) :\[[ ]*([\w*]*)\][ ]*:[ ]*([^:]+):[  ]*(.*)$")
-
-        # "'simple test' /0:00:00.001361/"
-        self.re_tinfo = re.compile(r"[^/]*(/(\d+):(\d{1,2}):(\d{1,2})([.](\d*))*/)*$")
-
-        # clr.init(autoreset=True)
+        self.rcheck = re.compile(r"([\w@\ :]+)([!><]*[=]*)([-\d\ ]+)")
+        self.rcompare = re.compile(r"([\w@\ :]+)([!><]*[=]*)([\w@\ :]+)")
 
     @staticmethod
     def get_aliasname(cname):
@@ -234,10 +226,17 @@ class TestSuiteInterface():
             except Exception:
                 pass
 
+    def print_call_trace(self, results, call_limits):
+        for r in self.reporters:
+            try:
+                r.makeCallTrace(results, call_limits)
+            except Exception:
+                pass
+
     def print_result_report(self, results):
         for r in self.reporters:
             try:
-                r.makeResult(results)
+                r.makeReport(results)
             except Exception:
                 pass
 

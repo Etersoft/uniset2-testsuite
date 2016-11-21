@@ -23,7 +23,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.log_hide_time = False
         self.log_hide_msec = False
         self.log_show_testtype = False
-        self.log_list = []
         self.no_coloring_output = False
 
     def print_log(self, item):
@@ -47,13 +46,17 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         self.log_numstr += 1
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
-        txt2 = self.set_tab_space(txt, item['nrecur'], item['ntab'])
+
+        ntab = False
+        if item['item_type'] == 'check' or item['item_type'] == 'action':
+            ntab = True
+
+        txt2 = self.set_tab_space(txt, item['nrecur'], ntab)
 
         txt = str('[%s] %s%8s%s %s' % (
             self.colorize_result(t_result), self.colsep, t_test, self.colsep,
             self.colorize_text(t_result, t_test, txt2)))
         txt3 = str('[%7s] %s%8s%s %s' % (t_result, self.colsep, t_test, self.colsep, txt2))
-        # llog = '%s %s%s' % (t_tm, self.colsep, txt3)
 
         if not self.log_show_testtype:
             txt = str('[%s] %s %s' % (
@@ -80,12 +83,10 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
                 pass
 
         etm = self.elapsed_time_str()
-        # llog = '%s %s %s' % (etm, self.colsep, llog)
 
         if not self.log_hide_time:
             txt = '%s %s %s' % (etm, self.colsep, txt)
 
-        # llog = '%6s %s %s' % ("CHECK", self.colsep, llog)
         if self.show_test_type:
             txt = '%6s %s %s' % ("CHECK", self.colsep, txt)
 
@@ -104,6 +105,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             print txt
 
     def make_actlog(self, act):
+
         t_comment = act['comment']
         t_act = act['type']
         txt = act['text']
@@ -119,9 +121,12 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         self.log_numstr += 1
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
-        txt2 = self.set_tab_space(txt, act['nrecur'], act['ntab'])
-        txt3 = str('[%7s] %s%8s%s %s' % (t_result, self.colsep, t_act, self.colsep, txt2))
-        llog = '%s %s%s' % (t_tm, self.colsep, txt3)
+
+        ntab = False
+        if act['item_type'] == 'action' or act['item_type'] == 'check':
+            ntab = True
+
+        txt2 = self.set_tab_space(txt, act['nrecur'],ntab)
 
         txt = str('[%7s] %s%8s%s %s' % (
             self.colorize_result(t_result), self.colsep, t_act, self.colsep, self.colorize_text(t_result, t_act, txt2)))
@@ -152,11 +157,10 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
                 pass
 
         etm = self.elapsed_time_str()
-        # llog = '%s %s %s' % (etm, self.colsep, llog)
+
         if not self.log_hide_time:
             txt = '%s %s %s' % (etm, self.colsep, txt)
 
-        llog = '%6s %s %s' % ('ACTION', self.colsep, llog)
         if self.show_test_type:
             txt = '%6s %s %s' % ('ACTION', self.colsep, txt)
 
@@ -172,7 +176,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         filename = ''
         if len(results) > 0:
-            filename = results[0]
+            filename = results[0]['filename']
 
         head = "\nRESULT REPORT: '%s'" % filename
         head2 = ""
@@ -324,3 +328,67 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
     def set_show_test_comment(self, show_test_comment):
         self.log_show_test_comment = show_test_comment
+
+    @staticmethod
+    def build_failtrace(self, call_trace):
+
+        if len(call_trace) == 0:
+            return list()
+
+        # идём в обратном порядке
+        # от последнего вызова (это тот на котором вывалился тест) до первого
+        # Смысл: построить дерево вызовов от провалившегося до первого уровня
+        # пропуская успешные (т.е. строится дерево вызовов приведшее до провалившегося теста)
+        # -----
+        # т.к. у нас сохранены ссылки на предыдущие вызовы... то просто идём по ним
+        failtrace = list()
+        stackItem = call_trace[-1]
+        failtrace.append(stackItem)
+        curlevel = stackItem['call_level']
+        # print "BEGIN LEVEL: %d " % curlevel
+
+        while stackItem != None:
+
+            stackItem = stackItem['prev']
+
+            if stackItem == None:
+                break
+
+            if stackItem['call_level'] < curlevel:
+                failtrace.append(stackItem)
+                curlevel = stackItem['call_level']
+
+            if stackItem['call_level'] == 0:
+                break
+
+        return failtrace[::-1]
+
+    def makeCallTrace(self, results, call_limit):
+
+        # выводим только дерево вызовов до неуспешного теста
+        # для этого надо построить дерево от последнего вызова до первого
+        failtrace = self.build_failtrace(results)
+
+        tname_width = 40
+        call_limit = abs(call_limit)
+        ttab = "=== TESTFILE ==="
+
+        print "%s| %s" % (
+            self.colorize_test_begin(ttab.ljust(tname_width)),
+            self.colorize_test_begin("=== TEST CALL TRACE (limit: %d) ===" % call_limit))
+
+        for stackItem in failtrace[-call_limit::]:
+            tab = ""
+            for i in range(0, stackItem['call_level']):
+                tab = "%s.   " % (tab)
+
+            t_comment = ''
+            if self.log_show_test_comment:
+                t_comment = " | %s " % self.format_comment(stackItem['comment'])
+
+            # if not self.show_xmlfile:
+            #     t_fname = ""
+
+            print "%s%s| %s%s" % (stackItem['filename'].ljust(tname_width), t_comment, tab, stackItem['name'])
+
+        print ""
