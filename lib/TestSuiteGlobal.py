@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from uniset2 import *
+import time
 
 # различные глобальные вспомогательные функции
 t_NONE = ''
@@ -13,33 +14,36 @@ t_PAUSE = 'PAUSE'
 t_WARNING = 'WARNING'
 t_UNKNOWN = 'UNKNOWN'
 
-def make_default_result():
-    result = dict()
-    result['name'] = ''
-    result['comment'] = ''
-    result['call_level'] = None
-    result['result'] = t_NONE
-    result['text'] = ''
-    result['items'] = []
-    result['xmlnode'] = None
-    result['filename'] = ''
-    result['prev'] = None
-    result['item_type'] = '' # action,check,test
-    result['tag'] = '' # первый тег на котором "сработал" фильтр
-    result['tags'] = '' # теги
+def make_default_item():
+    item = dict()
+    item['name'] = ''
+    item['comment'] = ''
+    item['call_level'] = None
+    item['result'] = t_NONE
+    item['text'] = ''
+    item['items'] = []
+    item['xmlnode'] = None
+    item['filename'] = ''
+    item['prev'] = None
+    item['item_type'] = '' # action,check,test
+    item['tag'] = '' # первый тег на котором "сработал" фильтр
+    item['tags'] = '' # теги
+    item['nrecur'] = 0 # уровень рекурсии
+    item['ntab'] = False
+    item['start_time'] = time.time()
 
-    return result
+    return item
 
 def make_fail_result(text, type='(TestSuiteXMLPlayer)'):
 
-    fail = make_default_result()
+    fail = make_default_item()
     fail['result'] = t_FAILED
     fail['text'] = text
     fail['type'] = type
     return fail
 
-def make_info_result(text, type='(TestSuiteXMLPlayer)'):
-    info = make_default_result()
+def make_info_item(text, type='(TestSuiteXMLPlayer)'):
+    info = make_default_item()
     info['type'] = type
     info['text'] = text
     return info
@@ -63,6 +67,32 @@ def get_replace_list(raw_str):
 
     return slist
 
+''' Базовый класс для формирователей отчётов '''
+class TestSuiteReporter():
+    def __init__(self):
+        self.start_time = time.time()
+        self.finish_time = time.time()
+
+    def print_log(self, item):
+        pass
+
+    def print_actlog(self, act):
+        pass
+
+    def makeReport(self, results):
+        pass
+
+    def start_tests(self, tm=None):
+        if not tm:
+            self.start_time = time.time()
+        else:
+            self.start_time = tm
+
+    def finish_tests(self,tm=None):
+        if not tm:
+            self.finish_time = time.time()
+        else:
+            self.finish_time = tm
 
 class TestSuiteException(Exception):
     def __init__( self, e="", test_time=-1, item=dict() ):
