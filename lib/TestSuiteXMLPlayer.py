@@ -87,9 +87,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if self.keyb_inttr_callback != None:
             self.keyb_inttr_callback()
 
-    def print_call_trace(self, call_limits ):
-        # self.tsi.print_call_trace(self.results)
-        self.tsi.print_call_trace(self.call_stack)
+    def show_call_trace(self, call_limits):
+        self.tsi.print_call_trace(self.call_stack, call_limits)
 
     @staticmethod
     def get_begin_test_node(self, xml):
@@ -190,7 +189,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             #     logRepoter.set_logfile(logfile,trunc)
             #     self.tsi.add_repoter(logRepoter)
 
-            if xml.begnode.prop("notimestamp") != None:
+            if xml.begnode.prop("notimestamp") is not None:
                 self.tsi.set_notimestamp(to_int(self.replace(xml.begnode.prop("notimestamp"))))
 
             if hasattr(xml, 'global_replace_list') == False:
@@ -342,7 +341,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         return res
 
     def replace(self, name):
-        ''' преобразование, если есть в словаре замена.. '''
+        """
+        преобразование, если есть в словаре замена..
+        :param name: строка которая заменяется если будет найдена
+        :return: возвращется заменённая строка или таже самая
+        """
         if name is None or name == "" or name.__class__.__name__ == "int":
             return name
 
@@ -621,7 +624,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             return result
 
         if test == "MULTICHECK":
-            info = make_info_item("...",'MULTICHECK')
+            info = make_info_item("...", 'MULTICHECK')
             info['item_type'] = result['item_type']
             info['nrecur'] = self.tsi.nrecur
             self.tsi.setResult(info, False)
@@ -698,12 +701,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     t_xml = self.loadXML(t_file)
                 except UException, e:
                     result['result'] = t_FAILED
-                    result['text'] = "Can`t open file='%s'." % (t_file)
+                    result['text'] = "Can`t open file='%s'." % t_file
                     self.tsi.setResult(result, True)
                     return result
                 except TestSuiteException, e:
                     result['result'] = t_FAILED
-                    result['text'] = "Can`t open file='%s'." % (t_file)
+                    result['text'] = "Can`t open file='%s'." % t_file
                     self.tsi.setResult(result, True)
                     return result
 
@@ -742,7 +745,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                         info['item_type'] = result['item_type']
                         self.tsi.setResult(info, False)
                         self.tsi.nrecur += 1
-                        # т.к. вызываем только один тест из всего xml, приходиться самостоятельно добавлять global_replace
+                        # т.к. вызываем только один тест из всего xml, приходиться
+                        # самостоятельно добавлять global_replace
                         self.add_to_global_replace(t_xml.global_replace_list)
                         res = self.play_test(t_xml, t_node, logfile, r_list)
                         self.tsi.nrecur -= 1
@@ -852,7 +856,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         return False
 
     def firstTag(self, tag):
-        ''' возвращает первый тег который прошёл проверку'''
+        """
+        Поиск тега среди списка тегов
+        :param tag: искомый тэг
+        :return: возвращает первый тег который прошёл проверку
+        """
 
         if len(self.tags) == 0:
             return ''
@@ -1271,7 +1279,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         testname = "'%s'" % result['name']
 
-        if len(tags) > 0:
+        if len(result['tags']) > 0:
             testname = '%s [%s]'%( testname, result['tag'] )
 
         self.call_stack.append(result)
@@ -1281,6 +1289,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         prevStackItem = None
         if len(self.call_stack) > 1:
             prevStackItem = self.call_stack[-2]
+
+        # if prevStackItem is not None:
+        #     print "PREV CALL STACK: [%d] %s  " % (prevStackItem['call_level'],str(prevStackItem['name']))
 
         t_ignore = to_int( self.replace( testnode.prop('ignore') ) )
 
@@ -1349,17 +1360,17 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             ttime = tm_finish - tm_start
             td = datetime.timedelta(0, ttime)
             result['time'] = ttime
-            info = make_default_item()
-            info['type'] = 'FINISH'
-            info['text'] = "'%s' /%s/" % (result['name'], td)
-            info['result'] = tres['result']
-            info['nrecur'] = self.tsi.nrecur
-            info['item_type'] = result['item_type']
-            self.tsi.setResult(info, False)
-
             result['result'] = tres['result']
             result['text'] = tres['text']
             result['prev'] = prevStackItem
+            # result['prev'] = prevStackItem
+            info = make_default_item()
+            info['type'] = 'FINISH'
+            info['text'] = "'%s' /%s/" % (result['name'], td)
+            info['result'] = result['result']
+            info['nrecur'] = self.tsi.nrecur
+            info['item_type'] = result['item_type']
+            self.tsi.setResult(info, False)
             # чисто визуальное отделение нового теста
             if self.tsi.printlog == True and self.tsi.nrecur <= 0:
                 print "---------------------------------------------------------------------------------------------------------------------"
@@ -1617,7 +1628,7 @@ if __name__ == "__main__":
     finally:
         #         sys.stdin = sys.__stdin__
         if global_player is not None and print_calltrace and global_result != True:
-            global_player.print_call_trace(print_calltrace_limit)
+            global_player.show_call_trace(print_calltrace_limit)
     # if sys.stdin.closed == False:
     #       termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 

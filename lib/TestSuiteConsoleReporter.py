@@ -37,7 +37,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         txt = item['text']
         t_result = item['result']
         try:
-            if t_comment != None and len(t_comment) > 0:
+            if t_comment is not None and len(t_comment) > 0:
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
         except UnicodeDecodeError:
             pass
@@ -56,7 +56,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         txt = str('[%s] %s%8s%s %s' % (
             self.colorize_result(t_result), self.colsep, t_test, self.colsep,
             self.colorize_text(t_result, t_test, txt2)))
-        txt3 = str('[%7s] %s%8s%s %s' % (t_result, self.colsep, t_test, self.colsep, txt2))
 
         if not self.log_show_testtype:
             txt = str('[%s] %s %s' % (
@@ -112,7 +111,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         t_result = act['result']
 
         try:
-            if t_comment != None and len(t_comment) > 0:
+            if t_comment is not None and len(t_comment) > 0:
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
         except UnicodeDecodeError:
             pass
@@ -126,7 +125,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         if act['item_type'] == 'action' or act['item_type'] == 'check':
             ntab = True
 
-        txt2 = self.set_tab_space(txt, act['nrecur'],ntab)
+        txt2 = self.set_tab_space(txt, act['nrecur'], ntab)
 
         txt = str('[%7s] %s%8s%s %s' % (
             self.colorize_result(t_result), self.colsep, t_act, self.colsep, self.colorize_text(t_result, t_act, txt2)))
@@ -330,7 +329,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.log_show_test_comment = show_test_comment
 
     @staticmethod
-    def build_failtrace(self, call_trace):
+    def build_failtrace(call_trace):
 
         if len(call_trace) == 0:
             return list()
@@ -341,17 +340,18 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         # пропуская успешные (т.е. строится дерево вызовов приведшее до провалившегося теста)
         # -----
         # т.к. у нас сохранены ссылки на предыдущие вызовы... то просто идём по ним
+
         failtrace = list()
         stackItem = call_trace[-1]
         failtrace.append(stackItem)
         curlevel = stackItem['call_level']
         # print "BEGIN LEVEL: %d " % curlevel
 
-        while stackItem != None:
+        while stackItem is not None:
 
             stackItem = stackItem['prev']
 
-            if stackItem == None:
+            if stackItem is None:
                 break
 
             if stackItem['call_level'] < curlevel:
@@ -380,7 +380,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         for stackItem in failtrace[-call_limit::]:
             tab = ""
             for i in range(0, stackItem['call_level']):
-                tab = "%s.   " % (tab)
+                tab = "%s.   " % tab
 
             t_comment = ''
             if self.log_show_test_comment:
