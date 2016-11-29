@@ -329,7 +329,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.log_show_test_comment = show_test_comment
 
     @staticmethod
-    def build_failtrace(call_trace):
+    def build_fail_trace(call_trace):
 
         if len(call_trace) == 0:
             return list()
@@ -367,7 +367,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         # выводим только дерево вызовов до неуспешного теста
         # для этого надо построить дерево от последнего вызова до первого
-        failtrace = self.build_failtrace(results)
+        failtrace = self.build_fail_trace(results)
 
         tname_width = 40
         call_limit = abs(call_limit)
@@ -377,6 +377,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             self.colorize_test_begin(ttab.ljust(tname_width)),
             self.colorize_test_begin("=== TEST CALL TRACE (limit: %d) ===" % call_limit))
 
+        fail_test = failtrace[-1]
         for stackItem in failtrace[-call_limit::]:
             tab = ""
             for i in range(0, stackItem['call_level']):
@@ -392,3 +393,14 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             print "%s%s| %s%s" % (stackItem['filename'].ljust(tname_width), t_comment, tab, stackItem['name'])
 
         print ""
+        # ищем тест на котором произошёл вылет
+        # это последний item в "сбойном тесте"
+        fail_item = None
+        if fail_test is not None and len(fail_test['items']):
+            fail_item = fail_test['items'][-1]
+            self.show_extended_information(fail_item)
+
+    def show_extended_information(self, fail_item ):
+        print "FAIL ITEM: %s" % str(fail_item['faulty_sensor'])
+        sensor = to_sid(fail_item['faulty_sensor'],fail_item['ui'])
+        print "SENSOR: %s"%str(sensor)

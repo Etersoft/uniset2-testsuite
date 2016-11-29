@@ -31,6 +31,13 @@ def make_default_item():
     item['nrecur'] = 0 # уровень рекурсии
     item['start_time'] = time.time()
 
+    # датчик на котором произошёл вылет теста (в формате name@node)
+    # так же в этом поле может быть два датчика (в случае <compare> проверок)
+    # поэтому перед использованием надо проверять len(item['faulty_sensor'])==2
+    item['faulty_sensor'] = None
+    item['ui'] = None
+
+
     return item
 
 def make_fail_result(text, type='(TestSuiteXMLPlayer)'):
