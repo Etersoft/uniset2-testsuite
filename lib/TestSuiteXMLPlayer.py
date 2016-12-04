@@ -1224,7 +1224,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         except TestSuiteException, ex:
             item = make_default_item()
             item['name'] = to_str(self.replace(testnode.prop('name')))
-            item['time'] = e.getFinishTime - tm_start
+            item['time'] = ex.getFinishTime - tm_start
             item['result'] = t_FAILED
             item['text'] = ex.getError
             item['xmlnode'] = testnode

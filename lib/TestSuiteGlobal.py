@@ -73,8 +73,8 @@ def get_replace_list(raw_str):
 
     return slist
 
-''' Базовый класс для формирователей отчётов '''
 class TestSuiteReporter():
+    ''' Базовый класс для формирователей отчётов '''
     def __init__(self):
         self.start_time = time.time()
         self.finish_time = time.time()

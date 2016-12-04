@@ -364,7 +364,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         return failtrace[::-1]
 
     def makeCallTrace(self, results, call_limit):
-
         # выводим только дерево вызовов до неуспешного теста
         # для этого надо построить дерево от последнего вызова до первого
         failtrace = self.build_fail_trace(results)
@@ -400,7 +399,42 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             fail_item = fail_test['items'][-1]
             self.show_extended_information(fail_item)
 
-    def show_extended_information(self, fail_item ):
-        print "FAIL ITEM: %s" % str(fail_item['faulty_sensor'])
-        sensor = to_sid(fail_item['faulty_sensor'],fail_item['ui'])
-        print "SENSOR: %s"%str(sensor)
+    def show_extended_information(self, fail_item):
+
+        print "\n\n================================= EXTENDED INFORMATION =================================\n"
+
+        ui = fail_item['ui']
+        if ui is None:
+            print "Extended information is not available. Error: UI is None\n"
+            return
+
+        try:
+            sensor = to_sid(fail_item['faulty_sensor'],ui)
+
+            if sensor[0] == DefaultID:
+                print "Extended information is not available. Error: Unknown faulty sensor.\n"
+                return
+
+            tinfo = ui.getTimeChange(fail_item['faulty_sensor'])
+
+            stime = time.strftime('%Y-%m-%d %H:%M:%S',time.gmtime( tinfo.tv_sec ))
+            print "(%d)'%s' ==> last update %s [%d nanosec] value=%d owner=%d\n\n"%(sensor[0],fail_item['faulty_sensor'], stime, tinfo.tv_nsec, tinfo.value, tinfo.supplier)
+
+            ownerID = tinfo.supplier
+            if ownerID == DefaultID:
+                print "Extended information is not available. Error:  Unknown owner for sensor %s\n"%fail_item['faulty_sensor']
+                return
+
+            if ownerID == DefaultSupplerID:
+                print "Extended information is not available. Perhaps the update was done with 'uniset-admin'\n"
+                return
+
+            # обращатся надо на узел где датчик
+            o_name = "%d@%d"%(ownerID,sensor[1])
+            jsonInfo = ui.getObjectInfo(o_name)
+
+            print str(jsonInfo)
+
+        except UException, e:
+            print "Get extended information error: %s\n" % e.getError()
+
