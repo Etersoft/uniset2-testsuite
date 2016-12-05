@@ -28,7 +28,7 @@ class TestSuiteJUnitReporter(TestSuiteReporter):
     def print_actlog(self, act):
         pass
 
-    def makeReport(self, results):
+    def makeReport(self, results, checkScenarioMode=False):
         pass
         # try:
         #

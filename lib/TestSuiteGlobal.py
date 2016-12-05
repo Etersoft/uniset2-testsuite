@@ -85,7 +85,7 @@ class TestSuiteReporter():
     def print_actlog(self, act):
         pass
 
-    def makeReport(self, results):
+    def makeReport(self, results, checkScenarioMode=False):
         pass
 
     def makeCallTrace(self, results, call_limit):

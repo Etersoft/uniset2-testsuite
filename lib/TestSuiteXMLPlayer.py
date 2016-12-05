@@ -936,18 +936,17 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             s_v2 = to_int(self.replace(node.prop("rval")))
 
             self.tsi.setValue(s_id, s_val, result, ui)
-            # act['type'] = 'RESET'
-            # act['text'] = "set reset time %d msec for id=%s" % (reset_msec, s_id)
-            # self.actlog(act['result'], act['type'], act['text'], act['comment'], False)
             t = threading.Timer((reset_msec / 1000.), self.on_reset_timer, [s_id, s_v2, reset_msec, ui])
             self.add_reset_thread(t.getName(), t)
             t.start()
             return result
 
         if result['type'] == "MULTISET":
-            result['result'] = t_UNKNOWN
             result['text'] = to_str(self.replace(node.prop("set"))) # '...'
-            self.tsi.setActionResult(result, False)
+            info = make_info_item(result['text'], 'MULTISET')
+            info['item_type'] = result['item_type']
+            self.tsi.setResult(info, False)
+
             # для реализации механизма шаблонов
             # сперва разбиваем список на эелементы, подменяем каждый из них
             # собираем обратно, и уже разбираем как полагается (с разбивкой на id и val)
@@ -972,7 +971,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             script = to_str(self.replace(node.prop("script")))
             result['script'] = script
             self.tsi.runscript(script, result, silent, (self.tsi.ignorefailed == False))
-            result['result'] = t_PASSED
             return result
 
         result['result'] = t_FAILED
@@ -1542,8 +1540,8 @@ if __name__ == "__main__":
         print_calltrace = ts.checkArgParam('--print-calltrace', False)
         print_calltrace_limit = ts.getArgInt('--print-calltrace-limit', 20)
         supplier_name = ts.getArgParam("--supplier-name", "")
-        check_scenario = ts.getArgParam("--check-scenario",False)
-        check_scenario_ignorefailed = ts.getArgParam("--check-scenario-ignore-failed", False)
+        check_scenario = ts.checkArgParam("--check-scenario",False)
+        check_scenario_ignorefailed = ts.checkArgParam("--check-scenario-ignore-failed", False)
         tags = ts.getArgParam("--play-tags", "")
 
         cf = conflist.split(',')

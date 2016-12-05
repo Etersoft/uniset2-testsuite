@@ -236,7 +236,7 @@ class TestSuiteInterface():
     def print_result_report(self, results):
         for r in self.reporters:
             try:
-                r.makeReport(results)
+                r.makeReport(results, self.isCheckScenarioMode())
             except Exception:
                 pass
 
@@ -502,7 +502,6 @@ class TestSuiteInterface():
             item['result'] = t_FAILED
             item['text'] = '%s=%d' % (s_id, val)
             item['faulty_sensor'] = s_id
-            self.setResult(item, False)
             if len(s_id) == 2:
                 item['text'] = '%s(%d)=%s(%d) timeout=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
             else:

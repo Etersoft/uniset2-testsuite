@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.3
-Release: alt10
+Release: alt10.1
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -12,9 +12,9 @@ Source: %name-%version.tar
 # optimized out: pkg-config python-base python-devel python-modules
 BuildRequires: python-module-distribute
 
-BuildRequires: python-module-uniset2 >= 2.6-alt3.2
+BuildRequires: python-module-uniset2 >= 2.6-alt3.3
 
-Requires: python-module-uniset2 >= 2.6-alt3.2
+Requires: python-module-uniset2 >= 2.6-alt3.3
 
 %if_enabled doc
 BuildRequires: doxygen
@@ -101,6 +101,11 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Mon Dec 05 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt10.1
+- add show 'extended information' for stacktrace
+- add supported 'tags' or test
+- add supported --check-scenario
+
 * Tue Oct 11 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt10
 - fixed bug 'change directory' for 'outlink'
 

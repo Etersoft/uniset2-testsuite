@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
 import datetime
 import string
 from TestSuiteGlobal import *
 
-''' Вывод на экран (надо сделать Singleton-ом!) '''
 class TestSuiteConsoleReporter(TestSuiteReporter):
+    ''' Вывод на экран (надо сделать Singleton-ом!)'''
+
     def __init__(self):
         TestSuiteReporter.__init__(self)
 
@@ -171,13 +173,17 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         return txt
 
-    def makeReport(self, results):
+    def makeReport(self, results, checkScenarioMode=False):
 
         filename = ''
         if len(results) > 0:
             filename = results[0]['filename']
 
-        head = "\nRESULT REPORT: '%s'" % filename
+        csm = ""
+        if checkScenarioMode is True:
+            csm = "   !!! [CHECK SCENARIO MODE] !!!"
+
+        head = "\nRESULT REPORT: '%s' %s" % (filename, csm)
         head2 = ""
         foot2 = ""
         for i in range(0, len(head)):
@@ -345,7 +351,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         stackItem = call_trace[-1]
         failtrace.append(stackItem)
         curlevel = stackItem['call_level']
-        # print "BEGIN LEVEL: %d " % curlevel
 
         while stackItem is not None:
 
@@ -376,7 +381,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             self.colorize_test_begin(ttab.ljust(tname_width)),
             self.colorize_test_begin("=== TEST CALL TRACE (limit: %d) ===" % call_limit))
 
-        fail_test = failtrace[-1]
+        fail_test = failtrace[-0] # это просто последний тест с конца
         for stackItem in failtrace[-call_limit::]:
             tab = ""
             for i in range(0, stackItem['call_level']):
@@ -392,16 +397,17 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             print "%s%s| %s%s" % (stackItem['filename'].ljust(tname_width), t_comment, tab, stackItem['name'])
 
         print ""
+
         # ищем тест на котором произошёл вылет
         # это последний item в "сбойном тесте"
         fail_item = None
-        if fail_test is not None and len(fail_test['items']):
+        if fail_test is not None and len(fail_test['items']) > 0:
             fail_item = fail_test['items'][-1]
             self.show_extended_information(fail_item)
 
     def show_extended_information(self, fail_item):
 
-        print "\n\n================================= EXTENDED INFORMATION =================================\n"
+        print "\n================================= EXTENDED INFORMATION =================================\n"
 
         ui = fail_item['ui']
         if ui is None:
@@ -409,31 +415,68 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             return
 
         try:
-            sensor = to_sid(fail_item['faulty_sensor'],ui)
+            faultySensor = to_sid(fail_item['faulty_sensor'],ui)
 
-            if sensor[0] == DefaultID:
+            if faultySensor[0] == DefaultID:
                 print "Extended information is not available. Error: Unknown faulty sensor.\n"
                 return
 
-            tinfo = ui.getTimeChange(fail_item['faulty_sensor'])
+            # Получаем информацию кто и когда менял последний раз датчик
+            sensorChangeInfo = ui.getTimeChange(fail_item['faulty_sensor'])
 
-            stime = time.strftime('%Y-%m-%d %H:%M:%S',time.gmtime( tinfo.tv_sec ))
-            print "(%d)'%s' ==> last update %s [%d nanosec] value=%d owner=%d\n\n"%(sensor[0],fail_item['faulty_sensor'], stime, tinfo.tv_nsec, tinfo.value, tinfo.supplier)
+            stime = time.strftime('%Y-%m-%d %H:%M:%S',time.gmtime( sensorChangeInfo.tv_sec ))
+            # При выводе делаем nanosec --> millisec
+            print "(%d)'%s' ==> last update %s.%d value=%d owner=%d\n" % (faultySensor[0], fail_item['faulty_sensor'], stime, sensorChangeInfo.tv_nsec/1000000, sensorChangeInfo.value, sensorChangeInfo.supplier)
 
-            ownerID = tinfo.supplier
+            # Получаем информацию о том кто заказывал этот датчик
+            # возврщется массив запрошенных датчиков с кратким описанием и списоком заказчиков по каждому датчику
+            jsonConsumers = json.loads(ui.apiRequest(fail_item['faulty_sensor'],"/consumers?%s"%faultySensor[0]))
+            listSensors = jsonConsumers['sensors']
+
+            if len(listSensors) == 0:
+                print "..no consumers.."
+                return
+
+            # т.к. мы запрашивали информацию об одно датчике, то в ответе (по идее) только один элемент
+            sensorInfo = listSensors[0]
+            if len(sensorInfo['consumers']) == 0:
+                print "..no consumers for sensor '%s'..\n" % fail_item['faulty_sensor']
+                return
+
+            addon = ""
+            for n in range(0, len(faultySensor[2])):
+                addon = "%s=" % addon
+
+            print "CONSUMERS INFORMATION ('%s'):" % faultySensor[2]
+            print "========================%s===\n" % addon
+
+            # Вывод информации по каждому заказчикам датчика
+            for c in sensorInfo['consumers']:
+                o_name = "%d@%d" % (c['id'], c['node'])
+                try:
+                    print "%s\n" % str(ui.getObjectInfo(o_name))
+                except UException, e:
+                    print "Get information for '%s' error: %s\n" % (o_name, e.getError())
+
+            ownerID = sensorChangeInfo.supplier
             if ownerID == DefaultID:
-                print "Extended information is not available. Error:  Unknown owner for sensor %s\n"%fail_item['faulty_sensor']
+                print "Extended information 'OWNER' is not available. Error:  Unknown owner ID for sensor %s\n"%fail_item['faulty_sensor']
                 return
 
             if ownerID == DefaultSupplerID:
-                print "Extended information is not available. Perhaps the update was done with 'uniset-admin'\n"
+                print "Extended information 'OWNER' is not available. Perhaps the update was done with 'uniset-admin'\n"
                 return
 
-            # обращатся надо на узел где датчик
-            o_name = "%d@%d"%(ownerID,sensor[1])
-            jsonInfo = ui.getObjectInfo(o_name)
+            # Получаем информацию о том кто поменял датчик
+            o_name = "%d@%d" % (ownerID,faultySensor[1])
 
-            print str(jsonInfo)
+            addon = ""
+            for n in range(0, len(o_name)):
+                addon = "%s=" % addon
+
+            print "OWNER INFORMATION (%s):" % o_name
+            print "==================%s===\n" % addon
+            print "%s\n" % str(ui.getObjectInfo(o_name))
 
         except UException, e:
             print "Get extended information error: %s\n" % e.getError()
