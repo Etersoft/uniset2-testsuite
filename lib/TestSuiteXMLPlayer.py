@@ -1541,6 +1541,7 @@ if __name__ == "__main__":
         coloring_out = ts.checkArgParam('--no-coloring-output', False)
         print_calltrace = ts.checkArgParam('--print-calltrace', False)
         print_calltrace_limit = ts.getArgInt('--print-calltrace-limit', 20)
+        calltrace_disable_extinfo = ts.checkArgParam('--calltrace-disable-extended-info',False)
         supplier_name = ts.getArgParam("--supplier-name", "")
         check_scenario = ts.checkArgParam("--check-scenario",False)
         check_scenario_ignorefailed = ts.checkArgParam("--check-scenario-ignore-failed", False)
@@ -1561,6 +1562,7 @@ if __name__ == "__main__":
         consoleRepoter.no_coloring_output = coloring_out
         consoleRepoter.printlog = show_log
         consoleRepoter.printactlog = show_actlog
+        consoleRepoter.calltrace_disable_extinfo = calltrace_disable_extinfo
         # consoleRepoter.printresult = show_result
         ts.add_repoter(consoleRepoter)
 

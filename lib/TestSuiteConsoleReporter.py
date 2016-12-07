@@ -26,6 +26,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.log_hide_msec = False
         self.log_show_testtype = False
         self.no_coloring_output = False
+        self.calltrace_disable_extinfo = False
 
     def print_log(self, item):
         txt = self.make_log(item)
@@ -406,6 +407,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             self.show_extended_information(fail_item)
 
     def show_extended_information(self, fail_item):
+
+        if self.calltrace_disable_extinfo == True:
+            return
 
         print "\n================================= EXTENDED INFORMATION =================================\n"
 
