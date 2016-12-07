@@ -1052,10 +1052,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             try:
                 # cp = ChildProcess(node)
                 # cp.run(True)
-                self.tsi.runscript(node.prop("script"), result)
+                self.tsi.runscript(node.prop("script"), result, True, False)
             except OSError:
                 pass
             except KeyboardInterrupt:
+                pass
+            except Exception:
                 pass
 
             node = self.xml.nextNode(node)
@@ -1622,6 +1624,8 @@ if __name__ == "__main__":
         print "(TestSuiteXMLPlayer): catch exception: " + str(e.getError())
     except KeyboardInterrupt:
         print "(TestSuiteXMLPlayer): catch keyboard interrupt.. "
+    except Exception, e:
+        print "(TestSuiteXMLPlayer): catch basic python exception..."
 
     finally:
         #         sys.stdin = sys.__stdin__

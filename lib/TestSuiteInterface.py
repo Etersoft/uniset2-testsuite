@@ -1038,6 +1038,11 @@ class TestSuiteInterface():
             act['text'] = '\'%s\' error: %s' % (script_name, e.getError())
             self.setActionResult(act, throwIfFailed)
 
+        except Exception, e:
+            act['result'] = t_FAILED
+            act['text'] = '\'%s\' catch python exception..' % (script_name)
+            self.setActionResult(act, throwIfFailed)
+
         return False
 
     def get_check_info(self, node, ui):
