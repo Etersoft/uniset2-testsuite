@@ -8,27 +8,24 @@ load_mod spec
 REL=eter
 MAILDOMAIN=server
 
-# builder50 path
-TOPDIR=/var/ftp/pvt/Etersoft/Ourside/i586
+[ -z "$TOPDIR" ] && TOPDIR=/var/ftp/pub/Ourside
+[ -z "$GEN" ] && GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
 
 PKGNAME=uniset2-testsuite
 SPECNAME=uniset2-testsuite.spec
 
-PLATFORM=i586
-[[ `uname -m` == "x86_64" ]] && PLATFORM=x86_64
+if [ -z "$PLATFORM" ]; then
+	PLATFORM=i586
+	[[ `uname -m` == "x86_64" ]] && PLATFORM=x86_64
+fi
 
 PROJECT=$1
 test -n "$PROJECT" || PROJECT=$PKGNAME
 
-if [ -d "$TOPDIR" ] ; then
-	GEN="genbasedir --create --progress --topdir=$TOPDIR $PROJECT"
-else
-	# For NoteBook build
-	TOPDIR=/var/ftp/pub/Ourside/$PLATFORM
-	GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
-fi
-FTPDIR=$TOPDIR/RPMS.$PROJECT
-BACKUPDIR=$FTPDIR/backup
+[ -a "$GEN" ] || GEN="genbasedir --create --progress --topdir=$TOPDIR $PLATFORM $PROJECT"
+
+[ -z "$FTPDIR" ] && FTPDIR=$TOPDIR/$PLATFORM/RPMS.$PROJECT
+[ -z "$BACKUPDIR" ] && BACKUPDIR=$FTPDIR/backup
 
 fatal()
 {
@@ -44,7 +41,7 @@ function send_notify()
 # FIXME: проверка отправки
 mutt $MAILTO -s "[$PROJECT] New build: $BUILDNAME" <<EOF
 Готова новая сборка: $BUILDNAME
---
+-- 
 your $0
 $CURDATE
 EOF
