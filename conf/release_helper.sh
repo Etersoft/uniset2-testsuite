@@ -66,13 +66,37 @@ function cp2ftp()
 
 # ------------------------------------------------------------------------
 
-add_changelog_helper "- new build" $SPECNAME
+if [ -n "$BUILD_AUTOINCREMENT_SUBRELEASE" ]; then
+	inc_subrelease $SPECNAME
+
+	COMMIT="$(git rev-parse --verify HEAD)"
+	add_changelog -e "- (autobuild): commit $COMMIT" $SPECNAME
+
+elif [ -n "$JENKINS_BUILD_AUTOINCREMENT" ]; then
+	
+	rel="$(get_release $SPECNAME)"
+	
+	# Смотрим номер сборки в JENKINS
+	if [ -n "$BUILD_NUMBER" ]; then
+		rel="${rel}.${JENKINS_PREFIX}${BUILD_NUMBER}"
+		set_release $SPECNAME $rel
+	else
+		# просто увеличиваем subrelease
+		inc_subrelease $SPECNAME
+	fi
+
+	COMMIT="$(git rev-parse --verify HEAD)"
+	add_changelog -e "- (jenkinsbuild): commit $COMMIT" $SPECNAME
+else
+	# обычный build
+   add_changelog_helper "- new build" $SPECNAME
+fi
 
 rpmbb $SPECNAME || fatal "Can't build"
 
 cp2ftp
 
-rpmbs $SPECNAME
+#rpmbs $SPECNAME
 #send_notify
 
 # Увеличиваем релиз и запоминаем спек после успешной сборки
