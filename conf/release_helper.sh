@@ -23,10 +23,12 @@ PROJECT=$1
 test -n "$PROJECT" || PROJECT=$PKGNAME
 
 [ -a "$GEN" ] || GEN="genbasedir --create --progress --topdir=$TOPDIR $PLATFORM $PROJECT"
+[ -a "$GEN_noarch" ] || GEN="genbasedir --create --progress --topdir=$TOPDIR noarch $PROJECT"
 
 [ -z "$FTPDIR" ] && FTPDIR=$TOPDIR/$PLATFORM/RPMS.$PROJECT
 [ -z "$FTPDIR_noarch" ] && FTPDIR_noarch=$TOPDIR/noarch/RPMS.$PROJECT
 [ -z "$BACKUPDIR" ] && BACKUPDIR=$FTPDIR/backup
+[ -z "$BACKUPDIR_noarch" ] && BACKUPDIR_noarch=$FTPDIR_noarch/backup
 
 fatal()
 {
@@ -52,16 +54,22 @@ echo "inform mail sent to $MAILTO"
 function cp2ftp()
 {
 	RPMBINDIR=$RPMDIR/RPMS
-	NOARCHDIR=$RPMDIR/RPMS/noarch
+	RPMNOARCHDIR=$RPMDIR/RPMS/noarch
 	test -d $RPMBINDIR/$PLATFORM && RPMBINDIR=$RPMBINDIR/$PLATFORM
 	mkdir -p $BACKUPDIR
+	mkdir -p $BACKUPDIR_noarch
 	mkdir -p $FTPDIR
 	mkdir -p ${FTPDIR_noarch}
+
 	mv -f $FTPDIR/*$PKGNAME* $BACKUPDIR/
 	mv -f $RPMBINDIR/*$PKGNAME* $FTPDIR/
-	mv -f $NOARCHDIR/*$PKGNAME* ${FTPDIR_noarch}/
 	chmod 'a+rw' $FTPDIR/*$PKGNAME*
 	$GEN
+
+	mv -f $FTPDIR_noarch/*$PKGNAME* $BACKUPDIR_noarch/
+	mv -f $RPMNOARCHDIR/*$PKGNAME* ${FTPDIR_noarch}/
+	chmod 'a+rw' $FTPDIR_noarch/*$PKGNAME*
+	$GEN_noarch
 }
 
 
