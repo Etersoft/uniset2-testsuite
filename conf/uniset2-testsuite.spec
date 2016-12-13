@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.3
-Release: alt11
+Release: alt12
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -36,7 +36,7 @@ GUI (gtk) interface of uniset2-testsuite
 Summary: docs for uniset2-testsuite
 Group: Development/Python
 BuildArch: noarch
-Requires: %name = %version-%release 
+# Requires: %name = %version-%release 
 %description doc
 Documentation for uniset2-testsuite
 
@@ -101,6 +101,10 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Tue Dec 13 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt12
+- doc: minor fixes
+- remove require for doc package
+
 * Wed Dec 07 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt11
 - new version
 
