@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.3
-Release: alt12
+Release: alt13
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -101,6 +101,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Wed Dec 14 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt13
+- skip sleep for 'test scenario mode' (gitlab.set refs #2)
+
 * Tue Dec 13 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt12
 - doc: minor fixes
 - remove require for doc package

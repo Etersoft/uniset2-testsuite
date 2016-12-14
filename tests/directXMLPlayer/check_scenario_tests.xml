@@ -16,6 +16,9 @@
             <compare test="Test_AI1=Test_AI2" holdtime="500"/>
             <compare test="MyGlobalVar2=Test_AI2"/>
         </test>
+        <test name="check: msleep " tags="#tag1">
+        	<action msleep="1000000" comment="skip sleep"/>
+        </test>
         <test name="check: bad param" tags="#tag1#tag3">
             <action set="11wewer1=10"/>
             <action set="111=10"/>

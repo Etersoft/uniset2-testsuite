@@ -976,7 +976,12 @@ class TestSuiteInterface():
         act['text'] = 'sleep %d msec' % msec
         act['result'] = t_PASSED
         self.setActionResult(act, False)
+
+        if self.isCheckScenarioMode():
+            return True
+
         time.sleep((msec / 1000.))
+        return True
 
     def setValue(self, s_id, s_val, act, ui, throwIfFail=True):
 
