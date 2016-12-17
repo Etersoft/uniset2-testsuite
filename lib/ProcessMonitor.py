@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import signal
 import threading
 from subprocess import Popen
@@ -14,6 +15,7 @@ class ChildProcess():
         self.xmlnode = xmlnode
         self.cmd = []
         self.cmd.append(to_str(xmlnode.prop('script')))
+        self.script = self.cmd
         self.cmd = self.cmd + to_str(xmlnode.prop('args')).split(" ")
         self.ignore_terminated = to_int(xmlnode.prop('ignore_terminated'))
         self.ignore_run_failed = to_int(xmlnode.prop('ignore_run_failed'))
@@ -76,6 +78,10 @@ class ChildProcess():
     def wait(self):
         if self.popen and self.popen.poll() == None:
             self.popen.wait()
+
+    def check(self):
+        # проверяем что указанный скрипт существует
+        return os.path.exists(self.script)
 
 # ---------------------------------------------------------
 def waitncpid(w_pid, timeout_sec=-1):
@@ -285,5 +291,16 @@ class ProcessMonitor():
     def join(self):
         if self.thr:
             self.thr.join()
+
+    def chek(self):
+        '''
+        Проверка корректности
+        :return: True если всё ok
+        '''
+        for p in self.plist:
+            if p.check() == False:
+                return False
+
+        return True
 
 # ---------------------------------------------------------

@@ -1066,6 +1066,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.tsi.print_call_trace(self.results,call_limits)
 
     def play_all(self, xml=None):
+
         if xml is None:
             xml = self.xml
 
@@ -1080,7 +1081,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         pmonitor = self.get_pmonitor(xml)
         resOK = False
         try:
-            pmonitor.start()
+            if self.tsi.isCheckScenarioMode():
+                pmonitor.start()
+            else:
+                pmonitor.check()
+
             self.tsi.start_tests()
             while testnode is not None:
                 tm_start = time.time()
@@ -1117,7 +1122,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             self.tsi.finish_tests()
             self.tsi.print_result_report(self.results)
-            pmonitor.stop()
+            if not self.tsi.isCheckScenarioMode():
+                pmonitor.stop()
 
         return resOK
 
@@ -1140,7 +1146,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         item['item_type'] = 'test'
 
         try:
-            pmonitor.start()
+            if self.tsi.isCheckScenarioMode():
+                pmonitor.check()
+            else:
+                pmonitor.start()
+
             while testnode is not None:
                 tm_start = time.time()
                 item['items'].append(self.play_test(xml, testnode, logfile))
@@ -1159,7 +1169,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             raise e
 
         finally:
-            pmonitor.stop()
+            if not self.tsi.isCheckScenarioMode():
+                pmonitor.stop()
 
         self.del_from_test_replace(spec_replace_list)
         self.del_from_global_replace(xml.global_replace_list)
@@ -1208,7 +1219,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         resOK = False
         tm_start = time.time()
         try:
-            pmonitor.start()
+            if self.tsi.isCheckScenarioMode():
+                pmonitor.check()
+            else:
+                pmonitor.start()
+
             self.tsi.start_tests()
             for tprop, tname in tlist:
                 tm_start = time.time()
@@ -1242,7 +1257,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             self.tsi.finish_tests()
             self.tsi.print_result_report(self.results)
-            pmonitor.stop()
+            if not self.tsi.isCheckScenarioMode():
+                pmonitor.stop()
 
         return resOK
 
