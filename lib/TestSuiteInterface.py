@@ -542,10 +542,7 @@ class TestSuiteInterface():
                 if len(s_id) == 2:
                     v1 = self.getValue(s_id[0], ui)
                     v2 = self.getValue(s_id[1], ui)
-                    if v1 != v2:
-                        if self.isCheckScenarioMode() == True:
-                            break
-
+                    if v1 != v2 and not self.isCheckScenarioMode():
                         item['result'] = t_FAILED
                         item['text'] = 'HOLD %s(%d) != %s(%d) holdtime=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
                         item['faulty_sensor'] = s_id
@@ -553,10 +550,7 @@ class TestSuiteInterface():
                         return False
                 else:
                     v1 = self.getValue(s_id, ui)
-                    if v1 != val:
-                        if self.isCheckScenarioMode() == False:
-                            break
-
+                    if v1 != val and not self.isCheckScenarioMode():
                         item['result'] = t_FAILED
                         item['text'] = 'HOLD %s=%d != %d holdtime=%d msec' % (s_id, v1, val, t_out)
                         item['faulty_sensor'] = s_id
@@ -676,7 +670,7 @@ class TestSuiteInterface():
                 if len(s_id) == 2:
                     v1 = self.getValue(s_id[0], ui)
                     v2 = self.getValue(s_id[1], ui)
-                    if v1 == v2 and self.isCheckScenarioMode() == False:
+                    if v1 == v2 and not self.isCheckScenarioMode():
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = 'HOLD %s(%d) != %s(%d) holdtime=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
@@ -684,7 +678,7 @@ class TestSuiteInterface():
                         return False
                 else:
                     v = self.getValue(s_id, ui)
-                    if v == val:
+                    if v == val and not self.isCheckScenarioMode():
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = 'HOLD %s=%d != %d holdtime=%d msec' % (s_id, v, val, t_out)
@@ -1017,6 +1011,27 @@ class TestSuiteInterface():
 
     def runscript(self, script_name, act, silent=True, throwIfFailed=True):
         try:
+            act['type'] = 'SCRIPT'
+            act['text'] = '%s' % script_name
+
+            if self.isCheckScenarioMode():
+                act['result'] = t_PASSED
+                script = ''
+                if script_name:
+                    script = script_name.split(' ')
+
+                if len(script) > 0:
+                    script = script[0]
+
+                if os.path.exists(script):
+                    act['result'] = t_PASSED
+                    self.setActionResult(act, False)
+                    return True
+
+                act['result'] = t_FAILED
+                act['text'] = 'SCRIPT ERROR: \'%s\' not found' % script
+                self.setActionResult(act, throwIfFailed)
+                return False
 
             sout = None
             serr = None
@@ -1025,11 +1040,8 @@ class TestSuiteInterface():
                 sout = nul_f
                 serr = nul_f
 
-            act['type'] = 'SCRIPT'
-            act['text'] = '%s' % script_name
-
             ret = subprocess.call(script_name, shell=True, stdin=None, stdout=sout, stderr=serr)
-            if ret and self.isCheckScenarioMode() == False:
+            if ret:
                 act['result'] = t_FAILED
                 self.setActionResult(act, throwIfFailed)
                 return False

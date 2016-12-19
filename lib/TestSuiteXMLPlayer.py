@@ -16,6 +16,7 @@ class keys():
     pause = ' '  # break
     step = 's'  # on 'step by step' mode
 
+
 class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def __init__(self, testsuiteinterface, xmlfile, ignore_runlist=False):
 
@@ -91,7 +92,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.tsi.print_call_trace(self.call_stack, call_limits)
 
     @staticmethod
-    def get_begin_test_node(self, xml):
+    def get_begin_test_node(xml):
         return xml.begnode
 
     def set_supplier_name(self, supName):
@@ -936,6 +937,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             s_v2 = to_int(self.replace(node.prop("rval")))
 
             self.tsi.setValue(s_id, s_val, result, ui)
+
+            if self.tsi.isCheckScenarioMode():
+                return result
+
             t = threading.Timer((reset_msec / 1000.), self.on_reset_timer, [s_id, s_v2, reset_msec, ui])
             self.add_reset_thread(t.getName(), t)
             t.start()
@@ -1048,10 +1053,13 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         result = make_default_item()
         result['nrecur'] = self.tsi.nrecur
+
+        if self.tsi.isCheckScenarioMode():
+            inf = make_info_item("CHECK '%s' scripts" % section )
+            self.tsi.setResult(inf, False)
+
         while node is not None:
             try:
-                # cp = ChildProcess(node)
-                # cp.run(True)
                 self.tsi.runscript(node.prop("script"), result, True, False)
             except OSError:
                 pass
@@ -1082,9 +1090,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         resOK = False
         try:
             if self.tsi.isCheckScenarioMode():
-                pmonitor.start()
-            else:
                 pmonitor.check()
+            else:
+                pmonitor.start()
 
             self.tsi.start_tests()
             while testnode is not None:
@@ -1115,10 +1123,14 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             raise e
 
         finally:
-            if resOK == True:
+            if self.tsi.isCheckScenarioMode():
                 self.fini_success()
-            else:
                 self.fini_failure()
+            else:
+                if resOK == True:
+                    self.fini_success()
+                else:
+                    self.fini_failure()
 
             self.tsi.finish_tests()
             self.tsi.print_result_report(self.results)
@@ -1642,8 +1654,8 @@ if __name__ == "__main__":
         print "(TestSuiteXMLPlayer): catch exception: " + str(e.getError())
     except KeyboardInterrupt:
         print "(TestSuiteXMLPlayer): catch keyboard interrupt.. "
-    except Exception, e:
-        print "(TestSuiteXMLPlayer): catch basic python exception..."
+#    except Exception, e:
+#        print "(TestSuiteXMLPlayer): catch basic python exception..."
 
     finally:
         #         sys.stdin = sys.__stdin__

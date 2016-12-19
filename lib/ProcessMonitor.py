@@ -14,8 +14,8 @@ class ChildProcess():
 
         self.xmlnode = xmlnode
         self.cmd = []
-        self.cmd.append(to_str(xmlnode.prop('script')))
-        self.script = self.cmd
+        self.script = to_str(xmlnode.prop('script'))
+        self.cmd.append(self.script)
         self.cmd = self.cmd + to_str(xmlnode.prop('args')).split(" ")
         self.ignore_terminated = to_int(xmlnode.prop('ignore_terminated'))
         self.ignore_run_failed = to_int(xmlnode.prop('ignore_run_failed'))
@@ -292,7 +292,7 @@ class ProcessMonitor():
         if self.thr:
             self.thr.join()
 
-    def chek(self):
+    def check(self):
         '''
         Проверка корректности
         :return: True если всё ok

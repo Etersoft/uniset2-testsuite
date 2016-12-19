@@ -6,6 +6,14 @@
 			<item alias="c2" mbslave="localhost:2049" type="modbus"/>
         </aliases>
     </Config>
+    <Success>
+        <item script="./success.sh param1 param2"/>
+        <item script="./script-not-found.sh param1 param2"/>
+    </Success>
+    <Failure>
+        <item script="./failure.sh param1 param2"/>
+        <item script="./script-not-found.sh param1 param2"/>
+    </Failure>    
     <TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:Test_AI1,MyGlobalVar:101">
         <test name="check: Equal test" tags="#tag1">
             <action set="111=10"/>
@@ -13,7 +21,7 @@
             <compare test="111=112"/>
             <compare test="Test_AI1=Test_AI2"/>
             <compare test="111=112" holdtime="500"/>
-            <compare test="Test_AI1=Test_AI2" holdtime="500"/>
+            <compare test="Test_AI1=Test_AI2" holdtime="5000"/>
             <compare test="MyGlobalVar2=Test_AI2"/>
         </test>
         <test name="check: msleep " tags="#tag1">
@@ -25,10 +33,13 @@
             <action set="112=10"/>
             <compare test="111=112"/>
             <compare test="1dsfsdf11=112"/>
-            <compare test="Test_AI1=Test_AI2" holdtime="500"/>
+            <compare test="Test_AI1=Test_AI2" holdtime="5000"/>
         </test>
         <test name="check: bad outlink">
 	        <check file="not_found_links_file.xml" link="ALL" test="outlink"/>
+        </test>
+        <test name="check: ALL outlink">
+	        <check file="tests.xml" link="ALL" test="outlink"/>
         </test>
         <test name="check: bad link" tags="#tag3">
 	        <check file="tests.xml" link="num=werwer" test="outlink"/>
@@ -38,6 +49,9 @@
         </test>
         <test name="check: bad outlink scenario">
 	        <check file="check_scenario_test1.xml" link="ALL" test="outlink"/>
+        </test>
+        <test name="check: bad script">
+	        <action name="script" script="unknown_script.sh" show_output="1"/>
         </test>
   </TestList>
 </TestScenario>
