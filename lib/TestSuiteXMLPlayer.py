@@ -705,7 +705,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     result['text'] = "Can`t open file='%s'." % t_file
                     self.tsi.setResult(result, True)
                     return result
-                except TestSuiteException, e:
+                except TestSuiteException, ex:
                     result['result'] = t_FAILED
                     result['text'] = "Can`t open file='%s'." % t_file
                     self.tsi.setResult(result, True)
@@ -810,7 +810,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if len(self.reset_thread_dict) <= 0:
             self.reset_thread_event.set()
             return
+
         tout = timeout_sec
+
         while tout > 0:
             break_flag = True
             if self.check_thread_event(self.reset_thread_event):
@@ -854,6 +856,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         for t in taglist:
             if t in self.tags:
                 return True
+
         return False
 
     def firstTag(self, tag):
@@ -1307,7 +1310,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         testname = "'%s'" % result['name']
 
-        if len(result['tags']) > 0:
+        if len(result['tags']) > 0 and len(result['tag']) > 0:
             testname = '%s [%s]'%( testname, result['tag'] )
 
         self.call_stack.append(result)
@@ -1400,7 +1403,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             info['item_type'] = result['item_type']
             self.tsi.setResult(info, False)
             # чисто визуальное отделение нового теста
-            if self.tsi.printlog == True and self.tsi.nrecur <= 0:
+            if self.tsi.printlog == True and self.tsi.nrecur <= 0 and not self.tsi.isShowTestTreeMode():
                 print "---------------------------------------------------------------------------------------------------------------------"
 
         return result
@@ -1574,10 +1577,16 @@ if __name__ == "__main__":
         check_scenario = ts.checkArgParam("--check-scenario",False)
         check_scenario_ignorefailed = ts.checkArgParam("--check-scenario-ignore-failed", False)
         tags = ts.getArgParam("--play-tags", "")
+        show_test_tree = ts.checkArgParam("--show-test-tree", False)
+        if show_test_tree:
+            check_scenario = True
+            check_scenario_ignorefailed = True
+            show_result = False
 
         cf = conflist.split(',')
         ts.init_testsuite(cf, show_log, show_actlog)
         ts.set_ignore_nodes(ignore_nodes)
+        ts.set_show_test_tree_mode(show_test_tree)
 
         consoleRepoter = TestSuiteConsoleReporter()
         consoleRepoter.set_notimestamp(showtimestamp == False)
@@ -1591,6 +1600,7 @@ if __name__ == "__main__":
         consoleRepoter.printlog = show_log
         consoleRepoter.printactlog = show_actlog
         consoleRepoter.calltrace_disable_extinfo = calltrace_disable_extinfo
+        consoleRepoter.setShowTestTreeMode(show_test_tree)
         # consoleRepoter.printresult = show_result
         ts.add_repoter(consoleRepoter)
 

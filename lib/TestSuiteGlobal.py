@@ -78,12 +78,16 @@ class TestSuiteReporter():
     def __init__(self):
         self.start_time = time.time()
         self.finish_time = time.time()
+        self.showTestTreeMode = False
 
     def print_log(self, item):
         pass
 
     def print_actlog(self, act):
         pass
+
+    def setShowTestTreeMode(self, set):
+        self.showTestTreeMode = set
 
     def makeReport(self, results, checkScenarioMode=False):
         pass

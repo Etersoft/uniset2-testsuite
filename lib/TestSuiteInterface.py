@@ -34,6 +34,7 @@ class TestSuiteInterface():
         self.supplierID = uniset2.DefaultSupplerID
         self.checkScenarioMode = False
         self.checkScenarioMode_ignorefailed = False
+        self.showTestTreeMode = False
         self.reporters = list()
 
         self.rcheck = re.compile(r"([\w@\ :]+)([!><]*[=]*)([-\d\ ]+)")
@@ -206,6 +207,12 @@ class TestSuiteInterface():
 
     def set_check_scenario_mode_ignore_failed(self, set):
         self.checkScenarioMode_ignorefailed = set
+
+    def isShowTestTreeMode(self):
+        return self.showTestTreeMode
+
+    def set_show_test_tree_mode(self, set):
+        self.showTestTreeMode = set
 
     def add_repoter(self, reporter):
         self.reporters.append(reporter)

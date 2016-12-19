@@ -29,7 +29,14 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.calltrace_disable_extinfo = False
 
     def print_log(self, item):
+
         txt = self.make_log(item)
+
+        if self.showTestTreeMode:
+            if item['item_type'] == 'test' and item['type'] != 'FINISH':
+                print txt
+            return
+
         if self.printlog:
             print txt
 
@@ -47,7 +54,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         except TypeError:
             pass
 
-        self.log_numstr += 1
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
 
         ntab = False
@@ -55,6 +61,15 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             ntab = True
 
         txt2 = self.set_tab_space(txt, item['nrecur'], ntab)
+
+        if self.showTestTreeMode:
+            if item['item_type'] == 'test' and item['type'] != 'FINISH':
+                self.log_numstr += 1
+            if self.log_show_numline:
+                txt2 = '%4s %s' % (self.log_numstr, txt2)
+            return txt2
+
+        self.log_numstr += 1
 
         txt = str('[%s] %s%8s%s %s' % (
             self.colorize_result(t_result), self.colsep, t_test, self.colsep,
@@ -74,6 +89,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
                 pass
             except TypeError:
                 pass
+
             try:
                 txt = '%s %s %s' % (
                     self.colorize_text(t_result, t_test,
@@ -103,6 +119,12 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
     def print_actlog(self, act):
 
         txt = self.make_actlog(act)
+
+        if self.showTestTreeMode:
+            if act['item_type'] == 'test' and act['type'] != 'FINISH':
+                print txt
+            return
+
         if self.printactlog:
             print txt
 
@@ -121,7 +143,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         except TypeError:
             pass
 
-        self.log_numstr += 1
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
 
         ntab = False
@@ -129,6 +150,16 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             ntab = True
 
         txt2 = self.set_tab_space(txt, act['nrecur'], ntab)
+
+        if self.showTestTreeMode:
+            if act['item_type'] == 'test' and act['type'] != 'FINISH':
+                self.log_numstr += 1
+
+            if self.log_show_numline:
+                txt2 = '%4s %s' % (self.log_numstr, txt2)
+            return txt2
+
+        self.log_numstr += 1
 
         txt = str('[%7s] %s%8s%s %s' % (
             self.colorize_result(t_result), self.colsep, t_act, self.colsep, self.colorize_text(t_result, t_act, txt2)))
@@ -175,6 +206,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         return txt
 
     def makeReport(self, results, checkScenarioMode=False):
+
+        if self.showTestTreeMode:
+            return
 
         filename = ''
         if len(results) > 0:
