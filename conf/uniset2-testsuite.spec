@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.3
-Release: alt13
+Release: alt14
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -101,6 +101,11 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Mon Dec 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt14
+- add '--show-test-tree' command (gitlab.set issue #5)
+- gitlab.set issue #1 (check scripts path in scenario-mode)
+- gitlab.set issue #4 (bug in holdtime)
+
 * Wed Dec 14 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt13
 - skip sleep for 'test scenario mode' (gitlab.set refs #2)
 
