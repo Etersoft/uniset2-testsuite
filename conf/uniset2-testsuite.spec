@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.3
-Release: alt14
+Release: alt15
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -12,9 +12,9 @@ Source: %name-%version.tar
 # optimized out: pkg-config python-base python-devel python-modules
 BuildRequires: python-module-distribute
 
-BuildRequires: python-module-uniset2 >= 2.6-alt4
+BuildRequires: python-module-uniset2 >= 2.6-alt10
 
-Requires: python-module-uniset2 >= 2.6-alt4
+Requires: python-module-uniset2 >= 2.6-alt10
 
 %if_enabled doc
 BuildRequires: doxygen
@@ -101,6 +101,10 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Mon Jan 09 2017 Pavel Vainerman <pv@altlinux.ru> 2.3-alt15
+- fixes for new uniset
+- fixed bug set gitlab issue #8 
+
 * Mon Dec 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt14
 - add '--show-test-tree' command (gitlab.set issue #5)
 - gitlab.set issue #1 (check scripts path in scenario-mode)

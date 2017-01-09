@@ -9,7 +9,6 @@ import subprocess
 
 from TestSuiteGlobal import *
 
-
 class logid():
     Type = 0
     Time = 1
@@ -109,8 +108,7 @@ class TestSuiteInterface():
                 return None
             return self.ui_list[alias]
 
-        ui = UInterface()
-        ui.create_uniset_interface(xmlfile, self.params)
+        ui = UInterfaceUniSet(xmlfile, self.params)
         ui.set_ignore_nodes(self.ignore_nodes)
         self.ui_list[alias] = ui
         self.conf_list[alias] = xmlfile
@@ -129,9 +127,7 @@ class TestSuiteInterface():
             self.setResult(make_fail_result('(add_modbus_config): Failed get ip:port!  mbslave=\'%s\'' % (mbslave)), True)
             return None
 
-        ui = UInterface()
-        ui.create_modbus_interface()
-        ui.i.prepare(ip, port)
+        ui = UInterfaceModbus(ip,port)
         self.ui_list[alias] = ui
         return ui
 
