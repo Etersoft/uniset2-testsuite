@@ -203,7 +203,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             xml.begnode = xml.begnode.children
             self.begin_tests(xml)
         else:
-            self.tsi.setResult(make_fail_result("Can`t find begin node <TestList>"), True)
+            self.tsi.setResult(make_fail_result("Can`t find begin node <TestList> in %s" % xml.getFileName()), True)
 
     def initProcessMonitor(self, xml):
 
@@ -1031,7 +1031,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             return [testnode, firstnode]
 
         fail = make_default_item()
-        fail['text'] = 'Can`t find begin node <test>'
+        fail['text'] = "Can`t find begin node <test> in %s" % xml.getFileName()
         fail['type'] = '(TestSuiteXMLPlayer)'
         fail['result'] = t_FAILED
         fail['nrecur'] = self.tsi.nrecur
