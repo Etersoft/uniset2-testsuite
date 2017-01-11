@@ -177,11 +177,15 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 ui = self.tsi.add_modbus_config(node.prop("mbslave"), node.prop("alias"))
                 if to_str(node.prop("default")) != "":
                     self.tsi.set_default_ui(ui)
+            elif c_type == "snmp":
+                ui = self.tsi.add_snmp_config(node.prop("snmp"), node.prop("alias"))
+                if to_str(node.prop("default")) != "":
+                    self.tsi.set_default_ui(ui)
             else:
-                self.tsi.setResult(make_fail_result("Unknown scenario type='%s' Must be 'uniset' or 'modbus'" % c_type,
+                self.tsi.setResult(make_fail_result("Unknown scenario type='%s' Must be 'uniset' or 'modbus' or 'snmp' " % c_type,
                                                     "(TestSuiteXMLPlayer:initConfig)"), True)
                 raise TestSuiteException(
-                    "(TestSuiteXMLPlayer:initConfig): Unknown scenario type='%s' Must be 'uniset' or 'modbus'" % c_type)
+                    "(TestSuiteXMLPlayer:initConfig): Unknown scenario type='%s' Must be 'uniset' or 'modbus' or 'snmp'" % c_type)
 
             # print "add_config: " + str(node)
             node = xml.nextNode(node)

@@ -7,7 +7,9 @@ import subprocess
 # \todo может потом перейти на использование colorama
 # import colorama as clr
 
+from UInterfaceSNMP import *
 from TestSuiteGlobal import *
+
 
 class logid():
     Type = 0
@@ -118,6 +120,7 @@ class TestSuiteInterface():
         return ui
 
     def add_modbus_config(self, mbslave, alias, already_ignore=True):
+
         if alias in self.ui_list:
             if not already_ignore:
                 self.setResult(make_fail_result(
@@ -127,21 +130,41 @@ class TestSuiteInterface():
 
         ip, port = get_mbslave_param(mbslave)
         if ip is None:
-            self.setResult(make_fail_result('(add_modbus_config): Failed get ip:port!  mbslave=\'%s\'' % (mbslave)), True)
+            self.setResult(make_fail_result('(add_modbus_config): Failed get ip:port!  mbslave=\'%s\'' % (mbslave)),
+                           True)
             return None
 
-        ui = UInterfaceModbus(ip,port)
+        ui = UInterfaceModbus(ip, port)
         self.ui_list[alias] = ui
         return ui
+
+    def add_snmp_config(self, snmpConfile, alias, already_ignore=True):
+
+        if alias in self.ui_list:
+            if not already_ignore:
+                self.setResult(make_fail_result(
+                    '(add_snmp_config): %s already added..(Ignore add \'%s@%s\')' % (alias, alias, snmpConfile)), True)
+                return None
+            return self.ui_list[alias]
+
+        try:
+            ui = UInterfaceSNMP(snmpConfile)
+            self.ui_list[alias] = ui
+            return ui
+        except UException, e:
+            self.setResult(make_fail_result('(add_snmp_config): ERROR: %s' % e.getError()), True)
+            return None
 
     def remove_config(self, alias):
         if alias in self.ui_list:
             self.ui_list.pop(alias)
 
     def set_default_config(self, xmlfile, already_ignore=True):
+
         if xmlfile in self.ui_list:
             if not already_ignore:
-                self.setResult(make_fail_result('(set_default_config): %s already added..(Ignore add..)' % (xmlfile)), True)
+                self.setResult(make_fail_result('(set_default_config): %s already added..(Ignore add..)' % (xmlfile)),
+                               True)
                 return False
 
             ui = UInterface()
@@ -330,7 +353,7 @@ class TestSuiteInterface():
 
         return ui.getValue(s_id)
 
-    def isTrue(self, s_id, t_out, t_check, item, ui ):
+    def isTrue(self, s_id, t_out, t_check, item, ui):
 
         item['type'] = 'TRUE'
         item['ui'] = ui
@@ -370,7 +393,7 @@ class TestSuiteInterface():
 
         return False
 
-    def holdTrue(self, s_id, t_out, t_check, item, ui ):
+    def holdTrue(self, s_id, t_out, t_check, item, ui):
 
         item['type'] = 'TRUE'
         item['ui'] = ui
@@ -410,7 +433,7 @@ class TestSuiteInterface():
 
         return False
 
-    def isFalse(self, s_id, t_out, t_check, item, ui ):
+    def isFalse(self, s_id, t_out, t_check, item, ui):
 
         item['type'] = 'FALSE'
         item['ui'] = ui
@@ -490,7 +513,7 @@ class TestSuiteInterface():
 
         return False
 
-    def isEqual(self, s_id, val, t_out, t_check, item, ui ):
+    def isEqual(self, s_id, val, t_out, t_check, item, ui):
 
         item['type'] = 'EQUAL'
         item['ui'] = ui
@@ -825,17 +848,17 @@ class TestSuiteInterface():
                     v1 = self.getValue(s_id[0], ui)
                     v2 = self.getValue(s_id[1], ui)
                     if self.isCheckScenarioMode() == False and (
-                        (cond == '>=' and v1 < v2) or (cond == '>' and v1 <= v2)):
+                                (cond == '>=' and v1 < v2) or (cond == '>' and v1 <= v2)):
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = 'HOLD %s(%d) not %s %s(%d) holdtime=%d msec' % (
-                        s_id[0], v1, cond, s_id[1], v2, t_out)
+                            s_id[0], v1, cond, s_id[1], v2, t_out)
                         self.setResult(item, True)
                         return False
                 else:
                     v = self.getValue(s_id, ui)
                     if self.isCheckScenarioMode() == False and (
-                        (cond == '>=' and v < val) or (cond == '>' and v <= val)):
+                                (cond == '>=' and v < val) or (cond == '>' and v <= val)):
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = 'HOLD %s=%d not %s %d holdtime=%d msec' % (s_id, v, cond, val, t_out)
@@ -951,7 +974,7 @@ class TestSuiteInterface():
                     v1 = self.getValue(s_id[0], ui)
                     v2 = self.getValue(s_id[1], ui)
                     if self.isCheckScenarioMode() == False and (
-                        (cond == '<=' and v1 > v2) or (cond == '<' and v1 >= v2)):
+                                (cond == '<=' and v1 > v2) or (cond == '<' and v1 >= v2)):
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = '%s(%d) not %s %s(%d) holdtime=%d msec' % (s_id[0], v1, cond, s_id[1], v2, t_out)
@@ -959,7 +982,8 @@ class TestSuiteInterface():
                         return False
                 else:
                     v = self.getValue(s_id, ui)
-                    if self.isCheckScenarioMode() == False and ((cond == '<=' and v > val) or (cond == '<' and v >= val)):
+                    if self.isCheckScenarioMode() == False and (
+                                (cond == '<=' and v > val) or (cond == '<' and v >= val)):
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = '%s=%d not %s %d holdtime=%d msec' % (s_id, v, cond, val, t_out)

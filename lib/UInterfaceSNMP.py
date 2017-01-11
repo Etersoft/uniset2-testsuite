@@ -10,7 +10,7 @@ import netsnmp
 '''
 Пример файла конфигурации
 
-<?xml version = '1.0' encoding = 'utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <SNMP>
 <Nodes>
      <item name="node1" ip="10.16.11.1" comment="UPS1"/>
@@ -49,6 +49,8 @@ class UInterfaceSNMP(UInterface):
         if node is None:
             raise UValidateError("(UInterfaceSNMP): section <Nodes> not found in %s" % xml.getFileName())
 
+        node = xml.firstNode(node.children)
+
         while node is not None:
 
             item = dict()
@@ -77,6 +79,8 @@ class UInterfaceSNMP(UInterface):
         if node is None:
             raise UValidateError("(UInterfaceSNMP): section <Parameters> not found in %s" % xml.getFileName())
 
+        node = xml.firstNode(node.children)
+
         while node is not None:
 
             item = dict()
@@ -104,6 +108,24 @@ class UInterfaceSNMP(UInterface):
         id, node = get_sinfo(name, '@')
         return [id, node, name]
 
+    def getParam(self, name):
+
+        try:
+            return self.mibparams[name]
+        except KeyError, e:
+            return None
+        except ValueError, e:
+            return None
+
+    def getNode(self, name):
+
+        try:
+            return self.nodes[name]
+        except KeyError, e:
+            return None
+        except ValueError, e:
+            return None
+
     # return [ RESULT, ERROR ]
     def validateParam(self, name):
 
@@ -120,8 +142,12 @@ class UInterfaceSNMP(UInterface):
     def getValue(self, name):
 
         try:
-            id, node, sname = self.getIDinfo(name)
-            oid = netsnmp.Varbind('sysDescr.0')
+            id, nodename, sname = self.getIDinfo(name)
+
+            param = self.getParam(id)
+            node = self.getNode(nodename)
+            # print "(GETVALUE): param=%s   node=%s"%(str(param),str(node))
+            return 0
 
         except UException, e:
             raise e
