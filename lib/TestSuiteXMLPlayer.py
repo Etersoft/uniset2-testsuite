@@ -1540,6 +1540,7 @@ if __name__ == "__main__":
             print "--check-scenario                 - Enable 'check scenario mode'. Ignore for all tests result. Only check parameters"
             print "--check-scenario-ignore-failed   - Enable 'check scenario mode'. Ignore for all tests result and checks"
             print "--play-tags '#tag1#tag2#tag3..'  - Play tests only with the specified tag"
+            print "--show-test-tree                 - Show tree of tests"
             print ''
             exit(0)
 
