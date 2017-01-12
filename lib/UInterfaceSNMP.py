@@ -5,22 +5,25 @@ from uniset2.UInterface import *
 from uniset2.UGlobal import *
 from uniset2.UniXML import *
 from uniset2.pyUExceptions import *
-import netsnmp
+from pysnmp.entity.rfc3413.oneliner import cmdgen as snmp
 
 '''
 Пример файла конфигурации
 
 <?xml version='1.0' encoding='utf-8'?>
 <SNMP>
-<Nodes>
-     <item name="node1" ip="10.16.11.1" comment="UPS1"/>
-     <item name="node2" ip="10.16.11.2" comment="UPS2"/>
-     <item name="node3" ip="10.16.11.3" comment="UPS3"/>
-</Nodes>
-<Parameters>
-	<item name="status" OID="1.3.6.1.2.1.33.1.2.1.0" ObjectName="BatteryStatus"/>
-	<item name="voltage" OID="1.3.6.1.2.1.33.1.2.1.0" ObjectName="BatteryVoltage"/>
-</Parameters>
+  <Nodes defaultProtocolVersion="2c" defaultTimeout='1' defaultRetries='2' defaultPort='161'>
+    <item name="node1" ip="192.94.214.205" comment="UPS1" protocolVersion="2" timeout='1' retries='2'/>
+    <item name="node2" ip="10.16.11.2" comment="UPS2"/>
+    <item name="node3" ip="10.16.11.3" comment="UPS3"/>
+  </Nodes>
+
+  <Parameters defaultCommunity="demopublic">
+    <item name="uptime" OID="1.3.6.1.2.1.1.3.0" community="demopublic" ObjectName="SNMPv2-MIB::sysUpTime.0"/>
+    <item name="bstatus" OID="1.3.6.1.2.1.33.1.2.1.0" ObjectName="BatteryStatus"/>
+    <item name="btime" OID=".1.3.6.1.2.1.33.1.2.2.0" ObjectName="TimeOnBattery"/>
+    <item name="bcharge" OID=".1.3.6.1.2.1.33.1.2.4.0" ObjectName="BatteryCharge"/>
+  </Parameters>
 </SNMP>
 '''
 
@@ -37,17 +40,58 @@ class UInterfaceSNMP(UInterface):
 
         self.initFromFile(snmpConfile)
 
+        self.snmp = snmp.CommandGenerator()
+
     def initFromFile(self, xmlfile):
 
         xml = UniXML(xmlfile)
         self.initNodesList(xml)
         self.initParameters(xml)
 
+    @staticmethod
+    def getIntProp(node, propname, defval):
+        s = node.prop(propname)
+        if s:
+            return to_int(s)
+
+        return defval
+
+    @staticmethod
+    def getProp(node, propname, defval):
+        s = node.prop(propname)
+        if s:
+            return s
+
+        return defval
+
+    @staticmethod
+    def getMPModel(protocolVersion, defval=1):
+
+        # преобразуем версию в число для pysnmp
+        # см. http://pysnmp.sourceforge.net/docs/pysnmp-hlapi-tutorial.html#choosing-snmp-protocol-and-credentials
+
+        if protocolVersion == '1': # SNMPv1
+            return 0
+
+        if protocolVersion == '2' or protocolVersion == '2c': # SNMPv2c
+            return 1
+
+        return defval
+
     def initNodesList(self, xml):
 
         node = xml.findNode(xml.getDoc(), "Nodes")[0]
         if node is None:
             raise UValidateError("(UInterfaceSNMP): section <Nodes> not found in %s" % xml.getFileName())
+
+        defaultProtocolVersion = self.getProp(node, "defaultProtocolVersion", '2c')
+        defaultTimeout = self.getIntProp(node, "defaultTimeout", 1)
+        defaultRetries = self.getIntProp(node, "defaultRetries", 1)
+        defaultPort = self.getIntProp(node, "defaultPort", 161)
+
+        # elif defaultProtocolVersion == 3:
+        #     defaultPass =
+        #     defaultLogin =
 
         node = xml.firstNode(node.children)
 
@@ -69,6 +113,13 @@ class UInterfaceSNMP(UInterface):
 
             item['comment'] = to_str(node.prop("comment"))
 
+            protocolVersion = self.getProp(node, "protocolVersion", defaultProtocolVersion)
+
+            item['mpModel'] = self.getMPModel(protocolVersion)
+            item['port'] = self.getIntProp(node, "port", defaultPort )
+            item['timeout'] = self.getIntProp(node, "timeout", defaultTimeout)
+            item['retries'] = self.getIntProp(node, "retries", defaultRetries)
+
             self.nodes[item['name']] = item
 
             node = xml.nextNode(node)
@@ -78,6 +129,8 @@ class UInterfaceSNMP(UInterface):
         node = xml.findNode(xml.getDoc(), "Parameters")[0]
         if node is None:
             raise UValidateError("(UInterfaceSNMP): section <Parameters> not found in %s" % xml.getFileName())
+
+        defaultCommunity = to_str(node.prop("defaultCommunity"))
 
         node = xml.firstNode(node.children)
 
@@ -91,13 +144,15 @@ class UInterfaceSNMP(UInterface):
                     "(UInterfaceSNMP): <Parameters> : unknown name='' for string '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
+            item['ObjectName'] = to_str(node.prop("ObjectName"))
             item['OID'] = to_str(node.prop("OID"))
-            if item['OID'] == "":
+
+            if not item['OID'] and not item['ObjectName']:
                 raise UValidateError(
-                    "(UInterfaceSNMP):  <Parameters> : unknown OID='' for string '%s' in file %s" % (
+                    "(UInterfaceSNMP):  <Parameters> : unknown OID='' or ObjectName='' for parameter '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
-            item['ObjectName'] = to_str(node.prop("ObjectName"))
+            item['community'] = self.getProp(node, "community", defaultCommunity)
 
             self.mibparams[item['name']] = item
 
@@ -105,8 +160,8 @@ class UInterfaceSNMP(UInterface):
 
     # return [id,node,name]
     def getIDinfo(self, name):
-        id, node = get_sinfo(name, '@')
-        return [id, node, name]
+        vname, vnode = get_sinfo(name, '@')
+        return [vname, vnode, name]
 
     def getParam(self, name):
 
@@ -130,8 +185,8 @@ class UInterfaceSNMP(UInterface):
     def validateParam(self, name):
 
         try:
-            id, node, fname = self.getIDinfo(name)
-            if id == '':
+            vname, vnode, fname = self.getIDinfo(name)
+            if vname == '':
                 return [False, "Unknown ID for '%s'" % str(name)]
 
             return [True, ""]
@@ -146,8 +201,49 @@ class UInterfaceSNMP(UInterface):
 
             param = self.getParam(id)
             node = self.getNode(nodename)
-            # print "(GETVALUE): param=%s   node=%s"%(str(param),str(node))
-            return 0
+
+            varName = None
+            if param['OID']:
+                varName = snmp.ObjectIdentity(param['OID'])
+            elif param['ObjectName']:
+
+                # Парсим строку вида: SNMPv2-MIB::sysUpTime.0
+                # при этом этой части 'SNMPv2-MIB' может быть не задано
+                tmp = param['ObjectName']
+                v = tmp.split('::')
+                pname = ''
+                if len(v) > 1:
+                    pname = v[0]
+                    tmp = v[1]
+
+                v = tmp.split('.')
+                vname = v[0]
+                vnum = 0
+                if len(v) > 1:
+                    vnum = to_int(v[1])
+
+                varName = snmp.ObjectIdentity(pname, vname, vnum)
+            else:
+                raise UValidateError("(UInterfaceSNMP): 'getValue' Unknown OID for '%s'" % name)
+
+            community = snmp.CommunityData(param['community'], mpModel=node['mpModel'])
+            transport = snmp.UdpTransportTarget((node['ip'], node['port']), timeout=node['timeout'], retries=node['retries'])
+
+            errorIndication, errorStatus, errorIndex, varBinds = self.snmp.getCmd(
+                community,
+                transport,
+                varName
+            )
+
+            if errorIndication:
+                raise UValidateError("(UInterfaceSNMP): getValue : ERR: %s" % errorIndication)
+
+            if errorStatus:
+                raise UValidateError("(UInterfaceSNMP): getValue : ERR: %s at %s " % (
+                errorStatus.prettyPrint(), errorIndex and varBinds[int(errorIndex) - 1] or '?'))
+
+            varname, val = varBinds[0]
+            return val
 
         except UException, e:
             raise e
@@ -157,15 +253,3 @@ class UInterfaceSNMP(UInterface):
 
     def getConfFileName(self):
         return self.confile
-
-    def getShortName(self, s_node):
-        return ''
-
-    def getNodeID(self, s_node):
-        return None
-
-    def getSensorID(self, s_name):
-        return None
-
-    def getObjectID(self, o_name):
-        return None
