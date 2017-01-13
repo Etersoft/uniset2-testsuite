@@ -43,7 +43,7 @@ AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN != x)
 
 dnl Python
 AM_PATH_PYTHON(,,)
-PKG_CHECK_MODULES(PYTHON,python,,exit)
+PKG_CHECK_MODULES(PYTHON,python-2.7,,exit)
 
 AC_CONFIG_FILES([Makefile
 				docs/Makefile
