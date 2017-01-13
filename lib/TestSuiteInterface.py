@@ -1031,8 +1031,12 @@ class TestSuiteInterface():
                     self.setActionResult(act, False)
                     return True
 
+                fname = ''
+                if 'filename' in act:
+                    fname = act['filename']
+
                 act['result'] = t_FAILED
-                act['text'] = 'SCRIPT ERROR: \'%s\' not found' % script
+                act['text'] = "'SCRIPT ERROR('%s'): '%s' not found" % (fname, script)
                 self.setActionResult(act, throwIfFailed)
                 return False
 

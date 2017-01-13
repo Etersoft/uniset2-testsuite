@@ -1056,6 +1056,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         result = make_default_item()
         result['nrecur'] = self.tsi.nrecur
+        result['filename'] = self.xml.getFileName()
 
         if self.tsi.isCheckScenarioMode():
             inf = make_info_item("CHECK '%s' scripts" % section )
