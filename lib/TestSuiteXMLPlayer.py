@@ -1100,13 +1100,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.tsi.start_tests()
             while testnode is not None:
                 tm_start = time.time()
+                res = self.play_test(xml, testnode, logfile)
+                if res['result'] != t_NONE:
+                    self.results.append(res)
 
-                # если заданы теги то игнорируем тесты не проходящие проверку
-                if len(self.tags) > 0 and not self.check_tag(to_str(self.replace(testnode.prop('tags')))):
-                    testnode = xml.nextNode(testnode)
-                    continue
-
-                self.results.append(self.play_test(xml, testnode, logfile))
                 testnode = xml.nextNode(testnode)
 
             resOK = True
@@ -1168,7 +1165,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             while testnode is not None:
                 tm_start = time.time()
-                item['items'].append(self.play_test(xml, testnode, logfile))
+                res = self.play_test(xml, testnode, logfile)
+                if res['result'] != t_NONE:
+                    item['items'].append(res)
+
                 testnode = xml.nextNode(testnode)
 
         except TestSuiteException, e:
@@ -1243,12 +1243,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             for tprop, tname in tlist:
                 tm_start = time.time()
                 tnode = self.find_test(xml, tname, tprop)
-
-                # если заданы теги то игнорируем тесты не проходящие проверку
-                if len(self.tags) > 0 and not self.check_tag(to_str(self.replace(tnode.prop('tags')))):
-                    continue
-
-                self.results.append(self.play_test(xml, tnode, logfile))
+                res = self.play_test(xml, tnode, logfile)
+                if res['result'] != t_NONE:
+                    self.results.append(res)
 
             resOK = True
         except TestSuiteException, ex:
@@ -1312,6 +1309,15 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         if len(result['tags']) > 0 and len(result['tag']) > 0:
             testname = '%s [%s]'%( testname, result['tag'] )
+
+        # если заданы теги то игнорируем тесты не проходящие проверку
+        if len(self.tags) > 0 and not self.check_tag(to_str(self.replace(testnode.prop('tags')))):
+            result['result'] = t_NONE
+            result['time'] = 0
+            result['text'] = testname
+            result['type'] = t_NONE
+            self.del_from_test_replace(spec_replace_list)
+            return result
 
         self.call_stack.append(result)
 

@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.3
-Release: alt15
+Release: alt16
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -101,6 +101,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Fri Jan 13 2017 Pavel Vainerman <pv@altlinux.ru> 2.3-alt16
+- fixed bug in --play-tags (gitlab.set issue #5)
+
 * Mon Jan 09 2017 Pavel Vainerman <pv@altlinux.ru> 2.3-alt15
 - fixes for new uniset
 - fixed bug set gitlab issue #8 
