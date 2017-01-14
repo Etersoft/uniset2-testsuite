@@ -152,6 +152,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if node is None:
             return
 
+        self.initEnvironmentVariables(xml,node)
+
         node = xml.findNode(node, "aliases")[0]
         if node is None:
             return
@@ -178,6 +180,21 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             # print "add_config: " + str(node)
             node = xml.nextNode(node)
+
+    def initEnvironmentVariables(self, xml, confNode):
+
+        node = xml.findNode(confNode, "environment")[0]
+        if not node:
+            return
+
+        env = dict()
+
+        node = xml.firstNode(node.children)
+        while node is not None:
+            env[to_str(node.prop("name"))] = to_str(node.prop("value"))
+            node = xml.nextNode(node)
+
+        self.tsi.set_user_envirion_variables(env)
 
     def initTestList(self, xml):
         xml.begnode = xml.findNode(xml.getDoc(), "TestList")[0]

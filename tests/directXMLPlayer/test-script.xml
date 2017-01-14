@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
+	<Config>
+		<environment>
+			<item name="MyTEST_VAR1" value="MyTEST_VALUE1"/>
+			<item name="MyTEST_VAR2" value="MyTEST_VALUE2"/>
+			<item name="MyTEST_VAR3" value="MyTEST_VALUE3"/>
+		</environment>
+	</Config>
 	<Success>
 		<item script="./success.sh param1 param2"/>
 		<item script="./success.sh param3 param4"/>

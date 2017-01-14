@@ -192,13 +192,13 @@ class TestSuiteInterface():
         """
         self.env[self.make_environ_varname(varname)] = str(value)
 
-    def add_envirion_variables(self, elist):
+    def set_user_envirion_variables(self, edict):
         """
         Добавление переменных окружения которые будут выставлены при запуске скриптов
-        :param elist: словарь [VAR: VAL...]
+        :param edict: словарь {VAR:VAL, VAR2:VAL2...}
         """
-        for e,v in elist:
-            self.env[str(e)] = str(v)
+        for k,v in edict.items():
+            self.env[k] = v
 
     def make_environ_varname(self,varname):
         """
