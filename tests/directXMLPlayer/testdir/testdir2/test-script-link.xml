@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+	<TestList>
+        <test name="Test run script 2">
+            <action name="script" script="../../script.sh" show_output="1"/>
+        </test>
+    </TestList>
+</TestScenario>

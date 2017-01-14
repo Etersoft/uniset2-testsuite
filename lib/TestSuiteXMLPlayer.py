@@ -420,6 +420,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def compare_item(self, node, xml):
 
+        self.tsi.add_testsuite_environ_variable('CONFILE', '')
         ret = make_default_item()
 
         tname = self.replace(node.prop('test'))
@@ -452,6 +453,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             return ret
 
         s_id = []
+        self.tsi.add_testsuite_environ_variable('CONFILE', ui.getConfFileName())
 
         test = tname.upper()
         clist = self.tsi.rcompare.findall(tname)
@@ -534,6 +536,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def check_item(self, node, xml):
 
+        self.tsi.add_testsuite_environ_variable('CONFILE', '')
         result = make_default_item()
         tname = self.replace(node.prop('test'))
         t_comment = self.replace(node.prop('comment'))
@@ -566,6 +569,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.tsi.setResult(result, True)
             return result
 
+        self.tsi.add_testsuite_environ_variable('CONFILE', ui.getConfFileName())
         s_id = None
         s_val = None
 
@@ -882,6 +886,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         :param node: xmlnode of current item of test
         :return: result [t_XXXX]
         """
+
+        self.tsi.add_testsuite_environ_variable('CONFILE','')
         result = make_default_item()
 
         result['item_type'] = 'action'
@@ -904,6 +910,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             result['result'] = t_FAILED
             self.tsi.setActionResult(result, True)
             return result
+
+        self.tsi.add_testsuite_environ_variable('CONFILE', ui.getConfFileName())
 
         s_id = None
         s_val = None
@@ -1081,6 +1089,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         if xml is None:
             xml = self.xml
+            self.tsi.add_testsuite_environ_variable('ROOTDIR', os.getcwd())
+            self.tsi.add_testsuite_environ_variable('ROOT_FILENAME', xml.getFileName())
 
         # FIXME: Временно ведение лог файл отключено
         # logfile = self.tsi.get_logfile()
@@ -1310,6 +1320,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         if len(result['tags']) > 0 and len(result['tag']) > 0:
             testname = '%s [%s]'%( testname, result['tag'] )
+
+        # выставляем переменные окружения
+        self.tsi.add_testsuite_environ_variable('TESTNAME',testname)
+        self.tsi.add_testsuite_environ_variable('TESTFILE', xml.getFileName())
+        self.tsi.add_testsuite_environ_variable('CURDIR', os.getcwd())
 
         # если заданы теги то игнорируем тесты не проходящие проверку
         if len(self.tags) > 0 and not self.check_tag(to_str(self.replace(testnode.prop('tags')))):

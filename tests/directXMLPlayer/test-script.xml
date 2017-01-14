@@ -9,11 +9,17 @@
 		<item script="./failure.sh param3 param4"/>
 	</Failure>
 	<TestList>
-        <test name="Test run script">
+        <test name="Test run script" ignore_failed="1">
             <action name="script" script="exit 1"/>
         </test>
         <test name="Test run script 2">
             <action name="script" script="echo 'sdfsdfsdfs'; touch /tmp/tt" show_output="0"/>
+        </test>
+        <test name="Test run script 2">
+            <action name="script" script="./script.sh" show_output="1"/>
+        </test>
+        <test name="Test run script 3 (outlink)">
+            <check file="testdir/test-script-link.xml" link="ALL" test="outlink"/>
         </test>
         <test name="Fail test">
             <check test="asdasd=1"/>

@@ -257,8 +257,15 @@
 \code   
    <action name="script" script="command for run script" show_output="1"/>
 \endcode 
-
-
+	
+	При запуске скрипты доступны следующие переменные окружения:
+  - UNISET_TESTSUITE_ROOTDIR        - каталог где запущен "главный" тестовый файл
+  - UNISET_TESTSUITE_ROOT_FILENAME  - название главного тестового файла 
+  - UNISET_TESTSUITE_TESTNAME       - название (name) текущего выполняемого теста
+  - UNISET_TESTSUITE_TESTFILE       - имя текущего тестового файла 
+  - UNISET_TESTSUITE_CURDIR         - текущий каталог с выполняемым тестом
+  - UNISET_TESTSUITE_CONFILE        - текущий confile (зависит от теста)
+  
   \section uts_Check "Проверки"(checks)
   
   Доступны следующие виды проверок:

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuite>
+<TestList>
+<!--  comment comment -->
+  <test name="test 1" >
+    <action set="101!=0"/>
+  </test>
+  <test name="test 23" num="1">
+     <check file="../test5_replace.xml" link="num=52" replace="MyName:104,MyVal:10,LNK:num=51" test="outlink"/>
+  </test>
+</TestList>
+</testsuite>

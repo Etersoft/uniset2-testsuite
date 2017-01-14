@@ -39,6 +39,9 @@ class TestSuiteInterface():
         self.rcheck = re.compile(r"([\w@\ :]+)([!><]*[=]*)([-\d\ ]+)")
         self.rcompare = re.compile(r"([\w@\ :]+)([!><]*[=]*)([\w@\ :]+)")
 
+        self.env = os.environ.copy()
+        self.envPrefix = "UNISET_TESTSUITE"
+
     @staticmethod
     def get_aliasname(cname):
         v = cname.strip().split('@')
@@ -180,6 +183,29 @@ class TestSuiteInterface():
                 return True
 
         return defval
+
+    def add_testsuite_environ_variable(self, varname, value):
+        """
+        Добавление testsuite-переменной окружения (т.е. с префиксом)
+        :param varname: имя
+        :param value: значение
+        """
+        self.env[self.make_environ_varname(varname)] = str(value)
+
+    def add_envirion_variables(self, elist):
+        """
+        Добавление переменных окружения которые будут выставлены при запуске скриптов
+        :param elist: словарь [VAR: VAL...]
+        """
+        for e,v in elist:
+            self.env[str(e)] = str(v)
+
+    def make_environ_varname(self,varname):
+        """
+        Формирование имени переменной окружения с использованием заданного префикса
+        :param varname: имя
+        """
+        return self.envPrefix + '_' + varname;
 
     def set_ignore_nodes(self, state):
         self.ignore_nodes = state
@@ -1047,12 +1073,20 @@ class TestSuiteInterface():
                 sout = nul_f
                 serr = nul_f
 
-            ret = subprocess.call(script_name, shell=True, stdin=None, stdout=sout, stderr=serr)
+            # смена каталога на тот, где запускается скрипт..
+            # curdir = os.getcwd()
+            # script_path = os.dirname(script_name)
+            # if script_path:
+            #     os.chdir(script_path)
+
+            ret = subprocess.call(script_name, shell=True, stdin=None, stdout=sout, stderr=serr, env=self.env)
             if ret:
                 act['result'] = t_FAILED
                 self.setActionResult(act, throwIfFailed)
+                # os.chdir(curdir)
                 return False
 
+            # os.chdir(curdir)
             act['result'] = t_PASSED
             self.setActionResult(act, False)
             return True
