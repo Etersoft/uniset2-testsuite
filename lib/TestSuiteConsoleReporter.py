@@ -30,6 +30,11 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.calltrace_disable_extinfo = False
         self.show_test_filename = False
 
+    def finishTestEvent(self):
+
+        if self.printlog:
+            print "---------------------------------------------------------------------------------------------------------------------"
+
     def print_log(self, item):
 
         txt = self.make_log(item)

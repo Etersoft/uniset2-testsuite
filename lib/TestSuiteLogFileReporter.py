@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import datetime
-import string
-from TestSuiteGlobal import *
+import sys
 from TestSuiteConsoleReporter import *
 
 ''' Запись отчёта в лог файл (надо сделать Singleton-ом!) '''
-class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
 
+
+class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
     def __init__(self):
+        TestSuiteConsoleReporter.__init__(self)
 
         self.logfilename = ""
         self.log_flush = False
@@ -30,14 +30,14 @@ class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
         txt = self.make_log(item)
         self.write_logfile(txt)
         if self.log_flush:
-           sys.stdout.flush()
+            sys.stdout.flush()
 
     def print_actlog(self, act):
 
         txt = self.make_actlog(act)
         self.write_logfile(txt)
         if self.log_flush:
-           sys.stdout.flush()
+            sys.stdout.flush()
 
     def write_logfile(self, txt):
         if self.logfilename == "" or self.logfilename == None:
@@ -50,5 +50,5 @@ class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
         except IOError:
             pass
 
-    def makeReport(self, results):
+    def makeReport(self, results, checkScenarioMode=False):
         pass

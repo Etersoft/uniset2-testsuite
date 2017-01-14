@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from uniset2 import *
-import os
+import uniset2.UGlobal as UGlobal
 import time
+import os
 
 # различные глобальные вспомогательные функции
 t_NONE = ''
@@ -42,22 +42,22 @@ def make_default_item():
     return item
 
 
-def make_fail_result(text, type='(TestSuiteXMLPlayer)', copyFrom=None):
+def make_fail_result(text, ftype='(TestSuiteXMLPlayer)', copyFrom=None):
     fail = make_default_item()
     if copyFrom:
         fail = copyFrom
     fail['result'] = t_FAILED
     fail['text'] = text
-    fail['type'] = type
+    fail['type'] = ftype
     return fail
 
 
-def make_info_item(text, type='(TestSuiteXMLPlayer)', copyFrom=None):
+def make_info_item(text, ftype='(TestSuiteXMLPlayer)', copyFrom=None):
     info = make_default_item()
     if copyFrom:
         info = copyFrom
 
-    info['type'] = type
+    info['type'] = ftype
     info['text'] = text
     return info
 
@@ -71,16 +71,15 @@ def get_replace_list(raw_str):
     for s in l:
         v = s.split(':')
         if len(v) > 1:
-            key = to_str(v[0]).strip().strip('\n')
-            val = to_str(v[1]).strip().strip('\n')
+            key = UGlobal.to_str(v[0]).strip().strip('\n')
+            val = UGlobal.to_str(v[1]).strip().strip('\n')
             slist.append([key, val])
         else:
             print '(get_replace_list:WARNING): (v:x) undefined value for ' + str(s)
-            key = to_str(v[0]).strip().strip('\n')
+            key = UGlobal.to_str(v[0]).strip().strip('\n')
             slist.append([key, 0])
 
     return slist
-
 
 def is_executable(filename):
     """Проверка что файл можно запустить"""
@@ -106,9 +105,8 @@ def is_executable(filename):
 
     return False
 
-
 class TestSuiteReporter():
-    ''' Базовый класс для формирователей отчётов '''
+    """ Базовый класс для формирователей отчётов """
 
     def __init__(self):
         self.start_time = time.time()
@@ -121,8 +119,8 @@ class TestSuiteReporter():
     def print_actlog(self, act):
         pass
 
-    def setShowTestTreeMode(self, set):
-        self.showTestTreeMode = set
+    def setShowTestTreeMode(self, state):
+        self.showTestTreeMode = state
 
     def makeReport(self, results, checkScenarioMode=False):
         pass
@@ -142,11 +140,16 @@ class TestSuiteReporter():
         else:
             self.finish_time = tm
 
+    def finishTestEvent(self):
+        pass
 
 class TestSuiteException(Exception):
-    def __init__(self, e="", test_time=-1, item=dict()):
+    def __init__(self, err='', test_time=-1, item=None):
         self.failed_item = item
-        self.err = e
+        if not item:
+            self.failed_item = dict()
+
+        self.err = err
         self.ftime = test_time
         if test_time == -1:
             self.ftime = time.time()
@@ -158,3 +161,8 @@ class TestSuiteException(Exception):
     @property
     def getFinishTime(self):
         return self.ftime
+
+
+class TestSuiteValidateError(TestSuiteException):
+    def __init__(self, err=''):
+        TestSuiteException.__init__(self, err)

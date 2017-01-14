@@ -8,6 +8,7 @@ from TestSuiteGlobal import *
 
 class TestSuiteJUnitReporter(TestSuiteReporter):
     def __init__(self):
+        TestSuiteReporter.__init__(self)
 
         self.logfilename = ""
 

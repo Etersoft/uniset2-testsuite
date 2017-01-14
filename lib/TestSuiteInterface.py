@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import uniset2
 import subprocess
+import re
+import os
+import uniset2
+from uniset2.pyUExceptions import *
+from UTestInterfaceSNMP import *
+from UTestInterfaceModbus import *
+from UTestInterfaceUniSet import *
+from TestSuiteGlobal import *
 
 # \todo может потом перейти на использование colorama
 # import colorama as clr
-
-from UInterfaceSNMP import *
-from TestSuiteGlobal import *
-
 
 class logid():
     Type = 0
@@ -54,10 +57,7 @@ class TestSuiteInterface():
         s = v[0].split('.')
         return [s[0], v[0]]
 
-    def init_testsuite(self, conflist, logprn=False, logact_prn=False):
-
-        self.printlog = logprn
-        self.printactlog = logact_prn
+    def init_testsuite(self, conflist):
 
         for i in range(0, len(sys.argv)):
             if i >= Params.max:
@@ -113,7 +113,7 @@ class TestSuiteInterface():
                 return None
             return self.ui_list[alias]
 
-        ui = UInterfaceUniSet(xmlfile, self.params)
+        ui = UTestInterfaceUniSet(xmlfile, self.params)
         ui.set_ignore_nodes(self.ignore_nodes)
         self.ui_list[alias] = ui
         self.conf_list[alias] = xmlfile
@@ -134,7 +134,7 @@ class TestSuiteInterface():
                            True)
             return None
 
-        ui = UInterfaceModbus(ip, port)
+        ui = UTestInterfaceModbus(ip, port)
         self.ui_list[alias] = ui
         return ui
 
@@ -148,10 +148,10 @@ class TestSuiteInterface():
             return self.ui_list[alias]
 
         try:
-            ui = UInterfaceSNMP(snmpConfile)
+            ui = UTestInterfaceSNMP(snmpConfile)
             self.ui_list[alias] = ui
             return ui
-        except UException, e:
+        except TestSuiteException, e:
             self.setResult(make_fail_result('(add_snmp_config): ERROR: %s' % e.getError()), True)
             return None
 
@@ -167,8 +167,7 @@ class TestSuiteInterface():
                                True)
                 return False
 
-            ui = UInterface()
-            ui.create_uniset_interface(xmlfile, self.params)
+            ui = UTestInterfaceUniSet(xmlfile, self.params)
             self.default_ui = ui
             self.conf_list['default'] = xmlfile
 
@@ -247,17 +246,17 @@ class TestSuiteInterface():
     def isCheckScenarioMode(self):
         return self.checkScenarioMode
 
-    def set_check_scenario_mode(self, set):
-        self.checkScenarioMode = set
+    def set_check_scenario_mode(self, state):
+        self.checkScenarioMode = state
 
-    def set_check_scenario_mode_ignore_failed(self, set):
-        self.checkScenarioMode_ignorefailed = set
+    def set_check_scenario_mode_ignore_failed(self, state):
+        self.checkScenarioMode_ignorefailed = state
 
     def isShowTestTreeMode(self):
         return self.showTestTreeMode
 
-    def set_show_test_tree_mode(self, set):
-        self.showTestTreeMode = set
+    def set_show_test_tree_mode(self, state):
+        self.showTestTreeMode = state
 
     def add_repoter(self, reporter):
         self.reporters.append(reporter)
@@ -307,6 +306,17 @@ class TestSuiteInterface():
             except Exception:
                 pass
 
+    def finishTestEvent(self):
+
+        if self.isShowTestTreeMode() or self.nrecur > 0:
+            return
+
+        for r in self.reporters:
+            try:
+                r.finishTestEvent()
+            except Exception:
+                pass
+
     def setResult(self, item, throw=False):
 
         if self.print_log is not None:
@@ -346,9 +356,9 @@ class TestSuiteInterface():
     def getValue(self, s_id, ui):
 
         if self.isCheckScenarioMode():
-            ret, err = ui.validateParam(s_id)
+            ret, err = ui.validateParameter(s_id)
             if ret == False:
-                raise UValidateError(err)  # raise TestSuiteException(err)
+                raise TestSuiteValidateError(err)
             return 0
 
         return ui.getValue(s_id)
@@ -1041,12 +1051,12 @@ class TestSuiteInterface():
                 ui = self.default_ui
 
             if self.isCheckScenarioMode():
-                ret, err = ui.validateParam(s_id)
+                ret, err = ui.validateParameter(s_id)
                 if ret == False:
                     act['result'] = t_FAILED
                     act['text'] = err
                     act['faulty_sensor'] = s_id
-                    raise UValidateError(err)  # TestSuiteException(err,-1,act)
+                    raise TestSuiteValidateError(err)
             else:
                 ui.setValue(s_id, s_val, self.supplierID)
 
@@ -1122,7 +1132,7 @@ class TestSuiteInterface():
 
         except Exception, e:
             act['result'] = t_FAILED
-            act['text'] = '\'%s\' catch python exception..' % (script_name)
+            act['text'] = '\'%s\' catch python exception: %s' % (script_name, e.message)
             self.setActionResult(act, throwIfFailed)
 
         return False
@@ -1150,13 +1160,13 @@ class TestSuiteInterface():
                 tname = 'MULTICHECK'
 
         if tname == '=':
-            s = ui.getIDinfo(s_id)
+            s = ui.parseID(s_id)
             res = "%s=%s timeout=%d" % (s[2], s_val, to_int(node.prop("timeout")))
         elif tname == '>' or tname == '>=':
-            s = ui.getIDinfo(s_id)
+            s = ui.parseID(s_id)
             res = "%s %s %s timeout=%d" % (s[2], tname, s_val, to_int(node.prop("timeout")))
         elif tname == '<' or tname == '<=':
-            s = ui.getIDinfo(s_id)
+            s = ui.parseID(s_id)
             res = "%s %s %s timeout=%d" % (s[2], tname, s_val, to_int(node.prop("timeout")))
         elif tname == 'MULTICHECK':
             res = "%s" % (node.prop("set"))

@@ -6,10 +6,10 @@ import signal
 import threading
 from subprocess import Popen
 
+from uniset2.UGlobal import *
 from TestSuiteGlobal import *
 
 
-# ---------------------------------------------------------
 class ChildProcess():
     def __init__(self, xmlnode):
 
@@ -145,7 +145,7 @@ class MonitorThread(threading.Thread):
                 clist.append(p.popen)
             except (OSError, KeyboardInterrupt, IOError), e:
                 err = '[FAILED]: (ProcessMonitor): run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (
-                p.name, p.cmd, e.errno, e.strerror)
+                    p.name, p.cmd, e.errno, e.strerror)
                 if p.ignore_run_failed == False and self.term_flag == False:
                     print err
                     print '(ProcessMonitor): ..terminate all..[%d]' % len(self.plist)

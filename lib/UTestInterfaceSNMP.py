@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from uniset2.UInterface import *
-from uniset2.UGlobal import *
-from uniset2.UniXML import *
-from uniset2.pyUExceptions import *
+from uniset2.UniXML import UniXML
+from uniset2.pyUExceptions import UException
+import uniset2.UGlobal as uglobal
 from pysnmp.entity.rfc3413.oneliner import cmdgen as snmp
+from UTestInterface import *
 
 '''
 Пример файла конфигурации
@@ -28,12 +28,10 @@ from pysnmp.entity.rfc3413.oneliner import cmdgen as snmp
 '''
 
 
-class UInterfaceSNMP(UInterface):
+class UTestInterfaceSNMP(UTestInterface):
     def __init__(self, snmpConfile):
-        UInterface.__init__(self)
+        UTestInterface.__init__(self, "snmp")
 
-        self.itype = "snmp"
-        self.i = None
         self.mibparams = dict()
         self.nodes = dict()
         self.confile = snmpConfile
@@ -52,7 +50,7 @@ class UInterfaceSNMP(UInterface):
     def getIntProp(node, propname, defval):
         s = node.prop(propname)
         if s:
-            return to_int(s)
+            return uglobal.to_int(s)
 
         return defval
 
@@ -70,10 +68,10 @@ class UInterfaceSNMP(UInterface):
         # преобразуем версию в число для pysnmp
         # см. http://pysnmp.sourceforge.net/docs/pysnmp-hlapi-tutorial.html#choosing-snmp-protocol-and-credentials
 
-        if protocolVersion == '1': # SNMPv1
+        if protocolVersion == '1':  # SNMPv1
             return 0
 
-        if protocolVersion == '2' or protocolVersion == '2c': # SNMPv2c
+        if protocolVersion == '2' or protocolVersion == '2c':  # SNMPv2c
             return 1
 
         return defval
@@ -82,7 +80,7 @@ class UInterfaceSNMP(UInterface):
 
         node = xml.findNode(xml.getDoc(), "Nodes")[0]
         if node is None:
-            raise UValidateError("(UInterfaceSNMP): section <Nodes> not found in %s" % xml.getFileName())
+            raise TestSuiteValidateError("(UInterfaceSNMP): section <Nodes> not found in %s" % xml.getFileName())
 
         defaultProtocolVersion = self.getProp(node, "defaultProtocolVersion", '2c')
         defaultTimeout = self.getIntProp(node, "defaultTimeout", 1)
@@ -99,24 +97,24 @@ class UInterfaceSNMP(UInterface):
 
             item = dict()
 
-            item['name'] = to_str(node.prop("name"))
+            item['name'] = uglobal.to_str(node.prop("name"))
             if item['name'] == "":
-                raise UValidateError(
+                raise TestSuiteValidateError(
                     "(UInterfaceSNMP): <Nodes> : unknown name='' for string '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
-            item['ip'] = to_str(node.prop("ip"))
+            item['ip'] = uglobal.to_str(node.prop("ip"))
             if item['ip'] == "":
-                raise UValidateError(
+                raise TestSuiteValidateError(
                     "(UInterfaceSNMP): <Nodes> : unknown ip='' for string '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
-            item['comment'] = to_str(node.prop("comment"))
+            item['comment'] = uglobal.to_str(node.prop("comment"))
 
             protocolVersion = self.getProp(node, "protocolVersion", defaultProtocolVersion)
 
             item['mpModel'] = self.getMPModel(protocolVersion)
-            item['port'] = self.getIntProp(node, "port", defaultPort )
+            item['port'] = self.getIntProp(node, "port", defaultPort)
             item['timeout'] = self.getIntProp(node, "timeout", defaultTimeout)
             item['retries'] = self.getIntProp(node, "retries", defaultRetries)
 
@@ -128,9 +126,9 @@ class UInterfaceSNMP(UInterface):
 
         node = xml.findNode(xml.getDoc(), "Parameters")[0]
         if node is None:
-            raise UValidateError("(UInterfaceSNMP): section <Parameters> not found in %s" % xml.getFileName())
+            raise TestSuiteValidateError("(UInterfaceSNMP): section <Parameters> not found in %s" % xml.getFileName())
 
-        defaultCommunity = to_str(node.prop("defaultCommunity"))
+        defaultCommunity = uglobal.to_str(node.prop("defaultCommunity"))
 
         node = xml.firstNode(node.children)
 
@@ -138,17 +136,17 @@ class UInterfaceSNMP(UInterface):
 
             item = dict()
 
-            item['name'] = to_str(node.prop("name"))
+            item['name'] = uglobal.to_str(node.prop("name"))
             if item['name'] == "":
-                raise UValidateError(
+                raise TestSuiteValidateError(
                     "(UInterfaceSNMP): <Parameters> : unknown name='' for string '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
-            item['ObjectName'] = to_str(node.prop("ObjectName"))
-            item['OID'] = to_str(node.prop("OID"))
+            item['ObjectName'] = uglobal.to_str(node.prop("ObjectName"))
+            item['OID'] = uglobal.to_str(node.prop("OID"))
 
             if not item['OID'] and not item['ObjectName']:
-                raise UValidateError(
+                raise TestSuiteValidateError(
                     "(UInterfaceSNMP):  <Parameters> : unknown OID='' or ObjectName='' for parameter '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
@@ -158,12 +156,17 @@ class UInterfaceSNMP(UInterface):
 
             node = xml.nextNode(node)
 
-    # return [id,node,name]
-    def getIDinfo(self, name):
-        vname, vnode = get_sinfo(name, '@')
+    @staticmethod
+    def parseID(name):
+        """
+        Parse test parameter from <check> or <action>
+        :param name:
+        :return: [id,node,name]
+        """
+        vname, vnode = uglobal.get_sinfo(name, '@')
         return [vname, vnode, name]
 
-    def getParam(self, name):
+    def getParameter(self, name):
 
         try:
             return self.mibparams[name]
@@ -176,16 +179,19 @@ class UInterfaceSNMP(UInterface):
 
         try:
             return self.nodes[name]
-        except KeyError, e:
+        except KeyError:
             return None
-        except ValueError, e:
+        except ValueError:
             return None
 
-    # return [ RESULT, ERROR ]
-    def validateParam(self, name):
+    def validateConfiguration(self):
+        # todo Реализовать функцию проверки конфигурации
+        return [True, ""]
+
+    def validateParameter(self, name):
 
         try:
-            vname, vnode, fname = self.getIDinfo(name)
+            vname, vnode, fname = self.parseID(name)
             if vname == '':
                 return [False, "Unknown ID for '%s'" % str(name)]
 
@@ -197,12 +203,13 @@ class UInterfaceSNMP(UInterface):
     def getValue(self, name):
 
         try:
-            id, nodename, sname = self.getIDinfo(name)
+            id, nodename, sname = self.parseID(name)
 
-            param = self.getParam(id)
+            param = self.getParameter(id)
             node = self.getNode(nodename)
 
             varName = None
+
             if param['OID']:
                 varName = snmp.ObjectIdentity(param['OID'])
             elif param['ObjectName']:
@@ -220,14 +227,15 @@ class UInterfaceSNMP(UInterface):
                 vname = v[0]
                 vnum = 0
                 if len(v) > 1:
-                    vnum = to_int(v[1])
+                    vnum = uglobal.to_int(v[1])
 
                 varName = snmp.ObjectIdentity(pname, vname, vnum)
             else:
-                raise UValidateError("(UInterfaceSNMP): 'getValue' Unknown OID for '%s'" % name)
+                raise TestSuiteValidateError("(UInterfaceSNMP): 'getValue' Unknown OID for '%s'" % name)
 
             community = snmp.CommunityData(param['community'], mpModel=node['mpModel'])
-            transport = snmp.UdpTransportTarget((node['ip'], node['port']), timeout=node['timeout'], retries=node['retries'])
+            transport = snmp.UdpTransportTarget((node['ip'], node['port']), timeout=node['timeout'],
+                                                retries=node['retries'])
 
             errorIndication, errorStatus, errorIndex, varBinds = self.snmp.getCmd(
                 community,
@@ -236,11 +244,11 @@ class UInterfaceSNMP(UInterface):
             )
 
             if errorIndication:
-                raise UValidateError("(UInterfaceSNMP): getValue : ERR: %s" % errorIndication)
+                raise TestSuiteValidateError("(UInterfaceSNMP): getValue : ERR: %s" % errorIndication)
 
             if errorStatus:
-                raise UValidateError("(UInterfaceSNMP): getValue : ERR: %s at %s " % (
-                errorStatus.prettyPrint(), errorIndex and varBinds[int(errorIndex) - 1] or '?'))
+                raise TestSuiteValidateError("(UInterfaceSNMP): getValue : ERR: %s at %s " % (
+                    errorStatus.prettyPrint(), errorIndex and varBinds[int(errorIndex) - 1] or '?'))
 
             varname, val = varBinds[0]
             return val
@@ -248,8 +256,6 @@ class UInterfaceSNMP(UInterface):
         except UException, e:
             raise e
 
-    def setValue(self, name, val, supplier=DefaultSupplerID):
-        raise UValidateError("(UInterfaceSNMP): 'setValue' function not supported)")
-
-    def getConfFileName(self):
-        return self.confile
+    def setValue(self, name, value, supplierID):
+        # todo Реализовать функцию setValue
+        raise TestSuiteException("(UInterfaceSNMP): 'setValue' function not supported)")

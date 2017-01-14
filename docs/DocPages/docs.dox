@@ -28,6 +28,7 @@
    - \ref uts_Aliases
    - \ref uts_UseAliases
    - \ref uts_Modbus
+   - \ref uts_SNMP
    - \ref uts_multiInterface_Scenario
    - \ref uts_RunList
    - \ref uts_RunParam
@@ -43,9 +44,10 @@
      \b uniset-testsuite предназначен для автоматизации этого процесса. При этом система тестирования расчитана на взаимодействие
      с тестируемой системой по цифровому протоколу.
      
-     На данный момент поддерживается два интерфейса:
+     На данный момент поддерживаются следующие интерфейсы:
      - uniset
      - MobusTCP
+     - SNMP
      
     Подача тестовых воздействий и проверка реакции записывается в виде тестового сценария, который можно проигрывать сколько угодно раз.
 
@@ -568,6 +570,82 @@
   Один из адресов можно назначить, как адрес по умолчанию, просто дописав в соответствующей строке \b default="1".
   Тогда в тестах, где явно не указано config="..alias..", будет использоваться адрес по умолчанию.
 
+  \section uts_SNMP Интерфейс работы с устройствами по протоколу SNMP
+  Для работы с устройствами по протоколу SNMP требуется указать тип сценария  <TestScenario \b type="snmp">
+  и в секции <\b Config> прописать настройки указав специальный настроечный файл.
+  \code
+  <Config>
+        <aliases>
+            <item default="1" type="snmp" alias="snmp1" snmp="snmp.xml"/>
+            <item type="snmp" alias="snmp2" snmp="snmp2.xml"/>
+        </aliases>
+  </Config>
+  \endcode
+  Настроечных файлов может быть много. Параметр \b default задаёт настройки используемые по умолчанию.
+  Полный пример сценария показан ниже:
+  \code
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario type="snmp">
+	<Config>
+        <aliases>
+            <item type="snmp" alias="snmp1" snmp="snmp.xml" default="1"/>
+            <item type="snmp" alias="snmp2" snmp="/mydir1/snmp2.xml"/>
+        </aliases>
+	</Config>
+    <TestList>
+        <test num="1" name="SNMP_tests" comm="Тесты по snmp">
+			<check test="uptime@node1>1" comment="Uptime"/>
+			<check test="uptimeName@node2>=1" comment="Статус батареи" config="snmp2"/>
+        </test>
+    </TestList>
+</TestScenario>
+  \endcode
+
+  Настроечный файл имеет следующий формат:
+\code
+<?xml version='1.0' encoding='utf-8'?>
+<SNMP>
+  <Nodes defaultProtocolVersion="2c" defaultTimeout='1' defaultRetries='2' defaultPort='161'>
+    <item name="node1" ip="192.94.214.205" comment="UPS1" protocolVersion="2" timeout='1' retries='2'/>
+    <item name="node2" ip="test.net-snmp.org" comment="UPS2"/>
+    <item name="node3" ip="10.16.11.3" comment="UPS3"/>
+  </Nodes>
+
+  <Parameters defaultCommunity="demopublic">
+    <item name="uptime" OID="1.3.6.1.2.1.1.3.0" community="demopublic"/>
+	<item name="uptimeName" ObjectName="sysUpTime.0" community="demopublic"/>
+    <item name="bstatus" OID="1.3.6.1.2.1.33.1.2.1.0" ObjectName="BatteryStatus"/>
+    <item name="btime" OID=".1.3.6.1.2.1.33.1.2.2.0" ObjectName="TimeOnBattery"/>
+    <item name="bcharge" OID=".1.3.6.1.2.1.33.1.2.4.0" ObjectName="BatteryCharge"/>
+  </Parameters>
+</SNMP>
+\endcode
+	Секция <\b Nodes> задаёт список узлов (устройств) с которыми будет происходит обмен. При этом возможно задавать
+	следующие параметры:
+	- \b name - название узла используемое в дальнейшем в тесте
+	- \b ip - адрес устройства (ip или hostname)
+	- \b timeout - таймаут на одну попытку связи, в секундах. Не обязательный параметр. По умолчанию 1 сек.
+	- \b retries - количество попыток считать параметр.  Не обязательный параметр. По умолчанию 2.
+	- \b port - Порт для связи с устройством. Не обязательный параметр. По умолчанию 161.
+	- \b comment - коментарий к названию. Не обязательный параметр, на данный момент не используется.
+
+	Непосредственно в секции <\b Nodes> можно задать параметры по умолчанию для всех узлов.
+	- \b defaultProtocolVersion
+	- \b defaultTimeout
+	- \b defaultRetries
+	- \b defaultPort
+
+	Секция <\b Parameters> задаёт список парамеров, которые будут участвовать в тестах:
+	- \b name - название параметра используемое в дальнейшем в тесте
+	- \b community - установка 'community string' (см. snmp протокол).
+	- \b OID - идентификатор параметра в соответсвии с протоклом SNMP.
+	- \b ObjectName - название параметра в соответсвии с протоклом SNMP. Не обязательный параметр.
+
+	Параметры \b OID и \b ObjectName являются взаимозаменяемыми. Если заданы оба параметра, используется \b OID.
+
+	Непосредственно в секции <\b Parameters> можно задать параметры по умолчанию для всех узлов.
+	- \b defaultCommunity
+
   \section uts_multiInterface_Scenario Использование нескольких интерфейсов обмена в одном сценарии
    Система позволяет в одном сценарии одновременно обращаться и через uniset интерфейс и через ModbusTCP. Для этого
 	достаточно указать \b тип \b интерфейса в секции \b \<Config>. Ниже показан пример такого сценария:
@@ -581,6 +659,7 @@
         <aliases>
             <item alias="c1" confile="configure.xml"/>
             <item alias="c2" mbslave="localhost:2049" type="modbus"/>
+            <item alias="c3" type="snmp" snmp="snmp.xml"/>
         </aliases>
     </Config>
 	<TestList logfile="result.multitest.txt" logfile_trunc="1">
@@ -597,6 +676,10 @@
             <action set="16=10"/>
             <action set="0x25@0x02=10" config="c2"/>
             <action set="0x25@0x02:0x05=10" config="c2"/>
+        </test>
+        <test name="Test snmp">
+            <check test="uptime@node1>1" comment="Uptime" config="c3"/>
+            <check test="uptimeName@node2>=1" comment="Статус батареи" config="c3"/>
         </test>
 	</TestList>
 </TestScenario>

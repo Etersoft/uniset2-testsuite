@@ -6,6 +6,9 @@ import copy
 import string
 
 from ProcessMonitor import *
+from uniset2.pyUExceptions import UException
+from uniset2.UniXML import *
+
 import TestSuitePlayer
 from TestSuiteInterface import *
 from TestSuiteConsoleReporter import *
@@ -182,8 +185,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 if to_str(node.prop("default")) != "":
                     self.tsi.set_default_ui(ui)
             else:
-                self.tsi.setResult(make_fail_result("Unknown scenario type='%s' Must be 'uniset' or 'modbus' or 'snmp' " % c_type,
-                                                    "(TestSuiteXMLPlayer:initConfig)"), True)
+                self.tsi.setResult(
+                    make_fail_result("Unknown scenario type='%s' Must be 'uniset' or 'modbus' or 'snmp' " % c_type,
+                                     "(TestSuiteXMLPlayer:initConfig)"), True)
                 raise TestSuiteException(
                     "(TestSuiteXMLPlayer:initConfig): Unknown scenario type='%s' Must be 'uniset' or 'modbus' or 'snmp'" % c_type)
 
@@ -836,6 +840,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         if self.check_thread_event(self.reset_thread_event):
             self.reset_thread_event.wait()
+
         self.reset_thread_event.clear()
         if len(self.reset_thread_dict) <= 0:
             self.reset_thread_event.set()
@@ -994,7 +999,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             # собираем обратно, и уже разбираем как полагается (с разбивкой на id и val)
             slist = self.str_to_idlist(to_str(self.replace(node.prop("set"))), ui)
             for s in slist:
-                res = self.tsi.setValue(self.replace(s[0]), self.replace(s[1]), result, ui, False)
+                res = self.tsi.setValue(self.replace(s[0]), self.replace(s[1]), result, ui)
                 if res == False and self.tsi.ignorefailed == False:
                     return result
 
@@ -1449,9 +1454,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             info['nrecur'] = self.tsi.nrecur
             info['item_type'] = result['item_type']
             self.tsi.setResult(info, False)
-            # чисто визуальное отделение нового теста
-            if self.tsi.printlog == True and self.tsi.nrecur <= 0 and not self.tsi.isShowTestTreeMode():
-                print "---------------------------------------------------------------------------------------------------------------------"
+            self.tsi.finishTestEvent()
 
         return result
 
@@ -1466,6 +1469,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         t_res = 0
 
         for tres in items:
+
+            if 'result' not in tres:
+                continue
 
             r = tres['result']
             if r == t_PASSED:
@@ -1517,10 +1523,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     @staticmethod
     def get_tests_list(tname):
-        '''
+        """
         :param tname: строка в виде prop=test1,prop2=test2,...
         :return: список пар [prop,testname]
-        '''
+        """
 
         retlist = list()
         if len(tname) == 0:
@@ -1607,7 +1613,7 @@ if __name__ == "__main__":
         show_test_type = ts.checkArgParam('--show-test-type', False)
         show_test_comment = ts.checkArgParam('--show-test-comment', False)
         show_result_only = ts.checkArgParam('--show-result-only', False)
-        if show_result_only == True:
+        if show_result_only:
             show_actlog = False
             show_log = False
 
@@ -1634,7 +1640,7 @@ if __name__ == "__main__":
             show_result = False
 
         cf = conflist.split(',')
-        ts.init_testsuite(cf, show_log, show_actlog)
+        ts.init_testsuite(cf)
         ts.set_ignore_nodes(ignore_nodes)
         ts.set_show_test_tree_mode(show_test_tree)
 
@@ -1715,7 +1721,7 @@ if __name__ == "__main__":
         print "(TestSuiteXMLPlayer): catch exception: " + str(e.getError())
     except KeyboardInterrupt:
         print "(TestSuiteXMLPlayer): catch keyboard interrupt.. "
-    #    except Exception, e:
+    # except Exception, e:
     #        print "(TestSuiteXMLPlayer): catch basic python exception..."
 
     finally:
