@@ -463,8 +463,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         if len(clist) == 1:
             test = clist[0][1].upper()
-            s_id.append(self.replace(clist[0][0]))
-            s_id.append(self.replace(clist[0][2]))
+            s_id.append(clist[0][0])
+            s_id.append(clist[0][2])
         elif len(clist) > 1:
             test = 'MULTICHECK'
 
@@ -581,8 +581,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             if len(clist) == 1:
                 test = clist[0][1].upper()
-                s_id = self.replace(clist[0][0])
-                s_val = to_int(self.replace(clist[0][2]))
+                s_id = clist[0][0]
+                s_val = to_int(clist[0][2])
             elif len(clist) > 1:
                 test = 'MULTICHECK'
 
