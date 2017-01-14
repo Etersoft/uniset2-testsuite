@@ -8,6 +8,7 @@
     </Config>
     <Success>
         <item script="./success.sh param1 param2"/>
+        <item script="sleep 5"/>
         <item script="./script-not-found.sh param1 param2"/>
     </Success>
     <Failure>

@@ -1026,7 +1026,7 @@ class TestSuiteInterface():
                 if len(script) > 0:
                     script = script[0]
 
-                if os.path.exists(script):
+                if is_executable(script):
                     act['result'] = t_PASSED
                     self.setActionResult(act, False)
                     return True

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from uniset2 import *
+import os
 import time
 
 # различные глобальные вспомогательные функции
@@ -14,6 +15,7 @@ t_PAUSE = 'PAUSE'
 t_WARNING = 'WARNING'
 t_UNKNOWN = 'UNKNOWN'
 
+
 def make_default_item():
     item = dict()
     item['name'] = ''
@@ -25,10 +27,10 @@ def make_default_item():
     item['xmlnode'] = None
     item['filename'] = ''
     item['prev'] = None
-    item['item_type'] = '' # action,check,test
-    item['tag'] = '' # первый тег на котором "сработал" фильтр
-    item['tags'] = '' # теги
-    item['nrecur'] = 0 # уровень рекурсии
+    item['item_type'] = ''  # action,check,test
+    item['tag'] = ''  # первый тег на котором "сработал" фильтр
+    item['tags'] = ''  # теги
+    item['nrecur'] = 0  # уровень рекурсии
     item['start_time'] = time.time()
 
     # датчик на котором произошёл вылет теста (в формате name@node)
@@ -37,22 +39,23 @@ def make_default_item():
     item['faulty_sensor'] = None
     item['ui'] = None
 
-
     return item
 
-def make_fail_result(text, type='(TestSuiteXMLPlayer)'):
 
+def make_fail_result(text, type='(TestSuiteXMLPlayer)'):
     fail = make_default_item()
     fail['result'] = t_FAILED
     fail['text'] = text
     fail['type'] = type
     return fail
 
+
 def make_info_item(text, type='(TestSuiteXMLPlayer)'):
     info = make_default_item()
     info['type'] = type
     info['text'] = text
     return info
+
 
 # Получение списка пар [key,val] из строки "key1:val1,key2:val2,.."
 def get_replace_list(raw_str):
@@ -73,8 +76,35 @@ def get_replace_list(raw_str):
 
     return slist
 
+
+def is_executable(filename):
+    """Проверка что файл можно запустить"""
+
+    if not filename or len(filename) == 0:
+        return False
+
+    # если задан абсолютный путь, то сразу проверяем
+    dname = os.path.dirname(filename)
+    if dname:
+        return os.path.exists(filename)
+
+    # ищем по всем путям
+    path = os.environ['PATH']
+    if len(path) == 0:
+        return False
+
+    pdirs = path.split(':')
+
+    for d in pdirs:
+        if os.path.exists(d + '/' + filename):
+            return True
+
+    return False
+
+
 class TestSuiteReporter():
     ''' Базовый класс для формирователей отчётов '''
+
     def __init__(self):
         self.start_time = time.time()
         self.finish_time = time.time()
@@ -101,14 +131,15 @@ class TestSuiteReporter():
         else:
             self.start_time = tm
 
-    def finish_tests(self,tm=None):
+    def finish_tests(self, tm=None):
         if not tm:
             self.finish_time = time.time()
         else:
             self.finish_time = tm
 
+
 class TestSuiteException(Exception):
-    def __init__( self, e = "", test_time = -1, item = dict() ):
+    def __init__(self, e="", test_time=-1, item=dict()):
         self.failed_item = item
         self.err = e
         self.ftime = test_time
