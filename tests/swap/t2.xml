@@ -1,0 +1,44 @@
+<TestScenario>
+    &lt;RunList after_run_pause="5000">
+        &lt;item after_run_pause="0" chdir="../../Utils/SharedMemory/" ignore_run_failed="1" ignore_terminated="1"
+              name="SharedMemory" script="./start_fg.sh" silent_mode="1"/>
+    </RunList>
+    &lt;TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101">
+        &lt;test name="compare: Equal test">
+            &lt;action set="111=10"/>
+            &lt;action set="112=10"/>
+            &lt;compare test="111=112"/>
+            &lt;compare test="Test_AI1=Test_AI2"/>
+            &lt;compare test="111=112" holdtime="500"/>
+            &lt;compare test="Test_AI1=Test_AI2" holdtime="500"/>
+        </test>
+        &lt;test name="compare: Not Equal test">
+            &lt;action set="111=10"/>
+            &lt;action set="112=11"/>
+            &lt;compare test="111!=112"/>
+            &lt;compare test="Test_AI1!=Test_AI2"/>
+            &lt;compare test="111!=112" holdtime="500"/>
+            &lt;compare test="Test_AI1!=Test_AI2" holdtime="500"/>
+        </test>
+        &lt;test name="compare: great test">
+            &lt;action set="111=100"/>
+            &lt;action set="112=10"/>
+            &lt;compare test="111>112"/>
+            &lt;compare test="Test_AI1>Test_AI2"/>
+            &lt;compare test="111>=112"/>
+            &lt;compare test="Test_AI1>=Test_AI2"/>
+            &lt;compare test="111>=112" holdtime="300"/>
+            &lt;compare test="Test_AI1>=Test_AI2" holdtime="300"/>
+        </test>
+        &lt;test name="compare: less test">
+            &lt;action set="111=10"/>
+            &lt;action set="112=100"/>
+            &lt;compare test="111&lt;112"/>
+            &lt;compare test="Test_AI1&lt;Test_AI2"/>
+            &lt;compare test="111&lt;=112"/>
+            &lt;compare test="Test_AI1&lt;=Test_AI2"/>
+            &lt;compare test="111&lt;=112" holdtime="300"/>
+            &lt;compare test="Test_AI1&lt;=Test_AI2" holdtime="300"/>
+        </test>
+    </TestList>
+</TestScenario>

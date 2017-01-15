@@ -1,0 +1,12 @@
+<?xml version = '1.0' encoding = 'utf-8'?>
+<TestScenario>
+<!--TestList type="uniset" logfile="01.01-test_text.txt" logfile_trunc="1"-->
+<TestList type="uniset" replace="LOCAL_ID:0,CPU_ID:20088,HR_L_ID:20003,HR_R_ID:20005,HR_ID:20007,KP_ID:20009" comment="Шаблон переключения панелей ГЭДХ">
+
+    <test num="1" name="initialization" comment="Начальная инициализация">
+            <action set="control_reg1_PTU1=CPU_ID" comment="Отключение местного управления поста"/>
+            <check test="control_reg1_PTU1=CPU_ID"  timeout="5000" check_pause="200"/>
+    </test>
+
+</TestList>
+</TestScenario>

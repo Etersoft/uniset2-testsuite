@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+    <TestList replace="ses:ses1,QGX_:QG1">
+        <test name="simple test">
+			<check test="QGX_isOn_S@ses=0" timeout="15000" comment="Включен"/>
+			<check test="QGX_isOff_S@ses=1" timeout="15000" comment="Выключен"/>
+		</test>
+    </TestList>
+</TestScenario>

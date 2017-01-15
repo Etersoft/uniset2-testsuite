@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+    <Config>
+        <aliases>
+            <item alias="c1" mbslave="localhost:2048" type="modbus"/>
+			<item alias="c2" mbslave="localhost:2049" type="modbus"/>
+        </aliases>
+    </Config>
+    <TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:Test_AI1,MyGlobalVar:101">
+        <test name="check: Equal test">
+            <action set="111=10"/>
+            <action set="112=10"/>
+            <compare test="111=112"/>
+            <compare test="Test_AI1=Test_AI2"/>
+            <compare test="111=112" holdtime="5000"/>
+            <compare test="Test_AI1=Test_AI2" holdtime="5000"/>
+            <compare test="MyGlobalVar2=Test_AI2"/>
+        </test>
+        <test name="check: bad param">
+            <action set="11wewer1=10"/>
+            <action set="111=10"/>
+            <action set="112=10"/>
+            <compare test="111=112"/>
+            <compare test="1dsfsdf11=112"/>
+            <compare test="Test_AI1=Test_AI2" holdtime="5000"/>
+        </test>
+
+        <test name="check: bad outlink">
+	        <check file="not_found_links_file.xml" link="ALL" test="outlink"/>
+        </test>
+        <test name="check: bad link">
+	        <check file="tests.xml" link="num=werwer" test="outlink"/>
+        </test>
+  </TestList>
+</TestScenario>

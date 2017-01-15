@@ -1,1 +1,0 @@
-../../lib/TestSuiteGlobal.py

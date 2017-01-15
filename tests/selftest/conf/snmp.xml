@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<SNMP>
+  <Nodes defaultProtocolVersion="2c" defaultTimeout='1' defaultRetries='2' defaultPort='161'>
+    <item name="node1" ip="192.94.214.205" comment="UPS1" protocolVersion="2" timeout='1' retries='2'/>
+    <item name="node2" ip="test.net-snmp.org" comment="UPS2"/>
+    <item name="node3" ip="10.16.11.3" comment="UPS3"/>
+  </Nodes>
+
+  <Parameters defaultCommunity="demopublic">
+    <item name="uptime" OID="1.3.6.1.2.1.1.3.0" community="demopublic"/>
+	<item name="uptimeName" community="demopublic" ObjectName="sysUpTime.0"/>
+    <item name="bstatus" OID="1.3.6.1.2.1.33.1.2.1.0" ObjectName="BatteryStatus"/>
+    <item name="btime" OID=".1.3.6.1.2.1.33.1.2.2.0" ObjectName="TimeOnBattery"/>
+    <item name="bcharge" OID=".1.3.6.1.2.1.33.1.2.4.0" ObjectName="BatteryCharge"/>
+  </Parameters>
+</SNMP>

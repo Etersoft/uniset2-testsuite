@@ -1,0 +1,1 @@
+00:00:29 [  0.145] : [[1;32m PASSED[1;m] : 'Other configures test' /0:00:00.003835/

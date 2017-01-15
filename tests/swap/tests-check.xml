@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+    <TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101">
+        <test name="simple test">
+            <check test="101@3001=0"/>
+        </test>
+        <test ignore_failed="1" name="Test global replace">
+            <check file="test4_replace.xml" link="num=3" replace="RESFILE:global.replace.test.txt" test="outlink"/>
+        </test>
+
+        <test name="Other dir outlink" num="6">
+            <check ignore="1" file="testdir/test-outlink-otherdir.xml" link="ALL" test="outlink"/>
+            <check file="testdir/test-outlink-otherdir.xml" link="ALL" test="outlink"/>
+        </test>
+    </TestList>
+</TestScenario>

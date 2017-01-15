@@ -1,0 +1,29 @@
+<?xml version = '1.0' encoding = 'utf-8'?>
+<TestScenario>
+<!--
+<RunList after_run_pause="10000">
+	 <item after_run_pause="3000" chdir="../../SharedMemory" ignore_run_failed="0" ignore_terminated="0" name="SharedMemory" script="./start_fg.sh" silent_mode="1"/>
+	 <item after_run_pause="1000" chdir="../TGAImitator" ignore_run_failed="0" ignore_terminated="0" name="tgaimitator" script="./start_fg.sh" silent_mode="1"/>
+	 <item after_run_pause="10000" chdir="../SEDImitator/SEDImitator" ignore_run_failed="0" ignore_terminated="0" name="sedimitator" script="./start_fg.sh" silent_mode="1"/>
+	 <item after_run_pause="5000" chdir="../../Algorithms/SES" ignore_run_failed="0" ignore_terminated="0" name="tga-control" script="./start_fg.sh"/>
+</RunList>
+-->
+<TestList type="uniset" comm="Один общий большой-большой тест">
+
+
+    <test num="1" name="Test_1" comm="Все тесты по выбору постов управления">
+        <check test="outlink" file="test1_1.xml" link="ALL" ignore_run_list="1" comm="Все тесты по выбору постов управления"/>
+        <check test="outlink" file="test1_2.xml" link="ALL" ignore_run_list="1" comm="Все тесты по выбору постов управления"/>
+    </test>
+
+    <test num="2" name="Test_2" comm="Все тесты по синхронизации рукоятей">
+         <check test="outlink" file="test2_1.xml" link="ALL" ignore_run_list="1" comm="Все тесты по выбору постов управления"/>
+    </test>
+
+
+
+
+
+
+</TestList>
+</TestScenario>

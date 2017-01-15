@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+    <RunList after_run_pause="5000">
+        <item after_run_pause="0" chdir="../../Utils/SharedMemory/" ignore_run_failed="1" ignore_terminated="1"
+              name="SharedMemory" script="./start_fg.sh" silent_mode="1"/>
+        <item after_run_pause="0" chdir="../../Utils/SharedMemory/" ignore_run_failed="1" ignore_terminated="1"
+              name="SharedMemory2" script="./start2_fg.sh" silent_mode="0"/>
+    </RunList>
+    <TestList logfile="j2.txt" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101">
+        <test name="simple test">
+            <check test="101@3001=0"/>
+        </test>
+        <test ignore_failed="1" name="Test outlink:ALL (replace2)" replace="MyTestVar:102">
+            <check file="test5_replace.xml" link="num=TestName" replace="TestName:Test1,MyName:104,MyVal:10,LNK:num=51" test="outlink"/>
+        </test>
+        <test ignore_failed="1" name="Test global replace">
+            <check file="test4_replace.xml" link="num=3" replace="RESFILE:global.replace.test.txt" test="outlink"/>
+        </test>
+        <test ignore_failed="1" name="Test outlink:ALL (replace)" replace="MyTestVar:102">
+            <check file="test5_replace.xml" link="num=532" replace="MyName:104,MyVal:10,LNK:num=51" test="outlink"/>
+        </test>
+        <test ignore_failed="1" name="Test outlink:ALL (replace)" replace="MyTestVar:102">
+            <check file="test5_replace.xml" link="num=SpecTest" replace="#N:104,$Val:10,%N:104,[N]:104,{Val}:10" test="outlink"/>
+        </test>
+    </TestList>
+</TestScenario>

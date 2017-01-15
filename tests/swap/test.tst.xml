@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuite>
+<TestList>
+<!--  comment comment -->
+  <test name="test 1" >
+    <action set="123=34,345=456"/>
+    <check test="123>34"/>
+    <check test="55<=45"/>
+    <action msleep="4000"/>
+  </test>
+  <test name="test 23" num="1">
+    <action set="rlk@fsdf=3"/>
+    <check test="wrf@tte>5"/>
+    <check test="link" link="num=12"/>
+    <check test="outlink" link="num=1" file="test.xml"/>
+    <check test="outlink" link="num=23" file="UNKNOWN"/>
+<!-- comment -->
+  </test>
+</TestList>
+</testsuite>
