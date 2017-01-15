@@ -184,25 +184,15 @@ class UTestInterfaceSNMP(UTestInterface):
         except ValueError:
             return None
 
-    def validateConfiguration(self):
-        # todo Реализовать функцию проверки конфигурации
-        return [True, ""]
-
-    def validateParameter(self, name):
-
-        try:
-            vname, vnode, fname = self.parseID(name)
-            if vname == '':
-                return [False, "Unknown ID for '%s'" % str(name)]
-
-            return [True, ""]
-
-        except UException, e:
-            return [False, "%s" % e.getError()]
-
     def getValue(self, name):
 
         try:
+
+            ret, err = self.validateParameter(name)
+
+            if ret == False:
+                raise TestSuiteValidateError("(UInterfaceSNMP): 'getValue' ERR: '%s'" % err)
+
             id, nodename, sname = self.parseID(name)
 
             param = self.getParameter(id)
@@ -257,5 +247,37 @@ class UTestInterfaceSNMP(UTestInterface):
             raise e
 
     def setValue(self, name, value, supplierID):
+
+        ret, err = self.validateParameter(name)
+
+        if ret == False:
+            raise TestSuiteValidateError("(UInterfaceSNMP): 'setValue' ERR: '%s'" % err)
+
         # todo Реализовать функцию setValue
         raise TestSuiteException("(UInterfaceSNMP): 'setValue' function not supported)")
+
+    def validateConfiguration(self):
+        # todo Реализовать функцию проверки конфигурации
+        return [True, ""]
+
+    def validateParameter(self, name):
+
+        try:
+            vname, vnode, fname = self.parseID(name)
+            if vname == '':
+                return [False, "Unknown ID for '%s'" % str(name)]
+
+            param = self.getParameter(vname)
+
+            if not param:
+                return [False, "Unknown OID or ObjectName for '%s'" % str(name)]
+
+            node = self.getNode(vnode)
+
+            if not node:
+                return [False, "Unknown node ('%s') for '%s'" % (vnode, str(name))]
+
+            return [True, ""]
+
+        except UException, e:
+            return [False, "%s" % e.getError()]

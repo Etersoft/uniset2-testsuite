@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+    <Config>
+        <aliases>
+            <item alias="c1" mbslave="localhost:2048" type="modbus"/>
+			<item alias="c2" mbslave="localhost:2049" type="modbus"/>
+        </aliases>
+    </Config>
+    <RunList after_run_pause="5000">
+        <item after_run_pause="0" chdir="../../Utils/SharedMemory/" ignore_run_failed="1" ignore_terminated="1"
+              name="SharedMemory" script="./start_fg.sh" silent_mode="1"/>
+        <item script="./start_mbslave1.sh" args="-c 10" silent_mode="1" chdir="../../Utils/Modbus/" ignore_terminated="0"
+              ignore_run_failed="0" name="MBSlave1"/>
+        <item script="./start_mbslave2.sh" args="0x01" silent_mode="1" chdir="../../Utils/Modbus/" ignore_terminated="0"
+              ignore_run_failed="0" name="MBSlave2"/>
+    </RunList>
+    <TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:Test_AI1,MyGlobalVar:101">
+        <test name="check: Equal test">
+            <action set="111=10"/>
+            <check test="111=10"/>
+            <check test="Test_AI1=10"/>
+            <check test="111=10" holdtime="500"/>
+            <check test="Test_AI1=10" holdtime="500"/>
+            <check test="MyGlobalVar2=10"/>
+        </test>
+        <test name="check: Not Equal test">
+            <action set="111=10"/>
+            <check test="111!=11"/>
+            <check test="Test_AI1!=11"/>
+            <check test="111!=11" holdtime="500"/>
+            <check test="Test_AI1!=11" holdtime="500"/>
+        </test>
+        <test name="check: great test">
+            <action set="111=100"/>
+            <check test="111>10"/>
+            <check test="Test_AI1>10"/>
+            <check test="111>=10"/>
+            <check test="Test_AI1>=10"/>
+            <check test="111>=10" holdtime="300"/>
+            <check test="Test_AI1>=10" holdtime="300"/>
+        </test>
+        <test name="check: less test">
+            <action set="111=10"/>
+            <check test="111<100"/>
+            <check test="Test_AI1<100"/>
+            <check test="111<=112"/>
+            <check test="Test_AI1<=100"/>
+            <check test="111<=100" holdtime="300"/>
+            <check test="Test_AI1<=100" holdtime="300"/>
+        </test>
+        <test name="check: ignore test">
+            <action set="111=10"/>
+            <check test="111<100" ignore="1"/>
+            <check test="Test_AI1<100" ignore="1"/>
+            <check test="111<=100"/>
+            <check test="Test_AI1<=100"/>
+        </test>
+		<!-- MODBUS COMPARE TESTS -->
+        <test name="modbus check: Equal test">
+			<action set="111=10"/>
+			<check test="0x10=10" config="c1"/>
+			<check test="0x24:0x04=10" config="c1"/>
+        </test>
+        <test name="modbus check: Not Equal test">
+			<check test="0x10!=11" config="c2"/>
+			<check test="0x24:0x04!=11" config="c2"/>
+        </test>
+        <test name="modbus check: great test">
+			<check test="0x10>=10" config="c2"/>
+			<check test="0x24:0x04!=11" config="c2"/>
+        </test>
+        <test name="modbus check: less test">
+			<!-- <check test="0x10@0x01<=0x11" config="c2"/>-->
+			<check test="0x14:0x04<=21" config="c2"/>
+			<!-- <check test="0x10<0x20" config="c2"/> -->
+			<check test="0x14:0x04<21" config="c2"/>
+        </test>
+        <test name="modbus check: ignore test">
+			<check test="0x10>=0x20" config="c2" ignore="1"/>
+			<check test="0x14:0x04!=11" config="c2" ignore="1"/>
+        </test>
+  </TestList>
+</TestScenario>

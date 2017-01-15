@@ -1039,7 +1039,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             act['result'] = t_PASSED
         except TestSuiteException, e:
             act['result'] = t_FAILED
-            act['text'] = "FAILED: %s" % e.getError
+            act['text'] = "FAILED: %s" % e.getError()
             self.tsi.setActionResult(act, False)
         finally:
             if sys.version_info[1] == 5:
@@ -1150,13 +1150,13 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             resOK = True
         except TestSuiteException, e:
-            ttime = e.getFinishTime - tm_start
+            ttime = e.getFinishTime() - tm_start
             res = make_default_item()
             res['xmlnode'] = testnode
             res['result'] = t_FAILED
             res['name'] = to_str(self.replace(testnode.prop('name')))
             res['time'] = ttime
-            res['text'] = e.getError
+            res['text'] = e.getError()
             res['filename'] = xml.getFileName()
             res['nrecur'] = self.tsi.nrecur
             res['item_type'] = 'test'
@@ -1214,9 +1214,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
                 testnode = xml.nextNode(testnode)
 
-        except TestSuiteException, e:
-            item['time'] = e.getFinishTime - tm_start
-            item['text'] = e.getError
+        except (TestSuiteException, TestSuiteValidateError), e:
+            item['time'] = e.getFinishTime() - tm_start
+            item['text'] = e.getError()
             item['xmlnode'] = testnode
             if e.failed_item:
                 item['items'].append(e.failed_item)
@@ -1293,9 +1293,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         except TestSuiteException, ex:
             item = make_default_item()
             item['name'] = to_str(self.replace(testnode.prop('name')))
-            item['time'] = ex.getFinishTime - tm_start
+            item['time'] = ex.getFinishTime() - tm_start
             item['result'] = t_FAILED
-            item['text'] = ex.getError
+            item['text'] = ex.getError()
             item['xmlnode'] = testnode
             item['filename'] = xml.getFileName()
             item['nrecur'] = self.tsi.nrecur
@@ -1426,10 +1426,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
                 curnode = xml.nextNode(curnode)
 
-        except TestSuiteException, e:
+        except (TestSuiteException, TestSuiteValidateError), e:
             result['result'] = t_FAILED
             result['items'].append(e.failed_item)
-            tm_finish = e.getFinishTime
+            tm_finish = e.getFinishTime()
             # ttime = tm_finish - tm_start
             raise e
         else:
@@ -1716,7 +1716,7 @@ if __name__ == "__main__":
         exit(0)
 
     except TestSuiteException, e:
-        print "(TestSuiteXMLPlayer): catch exception: " + str(e.getError)
+        print "(TestSuiteXMLPlayer): catch exception: " + str(e.getError())
     except UException, e:
         print "(TestSuiteXMLPlayer): catch exception: " + str(e.getError())
     except KeyboardInterrupt:

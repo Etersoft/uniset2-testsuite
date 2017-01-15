@@ -395,7 +395,7 @@ class TestSuiteInterface():
             item['faulty_sensor'] = s_id
             self.setResult(item, True)
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = '(%s=true) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -420,12 +420,15 @@ class TestSuiteInterface():
 
         try:
             while t_tick >= 0:
-                if self.getValue(s_id, ui) == False or self.isCheckScenarioMode():
+                if self.getValue(s_id, ui) == False and not self.isCheckScenarioMode():
                     item['result'] = t_FAILED
                     item['text'] = 'HOLD %s=true holdtime=%d msec' % (s_id, t_out)
                     item['faulty_sensor'] = s_id
                     self.setResult(item, True)
                     return False
+
+                if self.isCheckScenarioMode():
+                    break
 
                 time.sleep(t_sleep)
                 t_tick -= 1
@@ -435,7 +438,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = 'HOLD (%s=true) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -475,7 +478,7 @@ class TestSuiteInterface():
             item['faulty_sensor'] = s_id
             self.setResult(item, True)
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = '(%s=false) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -500,12 +503,15 @@ class TestSuiteInterface():
         try:
             while t_tick >= 0:
 
-                if self.getValue(s_id, ui) == True and self.isCheckScenarioMode() == False:
+                if self.getValue(s_id, ui) == True and not self.isCheckScenarioMode():
                     item['result'] = t_FAILED
                     item['text'] = 'HOLD %s!=false holdtime=%d msec' % (s_id, t_out)
                     item['faulty_sensor'] = s_id
                     self.setResult(item, True)
                     return False
+
+                if self.isCheckScenarioMode():
+                    break
 
                 time.sleep(t_sleep)
                 t_tick -= 1
@@ -515,7 +521,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = 'HOLD (%s=false) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -571,7 +577,7 @@ class TestSuiteInterface():
 
             self.setResult(item, True)
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
                 item['text'] = '%s(%d)=%s(%d) error: %s' % (s_id[0], v1, s_id[1], v2, e.getError())
@@ -634,7 +640,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -696,7 +702,7 @@ class TestSuiteInterface():
 
             self.setResult(item, True)
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -762,7 +768,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -823,7 +829,7 @@ class TestSuiteInterface():
 
             self.setResult(item, True)
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -890,7 +896,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -949,7 +955,7 @@ class TestSuiteInterface():
 
             self.setResult(item, True)
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -1015,7 +1021,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -1064,7 +1070,7 @@ class TestSuiteInterface():
             self.setActionResult(act, False)
             return True
 
-        except UException, e:
+        except (UException,TestSuiteValidateError), e:
             act['text'] = '(%s=%s) error: %s' % (s_id, s_val, e.getError())
             act['result'] = t_FAILED
             act['faulty_sensor'] = s_id
@@ -1125,7 +1131,7 @@ class TestSuiteInterface():
             self.setActionResult(act, False)
             return True
 
-        except uniset2.pyUExceptions.UException, e:
+        except (UException,TestSuiteValidateError), e:
             act['result'] = t_FAILED
             act['text'] = '\'%s\' error: %s' % (script_name, e.getError())
             self.setActionResult(act, throwIfFailed)

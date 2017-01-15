@@ -35,6 +35,9 @@
             <compare test="111=112"/>
             <compare test="1dsfsdf11=112"/>
             <compare test="Test_AI1=Test_AI2" holdtime="5000"/>
+            <action set="111@nodeUnknown=10"/>
+            <check test="111@nodeUnknown=10"/>
+            <compare test="Test_AI1@nodeUnknown=Test_AI2"/>
         </test>
         <test name="check: bad outlink">
 	        <check file="not_found_links_file.xml" link="ALL" test="outlink"/>

@@ -21,6 +21,9 @@ class UTestInterface():
     def getInterfaceType(self):
         return self.itype
 
+    def getConfFileName(self):
+        return ''
+
     def validateParameter(self, name):
         """
         Validate test parameter (id@node)

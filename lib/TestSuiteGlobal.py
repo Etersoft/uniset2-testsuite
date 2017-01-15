@@ -145,6 +145,8 @@ class TestSuiteReporter():
 
 class TestSuiteException(Exception):
     def __init__(self, err='', test_time=-1, item=None):
+        Exception.__init__(self)
+
         self.failed_item = item
         if not item:
             self.failed_item = dict()
@@ -154,14 +156,11 @@ class TestSuiteException(Exception):
         if test_time == -1:
             self.ftime = time.time()
 
-    @property
     def getError(self):
         return self.err
 
-    @property
     def getFinishTime(self):
         return self.ftime
-
 
 class TestSuiteValidateError(TestSuiteException):
     def __init__(self, err=''):

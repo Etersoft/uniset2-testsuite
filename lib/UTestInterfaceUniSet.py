@@ -32,6 +32,14 @@ class UTestInterfaceUniSet(UTestInterface):
             if s[0] == DefaultID:
                 return [False, "Unknown ID for '%s'" % str(s_id)]
 
+            # id@node
+            fullname = s[2]
+            v = fullname.split('@')
+
+            # если задан узел но его ID не найден
+            if len(v) > 1 and v[1] and s[1] == DefaultID:
+                return [False, "Unknown ID for node '%s' in '%s'" % (v[1], str(s_id))]
+
             return [True, ""]
 
         except UException, e:
