@@ -28,6 +28,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.log_show_testtype = False
         self.no_coloring_output = False
         self.calltrace_disable_extinfo = False
+        self.show_test_filename = False
 
     def print_log(self, item):
 
@@ -66,11 +67,16 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         if self.showTestTreeMode:
             if item['item_type'] == 'test' and item['type'] != 'FINISH':
                 self.log_numstr += 1
+
             if self.log_show_numline:
                 txt2 = '%4s %s' % (self.log_numstr, txt2)
 
             # if self.log_show_comments or self.log_show_test_comment:
             txt2 = "%s\t\t%s" % (txt2, t_comment)
+
+            if self.show_test_filename:
+                txt2 = "[%35s]   %s" % (item['filename'], txt2)
+
             return txt2
 
         self.log_numstr += 1
@@ -157,6 +163,10 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
             # if self.log_show_comments or self.log_show_test_comment:
             txt2 = "%s\t\t%s" % (txt2, t_comment)
+
+            if self.show_test_filename:
+                txt2 = "[%35s]   %s" % (act['filename'], txt2)
+
             return txt2
 
         self.log_numstr += 1

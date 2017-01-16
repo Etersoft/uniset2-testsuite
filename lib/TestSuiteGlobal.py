@@ -42,16 +42,21 @@ def make_default_item():
     return item
 
 
-def make_fail_result(text, type='(TestSuiteXMLPlayer)'):
+def make_fail_result(text, type='(TestSuiteXMLPlayer)', copyFrom=None):
     fail = make_default_item()
+    if copyFrom:
+        fail = copyFrom
     fail['result'] = t_FAILED
     fail['text'] = text
     fail['type'] = type
     return fail
 
 
-def make_info_item(text, type='(TestSuiteXMLPlayer)'):
+def make_info_item(text, type='(TestSuiteXMLPlayer)', copyFrom=None):
     info = make_default_item()
+    if copyFrom:
+        info = copyFrom
+
     info['type'] = type
     info['text'] = text
     return info
