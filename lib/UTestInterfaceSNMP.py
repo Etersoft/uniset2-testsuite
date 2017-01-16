@@ -4,6 +4,7 @@
 from uniset2.UniXML import UniXML
 from uniset2.pyUExceptions import UException
 import uniset2.UGlobal as uglobal
+import pysnmp
 from pysnmp.entity.rfc3413.oneliner import cmdgen as snmp
 from UTestInterface import *
 
@@ -201,7 +202,7 @@ class UTestInterfaceSNMP(UTestInterface):
             varName = None
 
             if param['OID']:
-                varName = snmp.ObjectIdentity(param['OID'])
+                varName = snmp.MibVariable(param['OID'])
             elif param['ObjectName']:
 
                 # Парсим строку вида: SNMPv2-MIB::sysUpTime.0
@@ -219,7 +220,7 @@ class UTestInterfaceSNMP(UTestInterface):
                 if len(v) > 1:
                     vnum = uglobal.to_int(v[1])
 
-                varName = snmp.ObjectIdentity(pname, vname, vnum)
+                varName = snmp.MibVariable(pname, vname, vnum)
             else:
                 raise TestSuiteValidateError("(UInterfaceSNMP): 'getValue' Unknown OID for '%s'" % name)
 
