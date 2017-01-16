@@ -8,6 +8,7 @@ from subprocess import Popen
 
 from TestSuiteGlobal import *
 
+
 # ---------------------------------------------------------
 class ChildProcess():
     def __init__(self, xmlnode):
@@ -32,9 +33,7 @@ class ChildProcess():
         self.chdir = xmlnode.prop('chdir')
         self.runing = False
 
-    def run(self, waitfinish = False):
-        # print "run child process: " + self.name
-        #        print "*************** cmd: " + str(self.cmd)
+    def run(self, waitfinish=False):
         sout = None
         serr = None
         if self.silent_mode:
@@ -42,7 +41,7 @@ class ChildProcess():
             sout = nul_f
             serr = nul_f
 
-        if self.logfilename != None:
+        if self.logfilename:
             self.logfile = open(self.logfilename, 'w')
             sout = self.logfile
             serr = self.logfile
@@ -83,6 +82,7 @@ class ChildProcess():
         # проверяем что указанный скрипт существует
         return os.path.exists(self.script)
 
+
 # ---------------------------------------------------------
 def waitncpid(w_pid, timeout_sec=-1):
     """
@@ -92,8 +92,6 @@ def waitncpid(w_pid, timeout_sec=-1):
     tick = timeout_sec
     while True:
         try:
-            # print "******* wait terminate child pid=%d"%w_pid
-            #os.kill(w_pid, 0)
             os.waitpid(w_pid, 0)
             time.sleep(1)
             if timeout_sec > 0:
@@ -101,9 +99,8 @@ def waitncpid(w_pid, timeout_sec=-1):
                     break
                 tick = tick - 1
 
-        except OSError, KeyboardInterrupt:
+        except (OSError, KeyboardInterrupt, IOError):
             break
-            # print "******* wait terminate child pid=%d [OK]"%w_pid
 
 
 # ---------------------------------------------------------
@@ -111,16 +108,14 @@ def wait_childs(timeout_sec=-1):
     tick = timeout_sec
     while True:
         try:
-            # print "******* wait terminate ALL childs"
             os.wait()
             time.sleep(1)
             if timeout_sec > 0:
                 if tick <= 0:
                     break
                 tick = tick - 1
-        except OSError, KeyboardInterrupt:
+        except (OSError, KeyboardInterrupt, IOError):
             break
-            # print "******* wait terminate ALL childs [OK]"
 
 
 # ---------------------------------------------------------
@@ -148,15 +143,16 @@ class MonitorThread(threading.Thread):
             try:
                 p.run()
                 clist.append(p.popen)
-            except (OSError, KeyboardInterrupt), e:
-                err = '[FAILED]: (ProcessMonitor): run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (p.name, p.cmd, e.errno, e.strerror)
+            except (OSError, KeyboardInterrupt, IOError), e:
+                err = '[FAILED]: (ProcessMonitor): run \'%s\' failed.(cmd=\'%s\' error: (%d)%s).' % (
+                p.name, p.cmd, e.errno, e.strerror)
                 if p.ignore_run_failed == False and self.term_flag == False:
                     print err
-                    print '(ProcessMonitor): ..terminate all..[%d]'%len(self.plist)
+                    print '(ProcessMonitor): ..terminate all..[%d]' % len(self.plist)
                     for pp in self.plist:
                         if pp.popen:
                             p_pid = pp.popen.pid
-                            print "PID: %d"%p_pid
+                            print "PID: %d" % p_pid
                             pp.stop()
                             waitncpid(p_pid)
 
@@ -166,16 +162,15 @@ class MonitorThread(threading.Thread):
 
         self.run_event.set()
 
-        # print "Run monitor process..."
         while self.active:
             for p in self.plist:
                 if p.runing and p.popen.poll() is not None:
                     p.runing = False
                     if p.ignore_terminated == False and self.term_flag == False:
                         err = '[FAILED]:(ProcessMonitor):  Process \'%s\' terminated..(retcode=%d)' % (
-                        p.name, p.popen.poll())
+                            p.name, p.popen.poll())
                         print err
-                        #raise TestSuiteException(err)
+                        # raise TestSuiteException(err)
                         print '(ProcessMonitor): ..terminate all..'
                         for pp in self.plist:
                             if pp.popen:
@@ -204,7 +199,7 @@ class MonitorThread(threading.Thread):
     def m_stop(self):
         if not self.active:
             return
-        # print "****************** m_stop"
+
         self.term_flag = True
         for p in self.plist:
             # print "terminate " + str(p.cmd)
@@ -230,7 +225,7 @@ class MonitorThread(threading.Thread):
                     p_pid = p.popen.pid
                     p.stop()
                     waitncpid(p_pid)
-            except (OSError, KeyboardInterrupt), e:
+            except (OSError, KeyboardInterrupt, IOError), e:
                 print 'terminate failed: (%d)%s' % (e.errno, e.strerror)
 
         self.active = False
@@ -267,7 +262,6 @@ class ProcessMonitor():
             self.thr.m_start(os.getpid())  # запуск с ожиданием запуска всех
             self.active = True
             if self.after_run_pause > 0:
-                # print "******** PAUSE AFTER RUN " + str(self.after_run_pause)
                 time.sleep(self.after_run_pause)
             else:
                 time.sleep(1)
@@ -293,10 +287,10 @@ class ProcessMonitor():
             self.thr.join()
 
     def check(self):
-        '''
+        """
         Проверка корректности
         :return: True если всё ok
-        '''
+        """
         for p in self.plist:
             if p.check() == False:
                 return False

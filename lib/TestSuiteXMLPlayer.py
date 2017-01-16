@@ -1344,7 +1344,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.tsi.add_testsuite_environ_variable('CURDIR', os.getcwd())
 
         # если заданы теги то игнорируем тесты не проходящие проверку
-        if len(self.tags) > 0 and not self.check_tag(to_str(self.replace(testnode.prop('tags')))):
+        if len(self.tags) > 0 and not self.check_tag(result['tags']):
             result['result'] = t_NONE
             result['time'] = 0
             result['text'] = testname
