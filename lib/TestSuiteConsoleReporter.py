@@ -6,6 +6,7 @@ import datetime
 import string
 from TestSuiteGlobal import *
 
+
 class TestSuiteConsoleReporter(TestSuiteReporter):
     ''' Вывод на экран (надо сделать Singleton-ом!)'''
 
@@ -67,6 +68,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
                 self.log_numstr += 1
             if self.log_show_numline:
                 txt2 = '%4s %s' % (self.log_numstr, txt2)
+
+            # if self.log_show_comments or self.log_show_test_comment:
+            txt2 = "%s\t\t%s" % (txt2, t_comment)
             return txt2
 
         self.log_numstr += 1
@@ -82,13 +86,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         if self.log_show_comments or self.log_show_test_comment:
             if not t_comment or (self.log_show_test_comment and not self.log_show_comments and t_test != 'BEGIN'):
                 t_comment = ""
-
-            try:
-                t_comment = unicode(t_comment, "UTF-8", errors='replace')
-            except UnicodeDecodeError:
-                pass
-            except TypeError:
-                pass
 
             try:
                 txt = '%s %s %s' % (
@@ -157,6 +154,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
             if self.log_show_numline:
                 txt2 = '%4s %s' % (self.log_numstr, txt2)
+
+            # if self.log_show_comments or self.log_show_test_comment:
+            txt2 = "%s\t\t%s" % (txt2, t_comment)
             return txt2
 
         self.log_numstr += 1
@@ -171,13 +171,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         if self.log_show_comments or self.log_show_test_comment:
             if not t_comment or (self.log_show_test_comment and not self.log_show_comments and t_act != 'BEGIN'):
                 t_comment = ""
-
-            try:
-                t_comment = unicode(t_comment, "UTF-8", errors='replace')
-            except UnicodeDecodeError:
-                pass
-            except TypeError:
-                pass
 
             try:
                 txt = '%s %s %s' % (
@@ -416,7 +409,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             self.colorize_test_begin(ttab.ljust(tname_width)),
             self.colorize_test_begin("=== TEST CALL TRACE (limit: %d) ===" % call_limit))
 
-        fail_test = failtrace[-0] # это просто последний тест с конца
+        fail_test = failtrace[-0]  # это просто последний тест с конца
         for stackItem in failtrace[-call_limit::]:
             tab = ""
             for i in range(0, stackItem['call_level']):
@@ -453,7 +446,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             return
 
         try:
-            faultySensor = to_sid(fail_item['faulty_sensor'],ui)
+            faultySensor = to_sid(fail_item['faulty_sensor'], ui)
 
             if faultySensor[0] == DefaultID:
                 print "Extended information is not available. Error: Unknown faulty sensor.\n"
@@ -462,13 +455,15 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             # Получаем информацию кто и когда менял последний раз датчик
             sensorChangeInfo = ui.getTimeChange(fail_item['faulty_sensor'])
 
-            stime = time.strftime('%Y-%m-%d %H:%M:%S',time.gmtime( sensorChangeInfo.tv_sec ))
+            stime = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(sensorChangeInfo.tv_sec))
             # При выводе делаем nanosec --> millisec
-            print "(%d)'%s' ==> last update %s.%d value=%d owner=%d\n" % (faultySensor[0], fail_item['faulty_sensor'], stime, sensorChangeInfo.tv_nsec/1000000, sensorChangeInfo.value, sensorChangeInfo.supplier)
+            print "(%d)'%s' ==> last update %s.%d value=%d owner=%d\n" % (
+            faultySensor[0], fail_item['faulty_sensor'], stime, sensorChangeInfo.tv_nsec / 1000000,
+            sensorChangeInfo.value, sensorChangeInfo.supplier)
 
             # Получаем информацию о том кто заказывал этот датчик
             # возврщется массив запрошенных датчиков с кратким описанием и списоком заказчиков по каждому датчику
-            jsonConsumers = json.loads(ui.apiRequest(fail_item['faulty_sensor'],"/consumers?%s"%faultySensor[0]))
+            jsonConsumers = json.loads(ui.apiRequest(fail_item['faulty_sensor'], "/consumers?%s" % faultySensor[0]))
             listSensors = jsonConsumers['sensors']
 
             if len(listSensors) == 0:
@@ -498,7 +493,8 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
             ownerID = sensorChangeInfo.supplier
             if ownerID == DefaultID:
-                print "Extended information 'OWNER' is not available. Error:  Unknown owner ID for sensor %s\n"%fail_item['faulty_sensor']
+                print "Extended information 'OWNER' is not available. Error:  Unknown owner ID for sensor %s\n" % \
+                      fail_item['faulty_sensor']
                 return
 
             if ownerID == DefaultSupplerID:
@@ -506,7 +502,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
                 return
 
             # Получаем информацию о том кто поменял датчик
-            o_name = "%d@%d" % (ownerID,faultySensor[1])
+            o_name = "%d@%d" % (ownerID, faultySensor[1])
 
             addon = ""
             for n in range(0, len(o_name)):
@@ -518,4 +514,3 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         except UException, e:
             print "Get extended information error: %s\n" % e.getError()
-
