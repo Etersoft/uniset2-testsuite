@@ -1,1 +1,1 @@
-../../lib/TestSuiteXMLPlayer.py
+../../src/core/TestSuiteXMLPlayer.py

@@ -83,8 +83,10 @@ class TestSuiteInterface():
 
             fullname = os.path.join(pluginDir, name)
             if os.path.isfile(fullname):
-                m = __import__(os.path.splitext(name)[0])
-                self.plugins[m.uts_plugin_name()] = m
+                ext = os.path.splitext(name)
+                if len(ext)>1 and ext[1] == '.py':
+                    m = __import__(os.path.splitext(name)[0])
+                    self.plugins[m.uts_plugin_name()] = m
 
     def pluginsCount(self):
         return len(self.plugins)
