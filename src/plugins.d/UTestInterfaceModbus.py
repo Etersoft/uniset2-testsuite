@@ -8,14 +8,41 @@ from UTestInterface import *
 
 
 class UTestInterfaceModbus(UTestInterface):
-    def __init__(self, ip, port):
-        UTestInterface.__init__(self, 'modbus')
 
-        self.mbi = UModbus()
-        self.mbi.prepare(ip, port)
+    def __init__(self, **kwargs):
+        """
+        :param kwargs: параметры
+        """
+        UTestInterface.__init__(self, 'modbus', **kwargs)
+
+        slaveaddr = None
+        #  конфигурирование из xmlnode
+        if 'xmlConfNode' in kwargs:
+            xmlConfNode = kwargs['xmlConfNode']
+            slaveaddr = xmlConfNode.prop('mbslave')
+            if not slaveaddr:
+                raise TestSuiteValidateError("(uniset:init): Not found mbslave='' in %s" % str(xmlConfNode))
+
+        # прямое указание параметра
+        elif 'mbslave' in kwargs:
+            slaveaddr = kwargs['mbslave']
+
+        if not slaveaddr:
+            raise TestSuiteValidateError("(modbus:init): Unknown mbslave address and port")
+
+        ip, port = get_mbslave_param(slaveaddr)
+
+        if not ip or not port:
+            raise TestSuiteValidateError("(modbus:init): Unknown ip or port for mbslave='%s'" % (slaveaddr))
+
+        try:
+            self.mbi = UModbus()
+            self.mbi.prepare(ip, port)
+        except UException, e:
+            raise TestSuiteValidateError("(modbus:init): ERR: %s " % e.getError())
 
     @staticmethod
-    def parseID(self, pname):
+    def parseID(pname):
 
         mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(pname, "0x04")
         return [str(mbreg), str(mbaddr), pname]
@@ -80,3 +107,25 @@ class UTestInterfaceModbus(UTestInterface):
 
         except UException, e:
             raise TestSuiteException(e.getError())
+
+
+def uts_create_from_args(**kwargs):
+    """
+    Создание интерфейса
+    :param kwargs: именованные параметры
+    :return: объект наследник UTestInterface
+    """
+    return UTestInterfaceModbus(**kwargs)
+
+
+def uts_create_from_xml(xmlConfNode):
+    """
+    Создание интерфейса
+    :param xmlConfNode: xml-узел с настройками
+    :return: объект наследник UTestInterface
+    """
+    return UTestInterfaceModbus(xmlConfNode=xmlConfNode)
+
+
+def uts_plugin_name():
+    return "modbus"

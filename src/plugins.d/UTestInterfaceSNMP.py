@@ -31,14 +31,33 @@ from UTestInterface import *
 
 
 class UTestInterfaceSNMP(UTestInterface):
-    def __init__(self, snmpConfile):
-        UTestInterface.__init__(self, "snmp")
+    def __init__(self, **kwargs):
+
+        UTestInterface.__init__(self, "snmp", **kwargs)
+
+        snmpConFile = None
+
+        # конфигурирование из xmlnode
+        if 'xmlConfNode' in kwargs:
+            xmlConfNode = kwargs['xmlConfNode']
+            if not xmlConfNode:
+                raise TestSuiteValidateError("(snmp:init): Unknown confnode")
+            snmpConFile = uglobal.to_str(xmlConfNode.prop("snmp"))
+            if not snmpConFile:
+                raise TestSuiteValidateError("(snmp:init): Not found snmp='' in %s" % str(xmlConfNode))
+
+        # конфигурирование прямым указанием файла
+        elif 'snmpConFile' in kwargs:
+            snmpConFile = kwargs['snmpConFile']
+
+        if not snmpConFile:
+            raise TestSuiteValidateError("(snmp:init): Unknown snmp configuration file")
 
         self.mibparams = dict()
         self.nodes = dict()
-        self.confile = snmpConfile
+        self.confile = snmpConFile
 
-        self.initFromFile(snmpConfile)
+        self.initFromFile(snmpConFile)
 
         self.snmp = snmp.CommandGenerator()
 
@@ -47,6 +66,9 @@ class UTestInterfaceSNMP(UTestInterface):
         xml = UniXML(xmlfile)
         self.initNodesList(xml)
         self.initParameters(xml)
+
+    def getConfFileName(self):
+        return self.confile
 
     @staticmethod
     def getIntProp(node, propname, defval):
@@ -286,3 +308,25 @@ class UTestInterfaceSNMP(UTestInterface):
 
         except UException, e:
             return [False, "%s" % e.getError()]
+
+
+def uts_create_from_args(**kwargs):
+    """
+    Создание интерфейса
+    :param kwargs: именованные параметры
+    :return: объект наследник UTestInterface
+    """
+    return UTestInterfaceSNMP(**kwargs)
+
+
+def uts_create_from_xml(xmlConfNode):
+    """
+    Создание интерфейса
+    :param xmlConfNode: xml-узел с настройками
+    :return: объект наследник UTestInterface
+    """
+    return UTestInterfaceSNMP(xmlConfNode=xmlConfNode)
+
+
+def uts_plugin_name():
+    return "snmp"

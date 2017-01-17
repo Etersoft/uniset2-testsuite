@@ -14,7 +14,7 @@ from TestSuiteInterface import *
 from TestSuiteConsoleReporter import *
 from TestSuiteLogFileReporter import *
 from TestSuiteJUnitReporter import *
-
+from TestSuiteGlobal import *
 
 class keys():
     pause = ' '  # break
@@ -169,29 +169,17 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         while node is not None:
 
             c_type = to_str(node.prop("type"))
-            if c_type == "":
+            if c_type == '':
                 c_type = scenario_type
 
-            if c_type == "uniset":
-                ui = self.tsi.add_uniset_config(node.prop("confile"), node.prop("alias"))
-                if to_str(node.prop("default")) != "":
-                    self.tsi.set_default_ui(ui)
-            elif c_type == "modbus":
-                ui = self.tsi.add_modbus_config(node.prop("mbslave"), node.prop("alias"))
-                if to_str(node.prop("default")) != "":
-                    self.tsi.set_default_ui(ui)
-            elif c_type == "snmp":
-                ui = self.tsi.add_snmp_config(node.prop("snmp"), node.prop("alias"))
-                if to_str(node.prop("default")) != "":
-                    self.tsi.set_default_ui(ui)
-            else:
+            if not self.tsi.check_iterface_exist(c_type):
                 self.tsi.setResult(
-                    make_fail_result("Unknown scenario type='%s' Must be 'uniset' or 'modbus' or 'snmp' " % c_type,
+                    make_fail_result("Unknown scenario type='%s' Must be '%s'" % (c_type, self.tsi.iterfaces_as_str()),
                                      "(TestSuiteXMLPlayer:initConfig)"), True)
                 raise TestSuiteException(
                     "(TestSuiteXMLPlayer:initConfig): Unknown scenario type='%s' Must be 'uniset' or 'modbus' or 'snmp'" % c_type)
 
-            # print "add_config: " + str(node)
+            ui = self.tsi.add_interface(node)
             node = xml.nextNode(node)
 
     def initEnvironmentVariables(self, xml, confNode):
@@ -1550,21 +1538,34 @@ if __name__ == "__main__":
 
     #    import os
     #    import termios
-
     #    old_settings = termios.tcgetattr(sys.stdin)
 
-    ts = TestSuiteInterface()
     global_player = None
     print_calltrace = False
     print_calltrace_limit = 20
     global_result = None
+
     try:
+        ts = TestSuiteInterface()
+
+        plugDirs = ['./plugins.d', ts.get_plugins_dir()]
+        for d in plugDirs:
+            try:
+                if d:
+                    ts.load_plugins(d)
+            except TestSuiteException, e:
+                pass
+
+        if ts.pluginsCount() == 0:
+            print "TestSuiteInterface: ERROR: not found testsuite plugins.. :( "
+            print "check directory: %s" % ' '.join(plugDirs)
+            exit(1)
 
         if ts.checkArgParam('--help', False) == True or ts.checkArgParam('-h', False) == True:
             print 'Usage: %s [--confile [configure.xml|alias@conf1.xml,alias2@conf2.xml,..]  --testfile scenario.xml' % \
                   sys.argv[0]
             print '\n'
-            print '--confile [conf.xml,alias1@conf.xml,..]  - Configuration file.'
+            print '--confile [conf.xml,alias1@conf.xml,..]  - Configuration file for uniset test scenario.'
             print '--testfile tests.xml      - Test scenarion file.'
             print '--show-test-log           - Show test log'
             print '--show-action-log         - Show actions log'
@@ -1640,7 +1641,8 @@ if __name__ == "__main__":
             show_result = False
 
         cf = conflist.split(',')
-        ts.init_testsuite(cf)
+        ts.init_uniset_interfaces(cf)
+
         ts.set_ignore_nodes(ignore_nodes)
         ts.set_show_test_tree_mode(show_test_tree)
 

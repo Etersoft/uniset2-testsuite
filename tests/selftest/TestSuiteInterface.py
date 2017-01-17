@@ -1,1 +1,1 @@
-../../lib/TestSuiteInterface.py
+../../src/core/TestSuiteInterface.py

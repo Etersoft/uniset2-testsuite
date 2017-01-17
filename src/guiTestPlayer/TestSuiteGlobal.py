@@ -1,1 +1,1 @@
-../../lib/TestSuiteGlobal.py
+../core/TestSuiteGlobal.py

@@ -7,7 +7,7 @@ from TestSuiteGlobal import *
 class UTestInterface():
     """Базовый интерфейс для тестирования"""
 
-    def __init__(self, itype=''):
+    def __init__(self, itype, **kwargs):
         self.itype = itype
         self.ignore_nodes = False
 

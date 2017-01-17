@@ -4,15 +4,17 @@
 import subprocess
 import re
 import os
+import sys
 import uniset2
 from uniset2.pyUExceptions import *
-from UTestInterfaceSNMP import *
-from UTestInterfaceModbus import *
-from UTestInterfaceUniSet import *
+from uniset2.UGlobal import *
 from TestSuiteGlobal import *
 
 # \todo может потом перейти на использование colorama
 # import colorama as clr
+
+TS_PROJECT_NAME = 'uniset2-testsuite'
+
 
 class logid():
     Type = 0
@@ -30,9 +32,8 @@ class TestSuiteInterface():
 
         self.ignorefailed = False
         self.ui_list = dict()
-        self.conf_list = dict()
         self.default_ui = None
-        self.params = Params_inst()
+        # self.params = uniset2.Params_inst()
         self.ignore_nodes = False
         self.nrecur = 0
         self.supplierID = uniset2.DefaultSupplerID
@@ -47,6 +48,8 @@ class TestSuiteInterface():
         self.env = os.environ.copy()
         self.envPrefix = "UNISET_TESTSUITE"
 
+        self.plugins = dict()
+
     @staticmethod
     def get_aliasname(cname):
         v = cname.strip().split('@')
@@ -57,17 +60,42 @@ class TestSuiteInterface():
         s = v[0].split('.')
         return [s[0], v[0]]
 
-    def init_testsuite(self, conflist):
+    @staticmethod
+    def get_plugins_dir():
+        for p in sys.path:
+            d = os.path.join(p, TS_PROJECT_NAME)
+            if os.path.isdir(d):
+                return os.path.join(d, 'plugins.d')
 
-        for i in range(0, len(sys.argv)):
-            if i >= Params.max:
-                break
+        return ''
 
-            # confist передан отдельно
-            if sys.argv[i] == '--confile' or (i != 0 and sys.argv[i - 1] == '--confile'):
+    def load_plugins(self, pluginDir):
+
+        if not os.path.isdir(pluginDir):
+            raise TestSuiteException("(TestSuite::load_plugins): plugin directory '%s' not found " % pluginDir)
+
+        sys.path.append(pluginDir)
+
+        for name in os.listdir(pluginDir):
+
+            if not name:
                 continue
 
-            self.params.add(sys.argv[i])
+            fullname = os.path.join(pluginDir, name)
+            if os.path.isfile(fullname):
+                m = __import__(os.path.splitext(name)[0])
+                self.plugins[m.uts_plugin_name()] = m
+
+    def pluginsCount(self):
+        return len(self.plugins)
+
+    def check_iterface_exist(self, iname):
+        return iname in self.plugins
+
+    def iterfaces_as_str(self):
+        return ','.join(self.plugins.keys())
+
+    def init_uniset_interfaces(self, conflist):
 
         try:
             if len(conflist) == 0 or not conflist:
@@ -93,14 +121,6 @@ class TestSuiteInterface():
             self.setResult(make_fail_result('(init_testsuite): ' + str(e.getError())), True)
             raise e
 
-    def get_config_list(self):
-        clist = []
-        for c, xfile in self.conf_list.items():
-            clist.append(xfile)
-
-        # удаляем дубли..
-        return [x for x in set(clist)]
-
     def add_uniset_config(self, xmlfile, alias, already_ignore=True):
 
         if to_str(xmlfile) == "":
@@ -113,63 +133,41 @@ class TestSuiteInterface():
                 return None
             return self.ui_list[alias]
 
-        ui = UTestInterfaceUniSet(xmlfile, self.params)
-        ui.set_ignore_nodes(self.ignore_nodes)
-        self.ui_list[alias] = ui
-        self.conf_list[alias] = xmlfile
-        return ui
+        if 'uniset' not in self.plugins:
+            raise TestSuiteException("(TestSuite::add_uniset_config): not found uniset plugin")
 
-    def add_modbus_config(self, mbslave, alias, already_ignore=True):
-
-        if alias in self.ui_list:
-            if not already_ignore:
-                self.setResult(make_fail_result(
-                    '(add_modbus_config): %s already added..(Ignore add \'%s@%s\')' % (alias, alias, mbslave)), True)
-                return None
-            return self.ui_list[alias]
-
-        ip, port = get_mbslave_param(mbslave)
-        if ip is None:
-            self.setResult(make_fail_result('(add_modbus_config): Failed get ip:port!  mbslave=\'%s\'' % (mbslave)),
-                           True)
-            return None
-
-        ui = UTestInterfaceModbus(ip, port)
+        ui = self.plugins['uniset'].uts_create_from_args(confile=xmlfile)
+        ui.setIgnoreNodes(self.ignore_nodes)
         self.ui_list[alias] = ui
         return ui
 
-    def add_snmp_config(self, snmpConfile, alias, already_ignore=True):
+    def add_interface(self, xmlnode, already_ignore=True):
+
+        alias = xmlnode.prop('alias')
 
         if alias in self.ui_list:
             if not already_ignore:
-                self.setResult(make_fail_result(
-                    '(add_snmp_config): %s already added..(Ignore add \'%s@%s\')' % (alias, alias, snmpConfile)), True)
+                self.setResult(make_fail_result('(add_interface): %s already added..Ignore add...' % alias), True)
                 return None
+
             return self.ui_list[alias]
 
-        try:
-            ui = UTestInterfaceSNMP(snmpConfile)
-            self.ui_list[alias] = ui
-            return ui
-        except TestSuiteException, e:
-            self.setResult(make_fail_result('(add_snmp_config): ERROR: %s' % e.getError()), True)
-            return None
+        itype = xmlnode.prop('type')
+        if itype not in self.plugins:
+            raise TestSuiteValidateError("(add_interface): not found plugin for '%s'" % itype)
+
+        ui = self.plugins[itype].uts_create_from_xml(xmlnode)
+        ui.setIgnoreNodes(self.ignore_nodes)
+        self.ui_list[alias] = ui
+
+        if to_int(xmlnode.prop("default")):
+            self.set_default_ui(ui)
+
+        return ui
 
     def remove_config(self, alias):
         if alias in self.ui_list:
             self.ui_list.pop(alias)
-
-    def set_default_config(self, xmlfile, already_ignore=True):
-
-        if xmlfile in self.ui_list:
-            if not already_ignore:
-                self.setResult(make_fail_result('(set_default_config): %s already added..(Ignore add..)' % (xmlfile)),
-                               True)
-                return False
-
-            ui = UTestInterfaceUniSet(xmlfile, self.params)
-            self.default_ui = ui
-            self.conf_list['default'] = xmlfile
 
     def get_default_ui(self):
         return self.default_ui
@@ -177,7 +175,8 @@ class TestSuiteInterface():
     def set_default_ui(self, ui):
         self.default_ui = ui
 
-    def getArgParam(self, param, defval=""):
+    @staticmethod
+    def getArgParam(param, defval=""):
         for i in range(0, len(sys.argv)):
             if sys.argv[i] == param:
                 if i + 1 < len(sys.argv):
@@ -219,10 +218,10 @@ class TestSuiteInterface():
         Добавление переменных окружения которые будут выставлены при запуске скриптов
         :param edict: словарь {VAR:VAL, VAR2:VAL2...}
         """
-        for k,v in edict.items():
+        for k, v in edict.items():
             self.env[k] = v
 
-    def make_environ_varname(self,varname):
+    def make_environ_varname(self, varname):
         """
         Формирование имени переменной окружения с использованием заданного префикса
         :param varname: имя
@@ -232,7 +231,7 @@ class TestSuiteInterface():
     def set_ignore_nodes(self, state):
         self.ignore_nodes = state
         for key, ui in self.ui_list.items():
-            ui.set_ignore_nodes(state)
+            ui.setIgnoreNodes(state)
 
     def set_supplier_id(self, supID):
         self.supplierID = supID
@@ -347,9 +346,9 @@ class TestSuiteInterface():
             return self.ui_list[cf]
 
         except KeyError, e:
-            self.setResult(make_fail_result('(get_ui): Unknown cf=\'%s\'' % cf, 'UI'), True)
+            self.setResult(make_fail_result('(get_ui): Unknown config=\'%s\'' % cf, 'UI'), True)
         except ValueError, e:
-            self.setResult(make_fail_result('(get_ui): Unknown cf=\'%s\'' % cf, 'UI'), True)
+            self.setResult(make_fail_result('(get_ui): Unknown config=\'%s\'' % cf, 'UI'), True)
 
         return None
 
@@ -395,7 +394,7 @@ class TestSuiteInterface():
             item['faulty_sensor'] = s_id
             self.setResult(item, True)
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = '(%s=true) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -438,7 +437,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = 'HOLD (%s=true) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -478,7 +477,7 @@ class TestSuiteInterface():
             item['faulty_sensor'] = s_id
             self.setResult(item, True)
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = '(%s=false) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -521,7 +520,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = 'HOLD (%s=false) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -577,7 +576,7 @@ class TestSuiteInterface():
 
             self.setResult(item, True)
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
                 item['text'] = '%s(%d)=%s(%d) error: %s' % (s_id[0], v1, s_id[1], v2, e.getError())
@@ -640,7 +639,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -702,7 +701,7 @@ class TestSuiteInterface():
 
             self.setResult(item, True)
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -768,7 +767,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -829,7 +828,7 @@ class TestSuiteInterface():
 
             self.setResult(item, True)
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -896,7 +895,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -955,7 +954,7 @@ class TestSuiteInterface():
 
             self.setResult(item, True)
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -1021,7 +1020,7 @@ class TestSuiteInterface():
             self.setResult(item, False)
             return True
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -1070,7 +1069,7 @@ class TestSuiteInterface():
             self.setActionResult(act, False)
             return True
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             act['text'] = '(%s=%s) error: %s' % (s_id, s_val, e.getError())
             act['result'] = t_FAILED
             act['faulty_sensor'] = s_id
@@ -1131,7 +1130,7 @@ class TestSuiteInterface():
             self.setActionResult(act, False)
             return True
 
-        except (UException,TestSuiteValidateError), e:
+        except (UException, TestSuiteValidateError), e:
             act['result'] = t_FAILED
             act['text'] = '\'%s\' error: %s' % (script_name, e.getError())
             self.setActionResult(act, throwIfFailed)

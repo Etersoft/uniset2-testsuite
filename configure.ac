@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset2-testsuite], [2.4])
+AC_INIT([uniset2-testsuite], [2.5])
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
 #AM_GNU_GETTEXT([external])
@@ -48,9 +48,12 @@ PKG_CHECK_MODULES(PYTHON,python-2.7,,exit)
 AC_CONFIG_FILES([Makefile
 				docs/Makefile
 				docs/dox.cfg
-				lib/Makefile
 				src/Makefile
-				src/Utils/Makefile
+				src/core/Makefile
+				src/plugins.d/Makefile
+				Utils/Makefile
+				Utils/conv/Makefile
+				Utils/tst-make/Makefile
 				src/guiTestPlayer/Makefile
 				src/guiTestPlayer/editors/Makefile
 				src/guiTestPlayer/images/Makefile])

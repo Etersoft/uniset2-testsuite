@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.3
-Release: alt17
+Release: alt17.1
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -15,6 +15,7 @@ BuildRequires: python-module-distribute
 BuildRequires: python-module-uniset2 >= 2.6-alt10
 
 Requires: python-module-uniset2 >= 2.6-alt10
+# BuildArch: noarch
 
 %if_enabled doc
 BuildRequires: doxygen
@@ -57,13 +58,10 @@ Documentation for uniset2-testsuite
 %install
 %make_install install DESTDIR=%buildroot
 
-mkdir -p %buildroot%python_sitelibdir/%name
-mv -f %buildroot%python_sitelibdir/*.py %buildroot%python_sitelibdir/%name/
-
 mkdir -p %buildroot/%_bindir/
-ln -s %python_sitelibdir/%name/TestSuiteXMLPlayer.py %buildroot/%_bindir/uniset2-testsuite-xmlplayer
-ln -s %python_sitelibdir/%name/guiTestSuitePlayer-gtk.py %buildroot/%_bindir/uniset2-testsuite-gtkplayer
-ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsuite-conv
+ln -s %python_sitelibdir_noarch/%name/TestSuiteXMLPlayer.py %buildroot/%_bindir/uniset2-testsuite-xmlplayer
+ln -s %python_sitelibdir_noarch/%name/guiTestSuitePlayer-gtk.py %buildroot/%_bindir/uniset2-testsuite-gtkplayer
+ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsuite-conv
 
 #%if_enabled doc
 #  mkdir -p %buildroot/%_docdir/%name
@@ -72,21 +70,21 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 #%endif
 
 %files
-%dir %python_sitelibdir/%name
-%python_sitelibdir/*
+%dir %python_sitelibdir_noarch/%name
+%dir %python_sitelibdir_noarch/%name/plugins.d
+%python_sitelibdir_noarch/%name/*
 %_bindir/uniset2-testsuite-xmlplayer
 %_bindir/uniset2-testsuite-conv
-%python_sitelibdir/%name/*
-%exclude %python_sitelibdir/%name/gui*Player*
-%exclude %python_sitelibdir/%name/Gtk*
-%exclude %python_sitelibdir/%name/ScenarioParamEditor*
-%exclude %python_sitelibdir/%name/dlg*
+%exclude %python_sitelibdir_noarch/%name/gui*Player*
+%exclude %python_sitelibdir_noarch/%name/Gtk*
+%exclude %python_sitelibdir_noarch/%name/ScenarioParamEditor*
+%exclude %python_sitelibdir_noarch/%name/dlg*
 
 %files gui
-%python_sitelibdir/%name/guiTestSuitePlayer-gtk.py
-%python_sitelibdir/%name/GtkProcessMonitor.py
-%python_sitelibdir/%name/ScenarioParamEditor*
-%python_sitelibdir/%name/dlg*
+%python_sitelibdir_noarch/%name/guiTestSuitePlayer-gtk.py
+%python_sitelibdir_noarch/%name/GtkProcessMonitor.py
+%python_sitelibdir_noarch/%name/ScenarioParamEditor*
+%python_sitelibdir_noarch/%name/dlg*
 %_bindir/uniset2-testsuite-gtkplayer
 %dir %_datadir/%name/player/
 %dir %_datadir/%name/player/editors
@@ -101,6 +99,9 @@ ln -s %python_sitelibdir/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsui
 %endif
 
 %changelog
+* Wed Jan 18 2017 Pavel Vainerman <pv@altlinux.ru> 2.3-alt17.1
+- test plugins build
+
 * Sat Jan 14 2017 Pavel Vainerman <pv@altlinux.ru> 2.3-alt17
 - fixed bug 'double replace' (gitlab.set issue #7)
 

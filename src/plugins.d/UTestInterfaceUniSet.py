@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+
+sys.path.append("../")
+
+import uniset2
 from uniset2.UGlobal import *
 from uniset2.pyUExceptions import UException
 from uniset2.pyUConnector import *
@@ -8,21 +13,62 @@ from UTestInterface import *
 
 
 class UTestInterfaceUniSet(UTestInterface):
-    def __init__(self, xmlfile, params):
+    def __init__(self, **kwargs):
+        UTestInterface.__init__(self, 'uniset', **kwargs)
 
-        UTestInterface.__init__(self, 'uniset')
-        self.ui = UConnector(params, xmlfile)
         self.supplierID = DefaultID
-        self.ignore_nodes = False
 
-    def set_ignore_nodes(self, state):
-        self.ignore_nodes = state
+        # Проверяем создание на основе xmlConfNode
+        xmlfile = None
+
+        if 'xmlConfNode' in kwargs:
+            xmlConfNode = kwargs['xmlConfNode']
+            xmlfile = xmlConfNode.prop('confile')
+            if not xmlfile:
+                raise TestSuiteValidateError("(uniset:init): Not found xmlfile='' in %s" % str(xmlConfNode))
+
+            if xmlConfNode.prop('supplierID'):
+                self.supplierID = xmlConfNode.prop('supplierID')
+        # Проверяем создание на основе 'confile'
+        elif 'confile' in kwargs:
+            xmlfile = kwargs['confile']
+            if not xmlfile:
+                raise TestSuiteValidateError("(uniset:init): Unknown xmlfile")
+
+        if not xmlfile:
+            raise TestSuiteValidateError("(uniset:init): Unknown xmlfile")
+
+        if 'suplierID' in kwargs:
+            self.supplierID = kwargs['suplierID']
+
+        params = uniset2.Params_inst()
+
+        for i in range(0, len(sys.argv)):
+            if i >= Params.max:
+                break
+
+            # пропускаем параметры типа --confile
+            if sys.argv[i] == '--confile':
+                continue
+
+            if i != 0 and sys.argv[i - 1] == '--confile':
+                continue
+
+            params.add(sys.argv[i])
+
+        try:
+            self.ui = UConnector(params, xmlfile)
+        except UException, e:
+            raise TestSuiteValidateError("(uniset:init): ERR: %s " % e.getError())
+
+    def getConfFileName(self):
+        return self.ui.getConfFileName()
 
     def parseID(self, name):
         return to_sid(name, self.ui)
 
     def validateConfiguration(self):
-        #todo Реализовать функцию проверки конфигурации
+        # todo Реализовать функцию проверки конфигурации
         return [True, ""]
 
     def validateParameter(self, s_id):
@@ -30,7 +76,7 @@ class UTestInterfaceUniSet(UTestInterface):
         try:
             s = self.parseID(s_id)
             if s[0] == DefaultID:
-                return [False, "Unknown ID for '%s'" % str(s_id)]
+                return [False, "(uniset): Unknown ID for '%s'" % str(s_id)]
 
             # id@node
             fullname = s[2]
@@ -38,7 +84,7 @@ class UTestInterfaceUniSet(UTestInterface):
 
             # если задан узел но его ID не найден
             if len(v) > 1 and v[1] and s[1] == DefaultID:
-                return [False, "Unknown ID for node '%s' in '%s'" % (v[1], str(s_id))]
+                return [False, "(uniset): Unknown ID for node '%s' in '%s'" % (v[1], str(s_id))]
 
             return [True, ""]
 
@@ -113,3 +159,25 @@ class UTestInterfaceUniSet(UTestInterface):
         """
         s = self.parseID(o_name)
         return self.ui.apiRequest(s[0], query, s[1])
+
+
+def uts_plugin_name():
+    return "uniset"
+
+
+def uts_create_from_args(**kwargs):
+    """
+    Создание интерфейса
+    :param kwargs: именованные параметры
+    :return: объект наследник UTestInterface
+    """
+    return UTestInterfaceUniSet(**kwargs)
+
+
+def uts_create_from_xml(xmlConfNode):
+    """
+    Создание интерфейса
+    :param xmlConfNode: xml-узел с настройками
+    :return: объект наследник UTestInterface
+    """
+    return UTestInterfaceUniSet(xmlConfNode=xmlConfNode)

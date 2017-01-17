@@ -1,2 +1,1 @@
-SUBDIRS = guiTestPlayer Utils
-#TestEditor  cliTestPlayer
+SUBDIRS = core plugins.d guiTestPlayer

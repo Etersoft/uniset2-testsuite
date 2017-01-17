@@ -1,1 +1,1 @@
-../../lib/TestSuitePlayer.py
+../core/TestSuitePlayer.py
