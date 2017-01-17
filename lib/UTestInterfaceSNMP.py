@@ -14,9 +14,9 @@ from UTestInterface import *
 <?xml version='1.0' encoding='utf-8'?>
 <SNMP>
   <Nodes defaultProtocolVersion="2c" defaultTimeout='1' defaultRetries='2' defaultPort='161'>
-    <item name="node1" ip="192.94.214.205" comment="UPS1" protocolVersion="2" timeout='1' retries='2'/>
-    <item name="node2" ip="10.16.11.2" comment="UPS2"/>
-    <item name="node3" ip="10.16.11.3" comment="UPS3"/>
+    <item name="node1" ip="192.94.214.205" comment="UPS1" protocolVersion="1" timeout='1' retries='2'/>
+    <item name="node2" ip="test.net-snmp.org" comment="UPS2"/>
+    <item name="node3" ip="demo.snmplabs.com" comment="DDD"/
   </Nodes>
 
   <Parameters defaultCommunity="demopublic">
@@ -24,6 +24,7 @@ from UTestInterface import *
     <item name="bstatus" OID="1.3.6.1.2.1.33.1.2.1.0" ObjectName="BatteryStatus"/>
     <item name="btime" OID=".1.3.6.1.2.1.33.1.2.2.0" ObjectName="TimeOnBattery"/>
     <item name="bcharge" OID=".1.3.6.1.2.1.33.1.2.4.0" ObjectName="BatteryCharge"/>
+    <item name="sysServ" ObjectName="sysServices.0" community="public"/>
   </Parameters>
 </SNMP>
 '''
@@ -81,7 +82,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
         node = xml.findNode(xml.getDoc(), "Nodes")[0]
         if node is None:
-            raise TestSuiteValidateError("(UInterfaceSNMP): section <Nodes> not found in %s" % xml.getFileName())
+            raise TestSuiteValidateError("(snmp): section <Nodes> not found in %s" % xml.getFileName())
 
         defaultProtocolVersion = self.getProp(node, "defaultProtocolVersion", '2c')
         defaultTimeout = self.getIntProp(node, "defaultTimeout", 1)
@@ -101,13 +102,13 @@ class UTestInterfaceSNMP(UTestInterface):
             item['name'] = uglobal.to_str(node.prop("name"))
             if item['name'] == "":
                 raise TestSuiteValidateError(
-                    "(UInterfaceSNMP): <Nodes> : unknown name='' for string '%s' in file %s" % (
+                    "(snmp): <Nodes> : unknown name='' for string '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
             item['ip'] = uglobal.to_str(node.prop("ip"))
             if item['ip'] == "":
                 raise TestSuiteValidateError(
-                    "(UInterfaceSNMP): <Nodes> : unknown ip='' for string '%s' in file %s" % (
+                    "(snmp): <Nodes> : unknown ip='' for string '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
             item['comment'] = uglobal.to_str(node.prop("comment"))
@@ -127,7 +128,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
         node = xml.findNode(xml.getDoc(), "Parameters")[0]
         if node is None:
-            raise TestSuiteValidateError("(UInterfaceSNMP): section <Parameters> not found in %s" % xml.getFileName())
+            raise TestSuiteValidateError("(snmp): section <Parameters> not found in %s" % xml.getFileName())
 
         defaultCommunity = uglobal.to_str(node.prop("defaultCommunity"))
 
@@ -140,7 +141,7 @@ class UTestInterfaceSNMP(UTestInterface):
             item['name'] = uglobal.to_str(node.prop("name"))
             if item['name'] == "":
                 raise TestSuiteValidateError(
-                    "(UInterfaceSNMP): <Parameters> : unknown name='' for string '%s' in file %s" % (
+                    "(snmp): <Parameters> : unknown name='' for string '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
             item['ObjectName'] = uglobal.to_str(node.prop("ObjectName"))
@@ -148,7 +149,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
             if not item['OID'] and not item['ObjectName']:
                 raise TestSuiteValidateError(
-                    "(UInterfaceSNMP):  <Parameters> : unknown OID='' or ObjectName='' for parameter '%s' in file %s" % (
+                    "(snmp):  <Parameters> : unknown OID='' or ObjectName='' for parameter '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
             item['community'] = self.getProp(node, "community", defaultCommunity)
@@ -192,7 +193,7 @@ class UTestInterfaceSNMP(UTestInterface):
             ret, err = self.validateParameter(name)
 
             if ret == False:
-                raise TestSuiteValidateError("(UInterfaceSNMP): 'getValue' ERR: '%s'" % err)
+                raise TestSuiteValidateError("(snmp): 'getValue' ERR: '%s'" % err)
 
             id, nodename, sname = self.parseID(name)
 
@@ -222,7 +223,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
                 varName = snmp.MibVariable(pname, vname, vnum)
             else:
-                raise TestSuiteValidateError("(UInterfaceSNMP): 'getValue' Unknown OID for '%s'" % name)
+                raise TestSuiteValidateError("(snmp): 'getValue' Unknown OID for '%s'" % name)
 
             community = snmp.CommunityData(param['community'], mpModel=node['mpModel'])
             transport = snmp.UdpTransportTarget((node['ip'], node['port']), timeout=node['timeout'],
@@ -235,11 +236,14 @@ class UTestInterfaceSNMP(UTestInterface):
             )
 
             if errorIndication:
-                raise TestSuiteValidateError("(UInterfaceSNMP): getValue : ERR: %s" % errorIndication)
+                raise TestSuiteValidateError("(snmp): getValue : ERR: %s" % errorIndication)
 
             if errorStatus:
-                raise TestSuiteValidateError("(UInterfaceSNMP): getValue : ERR: %s at %s " % (
+                raise TestSuiteValidateError("(snmp): getValue : ERR: %s at %s " % (
                     errorStatus.prettyPrint(), errorIndex and varBinds[int(errorIndex) - 1] or '?'))
+
+            if len(varBinds) <= 0:
+                raise TestSuiteValidateError("(snmp): getValue : ERR: NO DATA?!!")
 
             varname, val = varBinds[0]
             return val
@@ -252,10 +256,10 @@ class UTestInterfaceSNMP(UTestInterface):
         ret, err = self.validateParameter(name)
 
         if ret == False:
-            raise TestSuiteValidateError("(UInterfaceSNMP): 'setValue' ERR: '%s'" % err)
+            raise TestSuiteValidateError("(snmp): 'setValue' ERR: '%s'" % err)
 
         # todo Реализовать функцию setValue
-        raise TestSuiteException("(UInterfaceSNMP): 'setValue' function not supported)")
+        raise TestSuiteException("(snmp): 'setValue' function not supported)")
 
     def validateConfiguration(self):
         # todo Реализовать функцию проверки конфигурации
@@ -266,7 +270,7 @@ class UTestInterfaceSNMP(UTestInterface):
         try:
             vname, vnode, fname = self.parseID(name)
             if vname == '':
-                return [False, "Unknown ID for '%s'" % str(name)]
+                return [False, "(snmp): Unknown ID for '%s'" % str(name)]
 
             param = self.getParameter(vname)
 
@@ -276,7 +280,7 @@ class UTestInterfaceSNMP(UTestInterface):
             node = self.getNode(vnode)
 
             if not node:
-                return [False, "Unknown node ('%s') for '%s'" % (vnode, str(name))]
+                return [False, "(snmp): Unknown node ('%s') for '%s'" % (vnode, str(name))]
 
             return [True, ""]
 
