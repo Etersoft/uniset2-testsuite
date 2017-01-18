@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+    <Config>
+        <aliases>
+            <item alias="c1" mbslave="localhost:2048" type="modbus"/>
+			<item alias="c2" mbslave="localhost:2049" type="modbus"/>
+			<item alias="snmp1" type="snmp" snmp="../selftest/conf/snmp.xml"/>
+        </aliases>
+    </Config>
+    <Success>
+        <item script="./success.sh param1 param2"/>
+        <item script="sleep 5"/>
+        <item script="./script-not-found.sh param1 param2"/>
+    </Success>
+    <Failure>
+        <item script="./failure.sh param1 param2"/>
+        <item script="./script-not-found.sh param1 param2"/>
+    </Failure>
+    <TestList>
+        <test name="check: Equal test" tags="#tag1">
+            <action set="111=10"/>
+            <action set="112=10"/>
+            <compare test="111=112"/>
+        </test>
+  </TestList>
+</TestScenario>

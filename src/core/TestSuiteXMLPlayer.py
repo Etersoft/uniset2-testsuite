@@ -143,7 +143,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         except UniXMLException, ex:
             self.tsi.set_result(make_fail_result("FAILED load xmlfile '%s' err: '%s'" % (xmlfile, ex.getError()),
                                                 "(TestSuiteXMLPlayer:loadXML)"), False)
-            raise TestSuiteException(e.getError())
+            raise TestSuiteException(ex.getError())
 
     def init_config(self, xml):
         rnode = xml.findNode(xml.getDoc(), "TestList")[0]
@@ -1123,6 +1123,21 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             else:
                 pmonitor.start()
 
+            if self.tsi.is_check_scenario_mode():
+                info = make_info_item('CHECK CONF...', 'BEGIN')
+                self.tsi.set_result(info, False)
+
+                ok, err = self.tsi.validate_configuration()
+                if not ok:
+                    info['result'] = t_FAILED
+                    info['text'] = err
+                else:
+                    info['result'] = t_PASSED
+                    info['text'] = 'CHECK CONF'
+
+                info['type'] = 'FINISH'
+                self.tsi.set_result(info, False)
+
             self.tsi.start_tests()
             while testnode is not None:
                 tm_start = time.time()
@@ -1579,7 +1594,7 @@ if __name__ == "__main__":
             print ''
             print '--test-name test1,prop2=test2,prop3=test3,...  - Run tests from list. By default prop=name'
             print '--ignore-run-list                - Ignore <RunList>'
-            print '--ignore-nodes                   - Do not use \'@node\''
+            print '--ignore-nodes                   - Do not use \'@node\' or do not check node available for check scenario mode'
             print '--default-timeout msec           - Default <check timeout=\'..\' ../>.\''
             print '--default-check-pause msec       - Default <check check_pause=\'..\' ../>.\''
             print '--junit filename                 - Disable colorization output'

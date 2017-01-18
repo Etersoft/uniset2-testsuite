@@ -354,6 +354,25 @@ class TestSuiteInterface():
 
         return None
 
+    def validate_configuration(self):
+
+        res_ok = True
+        errors = []
+
+        for k, ui in self.ui_list.items():
+            if not hasattr(ui,'checked') or not ui.checked:
+                ui.checked = True # защита от повторной проверки
+                ok, err = ui.validate_configuration()
+                if not ok:
+                    errors.append(str(err))
+                    res_ok = False
+
+        err = ''
+        if len(errors) > 0:
+            err = '\n\t'.join(errors)
+
+        return [res_ok, err]
+
     def get_value(self, s_id, ui):
 
         if self.is_check_scenario_mode():

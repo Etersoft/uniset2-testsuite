@@ -5,8 +5,11 @@ from uniset2.UniXML import UniXML
 from uniset2.pyUExceptions import UException
 import uniset2.UGlobal as uglobal
 import pysnmp
+import subprocess
+import os
 from pysnmp.entity.rfc3413.oneliner import cmdgen as snmp
 from UTestInterface import *
+from TestSuiteGlobal import *
 
 '''
 Пример файла конфигурации
@@ -283,9 +286,45 @@ class UTestInterfaceSNMP(UTestInterface):
         # todo Реализовать функцию setValue
         raise TestSuiteException("(snmp): 'setValue' function not supported)")
 
+    def ping(self, ip):
+        """
+        Проверка доступности через запуск ping. Пока-что это самый простой способ
+        :param ip: адрес узла
+        :return: True - если связь есть
+        """
+        nul_f = open(os.devnull, 'w')
+        cmd = "ping -c 2 -i 0.4 -w 3 %s"  % ip
+        ret = subprocess.call(cmd, shell=True, stdout=nul_f, stderr=nul_f)
+        nul_f.close()
+
+        if ret:
+            return False
+
+        return True
+
     def validate_configuration(self):
-        # todo Реализовать функцию проверки конфигурации
-        return [True, ""]
+        """
+        Проверка конфигурации snmp
+        :return: result[] - см. TestSuiteGlobal make_default_item():
+        """
+        res_ok = True
+        errors = []
+
+        # Если отключена проверка узлов, то нам и проверять нечего
+        if self.ignore_nodes:
+            return [True, '']
+
+        # 1. Проверка доступности узлов
+        for k, node in self.nodes.items():
+            if not self.ping( node['ip'] ):
+                errors.append("\t(snmp): CONF[%s] ERROR: %s not available" % (self.confile,node['ip']))
+                res_ok = False
+
+        err = ''
+        if len(errors) > 0:
+            err = "(snmp): ERRORS: \n %s" % '\n'.join(errors)
+
+        return [res_ok, err]
 
     def validate_parameter(self, name):
 

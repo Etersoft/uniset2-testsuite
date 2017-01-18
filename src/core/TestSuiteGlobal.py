@@ -15,6 +15,27 @@ t_PAUSE = 'PAUSE'
 t_WARNING = 'WARNING'
 t_UNKNOWN = 'UNKNOWN'
 
+# class TItem():
+#     def __init__(self, **kwargs ):
+#         self.name = ''
+#         self.comment = ''
+#         self.call_level = None
+#         self.result = t_NONE
+#         self.text = ''
+#         self.items = []
+#         self.xmlnode = None
+#         self.filename = ''
+#         self.prev = None
+#         self.item_type = ''  # action,check,test
+#         self.tag = ''  # первый тег на котором "сработал" фильтр
+#         self.tags = ''  # теги
+#         self.nrecur = 0  # уровень рекурсии
+#         self.start_time = time.time()
+#
+#         for k,v in kwargs.items():
+#             if k not in self.__dict__:
+#                 self.__dict__[k] = v
+
 
 def make_default_item():
     item = dict()
