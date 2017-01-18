@@ -573,14 +573,14 @@ class TestSuiteInterface():
                     v2 = self.get_value(s_id[1], ui)
                     if v1 == v2 or self.is_check_scenario_mode():
                         item['result'] = t_PASSED
-                        item['text'] = '%s(%d)=%s(%d)' % (s_id[0], v1, s_id[1], v2)
+                        item['text'] = '%s(%s)=%s(%s)' % (s_id[0], v1, s_id[1], v2)
                         self.set_result(item, False)
                         return True
                 else:
                     v = self.get_value(s_id, ui)
                     if v == val or self.is_check_scenario_mode():
                         item['result'] = t_PASSED
-                        item['text'] = '%s=%d' % (s_id, val)
+                        item['text'] = '%s=%s' % (s_id, val)
                         self.set_result(item, False)
                         return True
 
@@ -588,21 +588,21 @@ class TestSuiteInterface():
                 t_tick -= 1
 
             item['result'] = t_FAILED
-            item['text'] = '%s=%d' % (s_id, val)
+            item['text'] = '%s=%s' % (s_id, val)
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
-                item['text'] = '%s(%d)=%s(%d) timeout=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
+                item['text'] = '%s(%s)=%s(%s) timeout=%s msec' % (s_id[0], v1, s_id[1], v2, t_out)
             else:
-                item['text'] = '%s=%d != %d timeout=%d msec' % (s_id, v, val, t_out)
+                item['text'] = '%s=%s != %s timeout=%s msec' % (s_id, v, val, t_out)
 
             self.set_result(item, True)
 
         except (UException, TestSuiteValidateError), e:
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
-                item['text'] = '%s(%d)=%s(%d) error: %s' % (s_id[0], v1, s_id[1], v2, e.getError())
+                item['text'] = '%s(%s)=%s(%s) error: %s' % (s_id[0], v1, s_id[1], v2, e.getError())
             else:
-                item['text'] = '(%s=%d) error: %s' % (s_id, val, e.getError())
+                item['text'] = '(%s=%s) error: %s' % (s_id, val, e.getError())
             item['result'] = t_FAILED
 
             self.set_result(item, True)

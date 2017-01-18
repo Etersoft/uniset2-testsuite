@@ -7,10 +7,14 @@
         </aliases>
 	</Config>
     <TestList>
-        <test num="1" name="SNMP_tests" comm="Тесты по snmp">
+        <test num="1" name="SNMP read tests" comm="Чтение по snmp" ignore="1">
 			<check test="sysServ@node3>1" comment="serv"/>
 			<check test="uptime@node1>1" comment="Uptime"/>
 			<check test="uptimeName@node2>=1" comment="Статус батареи" config="snmp2"/>
+        </test>
+        <test num="1" name="SNMP write tests" comm="Запись по snmp">
+			<action set="sysName@node3=10" comment="save sysName"/>
+			<action set="sysServ2@node3=10" comment="save sysServ"/>
         </test>
     </TestList>
 </TestScenario>

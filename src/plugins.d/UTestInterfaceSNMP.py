@@ -273,18 +273,80 @@ class UTestInterfaceSNMP(UTestInterface):
             varname, val = varBinds[0]
             return val
 
-        except UException, e:
-            raise e
+        except UException, ex:
+            raise TestSuiteException("(snmp): getValue: err: %s" % ex.getError())
 
     def set_value(self, name, value, supplierID):
 
-        ret, err = self.validate_parameter(name)
+        try:
 
-        if ret == False:
-            raise TestSuiteValidateError("(snmp): 'setValue' ERR: '%s'" % err)
+            ret, err = self.validate_parameter(name)
 
-        # todo Реализовать функцию setValue
-        raise TestSuiteException("(snmp): 'setValue' function not supported)")
+            if ret == False:
+                raise TestSuiteValidateError("(snmp): 'setValue' ERR: '%s'" % err)
+
+            id, nodename, sname = self.parse_id(name)
+
+            param = self.get_parameter(id)
+            node = self.get_node(nodename)
+
+            varName = None
+
+            if param['OID']:
+                varName = snmp.MibVariable(param['OID'])
+            elif param['ObjectName']:
+
+                # Парсим строку вида: SNMPv2-MIB::sysUpTime.0
+                # при этом этой части 'SNMPv2-MIB' может быть не задано
+                tmp = param['ObjectName']
+                v = tmp.split('::')
+                pname = ''
+                if len(v) > 1:
+                    pname = v[0]
+                    tmp = v[1]
+
+                v = tmp.split('.')
+                vname = v[0]
+                vnum = 0
+                if len(v) > 1:
+                    vnum = uglobal.to_int(v[1])
+
+                varName = snmp.MibVariable(pname, vname, vnum)
+            else:
+                raise TestSuiteValidateError("(snmp): 'getValue' Unknown OID for '%s'" % name)
+
+            community = snmp.CommunityData(param['community'], mpModel=node['mpModel'])
+            transport = snmp.UdpTransportTarget((node['ip'], node['port']), timeout=node['timeout'],
+                                                retries=node['retries'])
+
+            errorIndication, errorStatus, errorIndex, varBinds = self.snmp.setCmd(
+                community,
+                transport,
+                (varName, uglobal.to_int(value))
+            )
+
+            if errorIndication:
+                raise TestSuiteValidateError("(snmp): setValue : ERR: %s" % errorIndication)
+
+            if errorStatus:
+                raise TestSuiteValidateError("(snmp): setValue : ERR: %s at %s " % (
+                    errorStatus.prettyPrint(), errorIndex and varBinds[int(errorIndex) - 1] or '?'))
+
+            if len(varBinds) <= 0:
+                raise TestSuiteValidateError("(snmp): setValue : ERR: NO DATA?!!")
+
+            ret_varname, val = varBinds[0]
+
+            if not val:
+                raise TestSuiteValidateError(
+                    "(snmp): setValue : UNKNOWN ERROR : for set %s = %s!" % (str(ret_varname), str(value)))
+
+            if uglobal.to_str(val) != uglobal.to_str(value):
+                raise TestSuiteValidateError(
+                    "(snmp): setValue : ERR: %s for set %s = %s!" % (str(val), str(ret_varname), str(value)))
+
+        except UException, ex:
+            raise TestSuiteException("(snmp): setValue: err: %s" % ex.getError())
 
     def ping(self, ip):
         """
@@ -293,7 +355,7 @@ class UTestInterfaceSNMP(UTestInterface):
         :return: True - если связь есть
         """
         nul_f = open(os.devnull, 'w')
-        cmd = "ping -c 2 -i 0.4 -w 3 %s"  % ip
+        cmd = "ping -c 2 -i 0.4 -w 3 %s" % ip
         ret = subprocess.call(cmd, shell=True, stdout=nul_f, stderr=nul_f)
         nul_f.close()
 
@@ -316,8 +378,8 @@ class UTestInterfaceSNMP(UTestInterface):
 
         # 1. Проверка доступности узлов
         for k, node in self.nodes.items():
-            if not self.ping( node['ip'] ):
-                errors.append("\t(snmp): CONF[%s] ERROR: %s not available" % (self.confile,node['ip']))
+            if not self.ping(node['ip']):
+                errors.append("\t(snmp): CONF[%s] ERROR: %s not available" % (self.confile, node['ip']))
                 res_ok = False
 
         err = ''

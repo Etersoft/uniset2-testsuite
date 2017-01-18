@@ -10,5 +10,7 @@
     <item name="uptime" OID="1.3.6.1.2.1.1.3.0" community="demopublic"/>
 	<item name="uptimeName" community="demopublic" ObjectName="sysUpTime.0"/>
     <item name="sysServ" ObjectName="sysServices.0" community="public"/>
+	<item name="sysName" ObjectName="sysName.0" community="private"/>
+	<item name="sysServ2" ObjectName="sysServices.0" community="private"/>
   </Parameters>
 </SNMP>
