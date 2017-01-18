@@ -8,9 +8,9 @@ Group: Development/Python
 License: LGPL
 Url: http://github.com/Etersoft/uniset2-testsuite
 Source: %name-%version.tar
-# Automatically added by buildreq on Thu Oct 02 2014
-# optimized out: pkg-config python-base python-devel python-modules
-BuildRequires: python-module-distribute
+# Automatically added by buildreq on Wed Jan 18 2017
+# optimized out: pkg-config python-base python-modules python3 python3-base
+BuildRequires: doxygen python-devel python-dev
 
 BuildRequires: python-module-uniset2 >= 2.6-alt10
 
@@ -40,6 +40,14 @@ BuildArch: noarch
 # Requires: %name = %version-%release 
 %description doc
 Documentation for uniset2-testsuite
+
+%package snmp
+Summary: SNMP plugin for uniset2-testsuite
+Group: Development/Python
+Requires: %name = %version-%release 
+Requires: python-module-pysnmp4
+%description snmp
+SNMP Plugin for uniset2-testsuite
 
 %prep
 %setup
@@ -71,7 +79,7 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 
 %files
 %dir %python_sitelibdir_noarch/%name
-%dir %python_sitelibdir_noarch/%name/plugins.d
+#%dir %python_sitelibdir_noarch/%name/plugins.d
 %python_sitelibdir_noarch/%name/*
 %_bindir/uniset2-testsuite-xmlplayer
 %_bindir/uniset2-testsuite-conv
@@ -79,6 +87,10 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %exclude %python_sitelibdir_noarch/%name/Gtk*
 %exclude %python_sitelibdir_noarch/%name/ScenarioParamEditor*
 %exclude %python_sitelibdir_noarch/%name/dlg*
+%exclude %python_sitelibdir_noarch/%name/plugins.d/*SNMP.py
+
+%files snmp
+%python_sitelibdir_noarch/%name/plugins.d/*SNMP.py
 
 %files gui
 %python_sitelibdir_noarch/%name/guiTestSuitePlayer-gtk.py

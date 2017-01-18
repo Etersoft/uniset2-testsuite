@@ -134,14 +134,14 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.initProcessMonitor(xml)
             return xml
 
-        except IOError, e:
-            err = "IOError: %s" % str(e)
+        except IOError, ex:
+            err = "IOError: %s" % str(ex)
             self.tsi.set_result(
                 make_fail_result("FAILED load xmlfile '%s' err: '%s'" % (xmlfile, err), "(TestSuiteXMLPlayer:loadXML)"),
                 False)
             raise TestSuiteException(err)
-        except UniXMLException, e:
-            self.tsi.set_result(make_fail_result("FAILED load xmlfile '%s' err: '%s'" % (xmlfile, e.getError()),
+        except UniXMLException, ex:
+            self.tsi.set_result(make_fail_result("FAILED load xmlfile '%s' err: '%s'" % (xmlfile, ex.getError()),
                                                 "(TestSuiteXMLPlayer:loadXML)"), False)
             raise TestSuiteException(e.getError())
 
@@ -249,21 +249,21 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def get_pmonitor(self, xml):
 
-        if self.global_ignore_runlist == True:
+        if self.global_ignore_runlist:
             return self.null_pm
 
         ignore_rlist = False
         try:
             ignore_rlist = self.ignore_rlist[xml.getFileName()]
-        except KeyError, ValueError:
+        except (KeyError, ValueError):
             pass
 
-        if ignore_rlist == True:
+        if ignore_rlist:
             return self.null_pm
 
         try:
             return self.pmonitor[xml.getFileName()]
-        except KeyError, ValueError:
+        except (KeyError, ValueError):
             pass
 
         # чтобы везде в коде не проверять pm!=None
@@ -1198,16 +1198,16 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
                 testnode = xml.nextNode(testnode)
 
-        except (TestSuiteException, TestSuiteValidateError), e:
-            item['time'] = e.getFinishTime() - tm_start
-            item['text'] = e.getError()
+        except (TestSuiteException, TestSuiteValidateError), ex:
+            item['time'] = ex.getFinishTime() - tm_start
+            item['text'] = ex.getError()
             item['xmlnode'] = testnode
-            if e.failed_item:
-                item['items'].append(e.failed_item)
+            if ex.failed_item:
+                item['items'].append(ex.failed_item)
 
             ret = self.get_cumulative_result(item['items'])
             item['result'] = ret['result']
-            raise e
+            raise ex
 
         finally:
             if not self.tsi.is_check_scenario_mode():
@@ -1288,7 +1288,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             raise ex
 
         finally:
-            if res_ok == True:
+            if res_ok:
                 self.fini_success()
             else:
                 self.fini_failure()
