@@ -1,8 +1,8 @@
 %def_enable doc
 
 Name: uniset2-testsuite
-Version: 2.3
-Release: alt17.1
+Version: 2.5
+Release: alt1
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -11,10 +11,10 @@ Source: %name-%version.tar
 # Automatically added by buildreq on Wed Jan 18 2017
 # optimized out: pkg-config python-base python-modules python3 python3-base
 BuildRequires: doxygen python-devel python-dev
-
 BuildRequires: python-module-uniset2 >= 2.6-alt10
 
 Requires: python-module-uniset2 >= 2.6-alt10
+Provides: python2.7(UTestInterface)
 # BuildArch: noarch
 
 %if_enabled doc
@@ -54,13 +54,7 @@ SNMP Plugin for uniset2-testsuite
 
 %build
 %autoreconf
-%if_enabled doc
-%configure
-%else
-%configure --disable-docs
-%endif
-%configure
-#%make_build
+%configure %{subst_enable docs}
 %make
 
 %install
@@ -98,11 +92,9 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %python_sitelibdir_noarch/%name/ScenarioParamEditor*
 %python_sitelibdir_noarch/%name/dlg*
 %_bindir/uniset2-testsuite-gtkplayer
-%dir %_datadir/%name/player/
-%dir %_datadir/%name/player/editors
+%dir %_datadir/%name
 %_datadir/%name/player/*.ui
 %_datadir/%name/player/editors
-%dir %_datadir/%name/player/images
 %_datadir/%name/player/images/*
 
 %if_enabled doc
@@ -111,6 +103,9 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %endif
 
 %changelog
+* Wed Jan 18 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt1
+- release new version (supported plugins, add snmp interface)
+
 * Wed Jan 18 2017 Pavel Vainerman <pv@altlinux.ru> 2.3-alt17.1
 - test plugins build
 
