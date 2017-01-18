@@ -655,7 +655,7 @@ class guiTestSuitePlayer():
 
         # это надо сделать вначале, что бы уже работали
         # глобальные replce ..
-        self.player.loadXML(xml.getFileName())
+        self.player.load_xml(xml.getFileName())
         self.player.initProcessMonitor(xml)
 
         node = self.player.get_begin_test_node(xml)
@@ -758,7 +758,7 @@ class guiTestSuitePlayer():
         if t_xml == None:
             # если в списке ещё нет, запоминаем..
             try:
-                t_xml = self.player.loadXML(t_file)
+                t_xml = self.player.load_xml(t_file)
             except UException, e:
                 print "OUTLINK: Can`t open file='%s'." % (t_file)
                 self.player.del_from_replace(r_list)
@@ -1781,7 +1781,7 @@ class guiTestSuitePlayer():
                     if t == tt.Link or t == tt.Outlink:
                         xmlnode = self.fmodel.get_value(self.edit_iter, gfid.link_xmlnode)
                     xml = self.fmodel.get_value(self.edit_iter, gfid.xml)
-                    self.player.initConfig(xml)
+                    self.player.init_config(xml)
                     config = self.player.get_item_config(xmlnode)
                     self.editor.init(xmlnode, config, self.dlg_xlist, xml)
                     widget.show()

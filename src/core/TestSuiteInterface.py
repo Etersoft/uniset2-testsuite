@@ -51,7 +51,7 @@ class TestSuiteInterface():
         self.plugins = dict()
 
     @staticmethod
-    def get_aliasname(cname):
+    def get_alias_name(cname):
         v = cname.strip().split('@')
         if len(v) > 1:
             return [v[0], v[1]]
@@ -88,10 +88,10 @@ class TestSuiteInterface():
                     m = __import__(os.path.splitext(name)[0])
                     self.plugins[m.uts_plugin_name()] = m
 
-    def pluginsCount(self):
+    def plugins_count(self):
         return len(self.plugins)
 
-    def check_iterface_exist(self, iname):
+    def is_iterface_exist(self, iname):
         return iname in self.plugins
 
     def iterfaces_as_str(self):
@@ -104,33 +104,33 @@ class TestSuiteInterface():
                 return
 
             if conflist.__class__.__name__ != 'list':
-                s = self.get_aliasname(conflist)
+                s = self.get_alias_name(conflist)
                 if s[1] == "":
                     return
 
-                self.default_ui = self.add_uniset_config(s[1], s[0])
+                self.default_ui = self.add_uniset_interface(s[1], s[0])
             else:
                 # умолчательный config - первый в списке
-                s = self.get_aliasname(conflist[0])
-                self.default_ui = self.add_uniset_config(s[1], s[0])
+                s = self.get_alias_name(conflist[0])
+                self.default_ui = self.add_uniset_interface(s[1], s[0])
                 for c in conflist:
-                    s = self.get_aliasname(c)
+                    s = self.get_alias_name(c)
                     if s[1] == "":
                         continue
-                    self.add_uniset_config(s[1], s[0])
+                    self.add_uniset_interface(s[1], s[0])
 
         except UException, e:
-            self.setResult(make_fail_result('(init_testsuite): ' + str(e.getError())), True)
+            self.set_result(make_fail_result('(init_testsuite): ' + str(e.getError())), True)
             raise e
 
-    def add_uniset_config(self, xmlfile, alias, already_ignore=True):
+    def add_uniset_interface(self, xmlfile, alias, already_ignore=True):
 
         if to_str(xmlfile) == "":
             return
 
         if alias in self.ui_list:
             if not already_ignore:
-                self.setResult(make_fail_result(
+                self.set_result(make_fail_result(
                     '(add_uniset_config): %s already added..(Ignore add \'%s@%s\')' % (alias, alias, xmlfile)), True)
                 return None
             return self.ui_list[alias]
@@ -139,7 +139,7 @@ class TestSuiteInterface():
             raise TestSuiteException("(TestSuite::add_uniset_config): not found uniset plugin")
 
         ui = self.plugins['uniset'].uts_create_from_args(confile=xmlfile)
-        ui.setIgnoreNodes(self.ignore_nodes)
+        ui.set_ignore_nodes(self.ignore_nodes)
         self.ui_list[alias] = ui
         return ui
 
@@ -149,7 +149,7 @@ class TestSuiteInterface():
 
         if alias in self.ui_list:
             if not already_ignore:
-                self.setResult(make_fail_result('(add_interface): %s already added..Ignore add...' % alias), True)
+                self.set_result(make_fail_result('(add_interface): %s already added..Ignore add...' % alias), True)
                 return None
 
             return self.ui_list[alias]
@@ -159,7 +159,7 @@ class TestSuiteInterface():
             raise TestSuiteValidateError("(add_interface): not found plugin for '%s'" % itype)
 
         ui = self.plugins[itype].uts_create_from_xml(xmlnode)
-        ui.setIgnoreNodes(self.ignore_nodes)
+        ui.set_ignore_nodes(self.ignore_nodes)
         self.ui_list[alias] = ui
 
         if to_int(xmlnode.prop("default")):
@@ -228,15 +228,15 @@ class TestSuiteInterface():
         Формирование имени переменной окружения с использованием заданного префикса
         :param varname: имя
         """
-        return self.envPrefix + '_' + varname;
+        return self.envPrefix + '_' + varname
 
     def set_ignore_nodes(self, state):
         self.ignore_nodes = state
         for key, ui in self.ui_list.items():
-            ui.setIgnoreNodes(state)
+            ui.set_ignore_nodes(state)
 
-    def set_supplier_id(self, supID):
-        self.supplierID = supID
+    def set_supplier_id(self, sup_id):
+        self.supplierID = sup_id
 
     def set_ignorefailed(self, state):
         self.ignorefailed = state
@@ -244,7 +244,7 @@ class TestSuiteInterface():
     def get_ignorefailed(self):
         return self.ignorefailed
 
-    def isCheckScenarioMode(self):
+    def is_check_scenario_mode(self):
         return self.checkScenarioMode
 
     def set_check_scenario_mode(self, state):
@@ -253,7 +253,7 @@ class TestSuiteInterface():
     def set_check_scenario_mode_ignore_failed(self, state):
         self.checkScenarioMode_ignorefailed = state
 
-    def isShowTestTreeMode(self):
+    def is_show_test_tree_mode(self):
         return self.showTestTreeMode
 
     def set_show_test_tree_mode(self, state):
@@ -281,14 +281,14 @@ class TestSuiteInterface():
     def print_call_trace(self, results, call_limits):
         for r in self.reporters:
             try:
-                r.makeCallTrace(results, call_limits)
+                r.make_call_trace(results, call_limits)
             except Exception:
                 pass
 
     def print_result_report(self, results):
         for r in self.reporters:
             try:
-                r.makeReport(results, self.isCheckScenarioMode())
+                r.make_report(results, self.is_check_scenario_mode())
             except Exception:
                 pass
 
@@ -307,34 +307,34 @@ class TestSuiteInterface():
             except Exception:
                 pass
 
-    def finishTestEvent(self):
+    def finish_test_event(self):
 
-        if self.isShowTestTreeMode() or self.nrecur > 0:
+        if self.is_show_test_tree_mode() or self.nrecur > 0:
             return
 
         for r in self.reporters:
             try:
-                r.finishTestEvent()
+                r.finish_test_event()
             except Exception:
                 pass
 
-    def setResult(self, item, throw=False):
+    def set_result(self, item, throw=False):
 
         if self.print_log is not None:
             self.print_log(item)
 
-        if self.isCheckScenarioMode() and self.checkScenarioMode_ignorefailed:
+        if self.is_check_scenario_mode() and self.checkScenarioMode_ignorefailed:
             return
 
         if False == self.ignorefailed and True == throw:
             raise TestSuiteException(item['text'], item=item)
 
-    def setActionResult(self, act, throw=False):
+    def set_action_result(self, act, throw=False):
 
         if self.print_actlog is not None:
             self.print_actlog(act)
 
-        if self.isCheckScenarioMode() and self.checkScenarioMode_ignorefailed:
+        if self.is_check_scenario_mode() and self.checkScenarioMode_ignorefailed:
             return
 
         if self.ignorefailed == False and throw == True:
@@ -348,21 +348,21 @@ class TestSuiteInterface():
             return self.ui_list[cf]
 
         except KeyError, e:
-            self.setResult(make_fail_result('(get_ui): Unknown config=\'%s\'' % cf, 'UI'), True)
+            self.set_result(make_fail_result('(get_ui): Unknown config=\'%s\'' % cf, 'UI'), True)
         except ValueError, e:
-            self.setResult(make_fail_result('(get_ui): Unknown config=\'%s\'' % cf, 'UI'), True)
+            self.set_result(make_fail_result('(get_ui): Unknown config=\'%s\'' % cf, 'UI'), True)
 
         return None
 
-    def getValue(self, s_id, ui):
+    def get_value(self, s_id, ui):
 
-        if self.isCheckScenarioMode():
-            ret, err = ui.validateParameter(s_id)
+        if self.is_check_scenario_mode():
+            ret, err = ui.validate_parameter(s_id)
             if ret == False:
                 raise TestSuiteValidateError(err)
             return 0
 
-        return ui.getValue(s_id)
+        return ui.get_value(s_id)
 
     def isTrue(self, s_id, t_out, t_check, item, ui):
 
@@ -382,10 +382,10 @@ class TestSuiteInterface():
 
         try:
             while t_tick >= 0:
-                if self.getValue(s_id, ui) == True or self.isCheckScenarioMode():
+                if self.get_value(s_id, ui) == True or self.is_check_scenario_mode():
                     item['result'] = t_PASSED
                     item['text'] = '%s=true' % s_id
-                    self.setResult(item, False)
+                    self.set_result(item, False)
                     return True
 
                 time.sleep(t_sleep)
@@ -394,13 +394,13 @@ class TestSuiteInterface():
             item['result'] = t_FAILED
             item['text'] = '%s!=true timeout=%d msec' % (s_id, t_out)
             item['faulty_sensor'] = s_id
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = '(%s=true) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -421,14 +421,14 @@ class TestSuiteInterface():
 
         try:
             while t_tick >= 0:
-                if self.getValue(s_id, ui) == False and not self.isCheckScenarioMode():
+                if self.get_value(s_id, ui) == False and not self.is_check_scenario_mode():
                     item['result'] = t_FAILED
                     item['text'] = 'HOLD %s=true holdtime=%d msec' % (s_id, t_out)
                     item['faulty_sensor'] = s_id
-                    self.setResult(item, True)
+                    self.set_result(item, True)
                     return False
 
-                if self.isCheckScenarioMode():
+                if self.is_check_scenario_mode():
                     break
 
                 time.sleep(t_sleep)
@@ -436,14 +436,14 @@ class TestSuiteInterface():
 
             item['result'] = t_PASSED
             item['text'] = 'HOLD %s=true holdtime=%d' % (s_id, t_out)
-            self.setResult(item, False)
+            self.set_result(item, False)
             return True
 
         except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = 'HOLD (%s=true) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -465,10 +465,10 @@ class TestSuiteInterface():
         try:
             while t_tick >= 0:
 
-                if self.getValue(s_id, ui) == 0 or self.isCheckScenarioMode():
+                if self.get_value(s_id, ui) == 0 or self.is_check_scenario_mode():
                     item['result'] = t_PASSED
                     item['text'] = '%s=false' % s_id
-                    self.setResult(item, False)
+                    self.set_result(item, False)
                     return True
 
                 time.sleep(t_sleep)
@@ -477,13 +477,13 @@ class TestSuiteInterface():
             item['result'] = t_FAILED
             item['text'] = '%s!=false timeout=%d msec' % (s_id, t_out)
             item['faulty_sensor'] = s_id
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = '(%s=false) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -504,14 +504,14 @@ class TestSuiteInterface():
         try:
             while t_tick >= 0:
 
-                if self.getValue(s_id, ui) == True and not self.isCheckScenarioMode():
+                if self.get_value(s_id, ui) == True and not self.is_check_scenario_mode():
                     item['result'] = t_FAILED
                     item['text'] = 'HOLD %s!=false holdtime=%d msec' % (s_id, t_out)
                     item['faulty_sensor'] = s_id
-                    self.setResult(item, True)
+                    self.set_result(item, True)
                     return False
 
-                if self.isCheckScenarioMode():
+                if self.is_check_scenario_mode():
                     break
 
                 time.sleep(t_sleep)
@@ -519,14 +519,14 @@ class TestSuiteInterface():
 
             item['result'] = t_PASSED
             item['text'] = 'HOLD %s=false holdtime=%d msec' % s_id
-            self.setResult(item, False)
+            self.set_result(item, False)
             return True
 
         except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
             item['text'] = 'HOLD (%s=false) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -550,19 +550,19 @@ class TestSuiteInterface():
             v = 0  # ui.getValue(s_id)
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = self.getValue(s_id[0], ui)
-                    v2 = self.getValue(s_id[1], ui)
-                    if v1 == v2 or self.isCheckScenarioMode():
+                    v1 = self.get_value(s_id[0], ui)
+                    v2 = self.get_value(s_id[1], ui)
+                    if v1 == v2 or self.is_check_scenario_mode():
                         item['result'] = t_PASSED
                         item['text'] = '%s(%d)=%s(%d)' % (s_id[0], v1, s_id[1], v2)
-                        self.setResult(item, False)
+                        self.set_result(item, False)
                         return True
                 else:
-                    v = self.getValue(s_id, ui)
-                    if v == val or self.isCheckScenarioMode():
+                    v = self.get_value(s_id, ui)
+                    if v == val or self.is_check_scenario_mode():
                         item['result'] = t_PASSED
                         item['text'] = '%s=%d' % (s_id, val)
-                        self.setResult(item, False)
+                        self.set_result(item, False)
                         return True
 
                 time.sleep(t_sleep)
@@ -576,7 +576,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '%s=%d != %d timeout=%d msec' % (s_id, v, val, t_out)
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         except (UException, TestSuiteValidateError), e:
             item['faulty_sensor'] = s_id
@@ -586,7 +586,7 @@ class TestSuiteInterface():
                 item['text'] = '(%s=%d) error: %s' % (s_id, val, e.getError())
             item['result'] = t_FAILED
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -609,24 +609,24 @@ class TestSuiteInterface():
         try:
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = self.getValue(s_id[0], ui)
-                    v2 = self.getValue(s_id[1], ui)
-                    if v1 != v2 and not self.isCheckScenarioMode():
+                    v1 = self.get_value(s_id[0], ui)
+                    v2 = self.get_value(s_id[1], ui)
+                    if v1 != v2 and not self.is_check_scenario_mode():
                         item['result'] = t_FAILED
                         item['text'] = 'HOLD %s(%d) != %s(%d) holdtime=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
                         item['faulty_sensor'] = s_id
-                        self.setResult(item, True)
+                        self.set_result(item, True)
                         return False
                 else:
-                    v1 = self.getValue(s_id, ui)
-                    if v1 != val and not self.isCheckScenarioMode():
+                    v1 = self.get_value(s_id, ui)
+                    if v1 != val and not self.is_check_scenario_mode():
                         item['result'] = t_FAILED
                         item['text'] = 'HOLD %s=%d != %d holdtime=%d msec' % (s_id, v1, val, t_out)
                         item['faulty_sensor'] = s_id
-                        self.setResult(item, True)
+                        self.set_result(item, True)
                         return False
 
-                if self.isCheckScenarioMode():
+                if self.is_check_scenario_mode():
                     break
 
                 time.sleep(t_sleep)
@@ -638,7 +638,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD %s=%d  holdtime=%d' % (s_id, val, t_out)
 
-            self.setResult(item, False)
+            self.set_result(item, False)
             return True
 
         except (UException, TestSuiteValidateError), e:
@@ -649,7 +649,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD (%s=%d) error: %s' % (s_id, val, e.getError())
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -676,19 +676,19 @@ class TestSuiteInterface():
             v = 0  # ui.getValue(s_id)
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = self.getValue(s_id[0], ui)
-                    v2 = self.getValue(s_id[1], ui)
-                    if v1 != v2 or self.isCheckScenarioMode():
+                    v1 = self.get_value(s_id[0], ui)
+                    v2 = self.get_value(s_id[1], ui)
+                    if v1 != v2 or self.is_check_scenario_mode():
                         item['result'] = t_PASSED
                         item['text'] = '%s(%d)!=%s(%d)' % (s_id[0], v1, s_id[1], v2)
-                        self.setResult(item, False)
+                        self.set_result(item, False)
                         return True
                 else:
-                    v = self.getValue(s_id, ui)
-                    if v != val or self.isCheckScenarioMode():
+                    v = self.get_value(s_id, ui)
+                    if v != val or self.is_check_scenario_mode():
                         item['result'] = t_PASSED
                         item['text'] = '%s!=%d' % (s_id, val)
-                        self.setResult(item, False)
+                        self.set_result(item, False)
                         return True
 
                 time.sleep(t_sleep)
@@ -701,7 +701,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '%s=%d != %d timeout=%d msec' % (s_id, v, val, t_out)
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
@@ -711,7 +711,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '(%s=%d) error: %s' % (s_id, val, e.getError())
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -737,24 +737,24 @@ class TestSuiteInterface():
             v = 0  # ui.getValue(s_id)
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = self.getValue(s_id[0], ui)
-                    v2 = self.getValue(s_id[1], ui)
-                    if v1 == v2 and not self.isCheckScenarioMode():
+                    v1 = self.get_value(s_id[0], ui)
+                    v2 = self.get_value(s_id[1], ui)
+                    if v1 == v2 and not self.is_check_scenario_mode():
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = 'HOLD %s(%d) != %s(%d) holdtime=%d msec' % (s_id[0], v1, s_id[1], v2, t_out)
-                        self.setResult(item, True)
+                        self.set_result(item, True)
                         return False
                 else:
-                    v = self.getValue(s_id, ui)
-                    if v == val and not self.isCheckScenarioMode():
+                    v = self.get_value(s_id, ui)
+                    if v == val and not self.is_check_scenario_mode():
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = 'HOLD %s=%d != %d holdtime=%d msec' % (s_id, v, val, t_out)
-                        self.setResult(item, True)
+                        self.set_result(item, True)
                         return False
 
-                if self.isCheckScenarioMode():
+                if self.is_check_scenario_mode():
                     break
 
                 time.sleep(t_sleep)
@@ -766,7 +766,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD %s!=%d holdtime=%d' % (s_id, val, t_out)
 
-            self.setResult(item, False)
+            self.set_result(item, False)
             return True
 
         except (UException, TestSuiteValidateError), e:
@@ -777,7 +777,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '(%s=%d) error: %s' % (s_id, val, e.getError())
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -803,19 +803,19 @@ class TestSuiteInterface():
             while t_tick >= 0:
 
                 if len(s_id) == 2:
-                    v1 = self.getValue(s_id[0], ui)
-                    v2 = self.getValue(s_id[1], ui)
-                    if (cond == '>=' and v1 >= v2) or (cond == '>' and v1 > v2) or self.isCheckScenarioMode():
+                    v1 = self.get_value(s_id[0], ui)
+                    v2 = self.get_value(s_id[1], ui)
+                    if (cond == '>=' and v1 >= v2) or (cond == '>' and v1 > v2) or self.is_check_scenario_mode():
                         item['result'] = t_PASSED
                         item['text'] = '%s(%d) %s %s(%d)' % (s_id[0], v1, cond, s_id[1], v2)
-                        self.setResult(item, False)
+                        self.set_result(item, False)
                         return True
                 else:
-                    v = self.getValue(s_id, ui)
-                    if (cond == '>=' and v >= val) or (cond == '>' and v > val) or self.isCheckScenarioMode():
+                    v = self.get_value(s_id, ui)
+                    if (cond == '>=' and v >= val) or (cond == '>' and v > val) or self.is_check_scenario_mode():
                         item['result'] = t_PASSED
                         item['text'] = '%s=%s %s %d' % (s_id, v, cond, val)
-                        self.setResult(item, False)
+                        self.set_result(item, False)
                         return True
 
                 time.sleep(t_sleep)
@@ -828,7 +828,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '%s=%d not %s %d timeout=%d msec' % (s_id, v, cond, val, t_out)
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
@@ -838,7 +838,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '(%s%s%d) error: %s' % (s_id, cond, val, e.getError())
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -862,27 +862,27 @@ class TestSuiteInterface():
         try:
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = self.getValue(s_id[0], ui)
-                    v2 = self.getValue(s_id[1], ui)
-                    if self.isCheckScenarioMode() == False and (
+                    v1 = self.get_value(s_id[0], ui)
+                    v2 = self.get_value(s_id[1], ui)
+                    if self.is_check_scenario_mode() == False and (
                                 (cond == '>=' and v1 < v2) or (cond == '>' and v1 <= v2)):
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = 'HOLD %s(%d) not %s %s(%d) holdtime=%d msec' % (
                             s_id[0], v1, cond, s_id[1], v2, t_out)
-                        self.setResult(item, True)
+                        self.set_result(item, True)
                         return False
                 else:
-                    v = self.getValue(s_id, ui)
-                    if self.isCheckScenarioMode() == False and (
+                    v = self.get_value(s_id, ui)
+                    if self.is_check_scenario_mode() == False and (
                                 (cond == '>=' and v < val) or (cond == '>' and v <= val)):
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = 'HOLD %s=%d not %s %d holdtime=%d msec' % (s_id, v, cond, val, t_out)
-                        self.setResult(item, True)
+                        self.set_result(item, True)
                         return False
 
-                if self.isCheckScenarioMode():
+                if self.is_check_scenario_mode():
                     break
 
                 time.sleep(t_sleep)
@@ -894,7 +894,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD %s=%s %s %d' % (s_id, v, cond, val)
 
-            self.setResult(item, False)
+            self.set_result(item, False)
             return True
 
         except (UException, TestSuiteValidateError), e:
@@ -905,7 +905,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD (%s%s%d) error: %s' % (s_id, cond, val, e.getError())
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -929,19 +929,19 @@ class TestSuiteInterface():
         try:
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = self.getValue(s_id[0], ui)
-                    v2 = self.getValue(s_id[1], ui)
-                    if self.isCheckScenarioMode() or (cond == '<=' and v1 <= v2) or (cond == '<' and v1 < v2):
+                    v1 = self.get_value(s_id[0], ui)
+                    v2 = self.get_value(s_id[1], ui)
+                    if self.is_check_scenario_mode() or (cond == '<=' and v1 <= v2) or (cond == '<' and v1 < v2):
                         item['result'] = t_PASSED
                         item['text'] = '%s(%d) %s %s(%d)' % (s_id[0], v1, cond, s_id[1], v2)
-                        self.setResult(item, False)
+                        self.set_result(item, False)
                         return True
                 else:
-                    v = self.getValue(s_id, ui)
-                    if self.isCheckScenarioMode() or (cond == '<=' and v <= val) or (cond == '<' and v < val):
+                    v = self.get_value(s_id, ui)
+                    if self.is_check_scenario_mode() or (cond == '<=' and v <= val) or (cond == '<' and v < val):
                         item['result'] = t_PASSED
                         item['text'] = '%s=%s %s %d' % (s_id, v, cond, val)
-                        self.setResult(item, False)
+                        self.set_result(item, False)
                         return True
 
                 time.sleep(t_sleep)
@@ -954,7 +954,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '%s=%d not %s %d timeout=%d msec' % (s_id, v, cond, val, t_out)
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         except (UException, TestSuiteValidateError), e:
             item['result'] = t_FAILED
@@ -964,7 +964,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = '(%s%s%d) error: %s' % (s_id, cond, val, e.getError())
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -988,26 +988,26 @@ class TestSuiteInterface():
         try:
             while t_tick >= 0:
                 if len(s_id) == 2:
-                    v1 = self.getValue(s_id[0], ui)
-                    v2 = self.getValue(s_id[1], ui)
-                    if self.isCheckScenarioMode() == False and (
+                    v1 = self.get_value(s_id[0], ui)
+                    v2 = self.get_value(s_id[1], ui)
+                    if self.is_check_scenario_mode() == False and (
                                 (cond == '<=' and v1 > v2) or (cond == '<' and v1 >= v2)):
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = '%s(%d) not %s %s(%d) holdtime=%d msec' % (s_id[0], v1, cond, s_id[1], v2, t_out)
-                        self.setResult(item, True)
+                        self.set_result(item, True)
                         return False
                 else:
-                    v = self.getValue(s_id, ui)
-                    if self.isCheckScenarioMode() == False and (
+                    v = self.get_value(s_id, ui)
+                    if self.is_check_scenario_mode() == False and (
                                 (cond == '<=' and v > val) or (cond == '<' and v >= val)):
                         item['result'] = t_FAILED
                         item['faulty_sensor'] = s_id
                         item['text'] = '%s=%d not %s %d holdtime=%d msec' % (s_id, v, cond, val, t_out)
-                        self.setResult(item, True)
+                        self.set_result(item, True)
                         return False
 
-                if self.isCheckScenarioMode():
+                if self.is_check_scenario_mode():
                     break
 
                 time.sleep(t_sleep)
@@ -1019,7 +1019,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD %s=%s %s %d' % (s_id, v, cond, val)
 
-            self.setResult(item, False)
+            self.set_result(item, False)
             return True
 
         except (UException, TestSuiteValidateError), e:
@@ -1030,7 +1030,7 @@ class TestSuiteInterface():
             else:
                 item['text'] = 'HOLD (%s%s%d) error: %s' % (s_id, cond, val, e.getError())
 
-            self.setResult(item, True)
+            self.set_result(item, True)
 
         return False
 
@@ -1039,15 +1039,15 @@ class TestSuiteInterface():
         act['type'] = 'SLEEP'
         act['text'] = 'sleep %d msec' % msec
         act['result'] = t_PASSED
-        self.setActionResult(act, False)
+        self.set_action_result(act, False)
 
-        if self.isCheckScenarioMode():
+        if self.is_check_scenario_mode():
             return True
 
         time.sleep((msec / 1000.))
         return True
 
-    def setValue(self, s_id, s_val, act, ui, throwIfFail=True):
+    def set_value(self, s_id, s_val, act, ui, throwIfFail=True):
 
         try:
             act['text'] = '%s=%d' % (s_id, s_val)
@@ -1057,25 +1057,25 @@ class TestSuiteInterface():
             if ui is None:
                 ui = self.default_ui
 
-            if self.isCheckScenarioMode():
-                ret, err = ui.validateParameter(s_id)
+            if self.is_check_scenario_mode():
+                ret, err = ui.validate_parameter(s_id)
                 if ret == False:
                     act['result'] = t_FAILED
                     act['text'] = err
                     act['faulty_sensor'] = s_id
                     raise TestSuiteValidateError(err)
             else:
-                ui.setValue(s_id, s_val, self.supplierID)
+                ui.set_value(s_id, s_val, self.supplierID)
 
             act['result'] = t_PASSED
-            self.setActionResult(act, False)
+            self.set_action_result(act, False)
             return True
 
         except (UException, TestSuiteValidateError), e:
             act['text'] = '(%s=%s) error: %s' % (s_id, s_val, e.getError())
             act['result'] = t_FAILED
             act['faulty_sensor'] = s_id
-            self.setActionResult(act, throwIfFail)
+            self.set_action_result(act, throwIfFail)
 
         return False
 
@@ -1084,7 +1084,7 @@ class TestSuiteInterface():
             act['type'] = 'SCRIPT'
             act['text'] = '%s' % script_name
 
-            if self.isCheckScenarioMode():
+            if self.is_check_scenario_mode():
                 act['result'] = t_PASSED
                 script = ''
                 if script_name:
@@ -1095,7 +1095,7 @@ class TestSuiteInterface():
 
                 if is_executable(script):
                     act['result'] = t_PASSED
-                    self.setActionResult(act, False)
+                    self.set_action_result(act, False)
                     return True
 
                 fname = ''
@@ -1104,7 +1104,7 @@ class TestSuiteInterface():
 
                 act['result'] = t_FAILED
                 act['text'] = "'SCRIPT ERROR('%s'): '%s' not found" % (fname, script)
-                self.setActionResult(act, throwIfFailed)
+                self.set_action_result(act, throwIfFailed)
                 return False
 
             sout = None
@@ -1123,24 +1123,24 @@ class TestSuiteInterface():
             ret = subprocess.call(script_name, shell=True, stdin=None, stdout=sout, stderr=serr, env=self.env)
             if ret:
                 act['result'] = t_FAILED
-                self.setActionResult(act, throwIfFailed)
+                self.set_action_result(act, throwIfFailed)
                 # os.chdir(curdir)
                 return False
 
             # os.chdir(curdir)
             act['result'] = t_PASSED
-            self.setActionResult(act, False)
+            self.set_action_result(act, False)
             return True
 
         except (UException, TestSuiteValidateError), e:
             act['result'] = t_FAILED
             act['text'] = '\'%s\' error: %s' % (script_name, e.getError())
-            self.setActionResult(act, throwIfFailed)
+            self.set_action_result(act, throwIfFailed)
 
         except Exception, e:
             act['result'] = t_FAILED
             act['text'] = '\'%s\' catch python exception: %s' % (script_name, e.message)
-            self.setActionResult(act, throwIfFailed)
+            self.set_action_result(act, throwIfFailed)
 
         return False
 
@@ -1167,13 +1167,13 @@ class TestSuiteInterface():
                 tname = 'MULTICHECK'
 
         if tname == '=':
-            s = ui.parseID(s_id)
+            s = ui.parse_id(s_id)
             res = "%s=%s timeout=%d" % (s[2], s_val, to_int(node.prop("timeout")))
         elif tname == '>' or tname == '>=':
-            s = ui.parseID(s_id)
+            s = ui.parse_id(s_id)
             res = "%s %s %s timeout=%d" % (s[2], tname, s_val, to_int(node.prop("timeout")))
         elif tname == '<' or tname == '<=':
-            s = ui.parseID(s_id)
+            s = ui.parse_id(s_id)
             res = "%s %s %s timeout=%d" % (s[2], tname, s_val, to_int(node.prop("timeout")))
         elif tname == 'MULTICHECK':
             res = "%s" % (node.prop("set"))

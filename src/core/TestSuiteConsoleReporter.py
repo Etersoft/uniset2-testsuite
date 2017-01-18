@@ -5,10 +5,12 @@ import json
 import datetime
 import string
 from TestSuiteGlobal import *
+from uniset2.UGlobal import *
+from uniset2.pyUExceptions import UException
 
 
 class TestSuiteConsoleReporter(TestSuiteReporter):
-    ''' Вывод на экран (надо сделать Singleton-ом!)'''
+    """ Вывод на экран (надо сделать Singleton-ом!)"""
 
     def __init__(self):
         TestSuiteReporter.__init__(self)
@@ -30,7 +32,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.calltrace_disable_extinfo = False
         self.show_test_filename = False
 
-    def finishTestEvent(self):
+    def finish_test_event(self):
 
         if self.printlog:
             print "---------------------------------------------------------------------------------------------------------------------"
@@ -213,7 +215,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         return txt
 
-    def makeReport(self, results, checkScenarioMode=False):
+    def make_report(self, results, check_scenario_mode=False):
 
         if self.showTestTreeMode:
             return
@@ -223,7 +225,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             filename = results[0]['filename']
 
         csm = ""
-        if checkScenarioMode is True:
+        if check_scenario_mode is True:
             csm = "   !!! [CHECK SCENARIO MODE] !!!"
 
         head = "\nRESULT REPORT: '%s' %s" % (filename, csm)
@@ -391,27 +393,27 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         # т.к. у нас сохранены ссылки на предыдущие вызовы... то просто идём по ним
 
         failtrace = list()
-        stackItem = call_trace[-1]
-        failtrace.append(stackItem)
-        curlevel = stackItem['call_level']
+        stack_item = call_trace[-1]
+        failtrace.append(stack_item)
+        curlevel = stack_item['call_level']
 
-        while stackItem is not None:
+        while stack_item is not None:
 
-            stackItem = stackItem['prev']
+            stack_item = stack_item['prev']
 
-            if stackItem is None:
+            if stack_item is None:
                 break
 
-            if stackItem['call_level'] < curlevel:
-                failtrace.append(stackItem)
-                curlevel = stackItem['call_level']
+            if stack_item['call_level'] < curlevel:
+                failtrace.append(stack_item)
+                curlevel = stack_item['call_level']
 
-            if stackItem['call_level'] == 0:
+            if stack_item['call_level'] == 0:
                 break
 
         return failtrace[::-1]
 
-    def makeCallTrace(self, results, call_limit):
+    def make_call_trace(self, results, call_limit):
         # выводим только дерево вызовов до неуспешного теста
         # для этого надо построить дерево от последнего вызова до первого
         failtrace = self.build_fail_trace(results)
@@ -443,7 +445,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         # ищем тест на котором произошёл вылет
         # это последний item в "сбойном тесте"
-        fail_item = None
         if fail_test is not None and len(fail_test['items']) > 0:
             fail_item = fail_test['items'][-1]
             self.show_extended_information(fail_item)

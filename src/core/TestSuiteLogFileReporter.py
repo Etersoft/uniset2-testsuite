@@ -50,5 +50,5 @@ class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
         except IOError:
             pass
 
-    def makeReport(self, results, checkScenarioMode=False):
+    def make_report(self, results, check_scenario_mode=False):
         pass

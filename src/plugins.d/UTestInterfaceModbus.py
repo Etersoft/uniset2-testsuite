@@ -42,26 +42,26 @@ class UTestInterfaceModbus(UTestInterface):
             raise TestSuiteValidateError("(modbus:init): ERR: %s " % e.getError())
 
     @staticmethod
-    def parseID(pname):
+    def parse_id(pname):
 
         mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(pname, "0x04")
         return [str(mbreg), str(mbaddr), pname]
 
-    def validateConfiguration(self):
+    def validate_configuration(self):
         # todo Реализовать функцию проверки конфигурации
         return [True, ""]
 
-    def validateParameter(self, pname):
+    def validate_parameter(self, pname):
 
         try:
             if self.itype == "modbus":
                 mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(pname, "0x04")
                 err = []
-                if mbaddr == None:
+                if not mbaddr:
                     err.append("Unknown mbaddr")
-                if mbfunc == None:
+                if not mbfunc:
                     err.append("Unknown mbfunc")
-                if mbreg == None:
+                if not mbreg:
                     err.append("Unknown mbreg")
 
                 if len(err) > 0:
@@ -72,15 +72,15 @@ class UTestInterfaceModbus(UTestInterface):
         except UException, e:
             return [False, "%s" % e.getError()]
 
-    def getValue(self, name):
+    def get_value(self, name):
 
         try:
             mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(name, "0x04")
-            if mbaddr == None or mbreg == None or mbfunc == None:
+            if not mbaddr or not mbreg or not mbfunc:
                 raise TestSuiteValidateError(
                     "(modbus:getValue): parse id='%s' failed. Must be 'mbreg@mbaddr:mbfunc:nbit:vtype'" % name)
 
-            if self.mbi.isWriteFunction(mbfunc) == True:
+            if self.mbi.isWriteFunction(mbfunc):
                 raise TestSuiteValidateError(
                     "(modbus:getValue): for id='%s' mbfunc=%d is WriteFunction. Must be 'read'." % (name, mbfunc))
 
@@ -89,16 +89,16 @@ class UTestInterfaceModbus(UTestInterface):
         except UException, e:
             raise TestSuiteException(e.getError())
 
-    def setValue(self, name, value, supplierID):
+    def set_value(self, name, value, supplierID):
         try:
             # ip,port,mbaddr,mbreg,mbfunc,vtype,nbit = ui.get_modbus_param(s_id)
             mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(name, "0x06")
-            if mbaddr == None or mbreg == None or mbfunc == None:
+            if not mbaddr or not mbreg or not mbfunc:
                 raise TestSuiteValidateError(
                     "(modbus:setValue): parse id='%s' failed. Must be 'mbreg@mbaddr:mbfunc'" % name)
 
             # print "MODBUS SET VALUE: s_id=%s"%s_id
-            if self.mbi.isWriteFunction(mbfunc) == False:
+            if not self.mbi.isWriteFunction(mbfunc):
                 raise TestSuiteValidateError(
                     "(modbus:setValue): for id='%s' mbfunc=%d is NOT WriteFunction." % (name, mbfunc))
 

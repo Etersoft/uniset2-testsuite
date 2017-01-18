@@ -61,17 +61,17 @@ class UTestInterfaceUniSet(UTestInterface):
         except UException, e:
             raise TestSuiteValidateError("(uniset:init): ERR: %s " % e.getError())
 
-    def getConfFileName(self):
+    def get_conf_filename(self):
         return self.ui.getConfFileName()
 
     def parseID(self, name):
         return to_sid(name, self.ui)
 
-    def validateConfiguration(self):
+    def validate_configuration(self):
         # todo Реализовать функцию проверки конфигурации
         return [True, ""]
 
-    def validateParameter(self, s_id):
+    def validate_parameter(self, s_id):
 
         try:
             s = self.parseID(s_id)
@@ -91,7 +91,7 @@ class UTestInterfaceUniSet(UTestInterface):
         except UException, e:
             return [False, "%s" % e.getError()]
 
-    def getValue(self, s_id):
+    def get_value(self, s_id):
 
         try:
             s = self.parseID(s_id)
@@ -103,7 +103,7 @@ class UTestInterfaceUniSet(UTestInterface):
         except UException, e:
             raise TestSuiteException(e.getError())
 
-    def setValue(self, s_id, s_value, supplierID):
+    def set_value(self, s_id, s_value, supplierID):
         try:
             s = self.parseID(s_id)
             if self.ignore_nodes:

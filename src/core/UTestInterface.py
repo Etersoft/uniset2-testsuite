@@ -11,20 +11,20 @@ class UTestInterface():
         self.itype = itype
         self.ignore_nodes = False
 
-    def setIgnoreNodes(self, state):
+    def set_ignore_nodes(self, state):
         """
         set ignore 'node' for tests (id@node)
         :param state: TRUE or FALSE
         """
         self.ignore_nodes = state
 
-    def getInterfaceType(self):
+    def get_interface_type(self):
         return self.itype
 
-    def getConfFileName(self):
+    def get_conf_filename(self):
         return ''
 
-    def validateParameter(self, name):
+    def validate_parameter(self, name):
         """
         Validate test parameter (id@node)
         :param name: parameter from <check> or <action>
@@ -32,15 +32,15 @@ class UTestInterface():
         """
         return [False, "(validateParam): Unknown interface.."]
 
-    def validateConfiguration(self):
+    def validate_configuration(self):
         """
         Validate configuration parameters  (check-scenario-mode)
         :return: [ RESULT, ERROR ]
         """
         return [False, "(validateConfiguration): Unknown interface.."]
 
-    def getValue(self, name):
+    def get_value(self, name):
         raise TestSuiteException("(getValue): Unknown interface..")
 
-    def setValue(self, name, value, supplierID):
+    def set_value(self, name, value, supplier_id):
         raise TestSuiteException("(setValue): Unknown interface...")

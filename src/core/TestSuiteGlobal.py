@@ -52,10 +52,10 @@ def make_fail_result(text, ftype='(TestSuiteXMLPlayer)', copyFrom=None):
     return fail
 
 
-def make_info_item(text, ftype='(TestSuiteXMLPlayer)', copyFrom=None):
+def make_info_item(text, ftype='(TestSuiteXMLPlayer)', copy_from=None):
     info = make_default_item()
-    if copyFrom:
-        info = copyFrom
+    if copy_from:
+        info = copy_from
 
     info['type'] = ftype
     info['text'] = text
@@ -122,10 +122,10 @@ class TestSuiteReporter():
     def setShowTestTreeMode(self, state):
         self.showTestTreeMode = state
 
-    def makeReport(self, results, checkScenarioMode=False):
+    def make_report(self, results, checkScenarioMode=False):
         pass
 
-    def makeCallTrace(self, results, call_limit):
+    def make_call_trace(self, results, call_limit):
         pass
 
     def start_tests(self, tm=None):
@@ -140,7 +140,7 @@ class TestSuiteReporter():
         else:
             self.finish_time = tm
 
-    def finishTestEvent(self):
+    def finish_test_event(self):
         pass
 
 class TestSuiteException(Exception):

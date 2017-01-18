@@ -64,14 +64,14 @@ class UTestInterfaceSNMP(UTestInterface):
     def initFromFile(self, xmlfile):
 
         xml = UniXML(xmlfile)
-        self.initNodesList(xml)
-        self.initParameters(xml)
+        self.init_nodes(xml)
+        self.init_parameters(xml)
 
-    def getConfFileName(self):
+    def get_conf_filename(self):
         return self.confile
 
     @staticmethod
-    def getIntProp(node, propname, defval):
+    def get_int_prop(node, propname, defval):
         s = node.prop(propname)
         if s:
             return uglobal.to_int(s)
@@ -79,7 +79,7 @@ class UTestInterfaceSNMP(UTestInterface):
         return defval
 
     @staticmethod
-    def getProp(node, propname, defval):
+    def get_prop(node, propname, defval):
         s = node.prop(propname)
         if s:
             return s
@@ -87,7 +87,7 @@ class UTestInterfaceSNMP(UTestInterface):
         return defval
 
     @staticmethod
-    def getMPModel(protocolVersion, defval=1):
+    def get_mp_model(protocolVersion, defval=1):
 
         # преобразуем версию в число для pysnmp
         # см. http://pysnmp.sourceforge.net/docs/pysnmp-hlapi-tutorial.html#choosing-snmp-protocol-and-credentials
@@ -100,16 +100,16 @@ class UTestInterfaceSNMP(UTestInterface):
 
         return defval
 
-    def initNodesList(self, xml):
+    def init_nodes(self, xml):
 
         node = xml.findNode(xml.getDoc(), "Nodes")[0]
         if node is None:
             raise TestSuiteValidateError("(snmp): section <Nodes> not found in %s" % xml.getFileName())
 
-        defaultProtocolVersion = self.getProp(node, "defaultProtocolVersion", '2c')
-        defaultTimeout = self.getIntProp(node, "defaultTimeout", 1)
-        defaultRetries = self.getIntProp(node, "defaultRetries", 1)
-        defaultPort = self.getIntProp(node, "defaultPort", 161)
+        defaultProtocolVersion = self.get_prop(node, "defaultProtocolVersion", '2c')
+        defaultTimeout = self.get_int_prop(node, "defaultTimeout", 1)
+        defaultRetries = self.get_int_prop(node, "defaultRetries", 1)
+        defaultPort = self.get_int_prop(node, "defaultPort", 161)
 
         # elif defaultProtocolVersion == 3:
         #     defaultPass =
@@ -135,18 +135,18 @@ class UTestInterfaceSNMP(UTestInterface):
 
             item['comment'] = uglobal.to_str(node.prop("comment"))
 
-            protocolVersion = self.getProp(node, "protocolVersion", defaultProtocolVersion)
+            protocolVersion = self.get_prop(node, "protocolVersion", defaultProtocolVersion)
 
-            item['mpModel'] = self.getMPModel(protocolVersion)
-            item['port'] = self.getIntProp(node, "port", defaultPort)
-            item['timeout'] = self.getIntProp(node, "timeout", defaultTimeout)
-            item['retries'] = self.getIntProp(node, "retries", defaultRetries)
+            item['mpModel'] = self.get_mp_model(protocolVersion)
+            item['port'] = self.get_int_prop(node, "port", defaultPort)
+            item['timeout'] = self.get_int_prop(node, "timeout", defaultTimeout)
+            item['retries'] = self.get_int_prop(node, "retries", defaultRetries)
 
             self.nodes[item['name']] = item
 
             node = xml.nextNode(node)
 
-    def initParameters(self, xml):
+    def init_parameters(self, xml):
 
         node = xml.findNode(xml.getDoc(), "Parameters")[0]
         if node is None:
@@ -174,14 +174,14 @@ class UTestInterfaceSNMP(UTestInterface):
                     "(snmp):  <Parameters> : unknown OID='' or ObjectName='' for parameter '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
-            item['community'] = self.getProp(node, "community", defaultCommunity)
+            item['community'] = self.get_prop(node, "community", defaultCommunity)
 
             self.mibparams[item['name']] = item
 
             node = xml.nextNode(node)
 
     @staticmethod
-    def parseID(name):
+    def parse_id(name):
         """
         Parse test parameter from <check> or <action>
         :param name:
@@ -190,7 +190,7 @@ class UTestInterfaceSNMP(UTestInterface):
         vname, vnode = uglobal.get_sinfo(name, '@')
         return [vname, vnode, name]
 
-    def getParameter(self, name):
+    def get_parameter(self, name):
 
         try:
             return self.mibparams[name]
@@ -199,7 +199,7 @@ class UTestInterfaceSNMP(UTestInterface):
         except ValueError, e:
             return None
 
-    def getNode(self, name):
+    def get_node(self, name):
 
         try:
             return self.nodes[name]
@@ -208,19 +208,19 @@ class UTestInterfaceSNMP(UTestInterface):
         except ValueError:
             return None
 
-    def getValue(self, name):
+    def get_value(self, name):
 
         try:
 
-            ret, err = self.validateParameter(name)
+            ret, err = self.validate_parameter(name)
 
             if ret == False:
                 raise TestSuiteValidateError("(snmp): 'getValue' ERR: '%s'" % err)
 
-            id, nodename, sname = self.parseID(name)
+            id, nodename, sname = self.parse_id(name)
 
-            param = self.getParameter(id)
-            node = self.getNode(nodename)
+            param = self.get_parameter(id)
+            node = self.get_node(nodename)
 
             varName = None
 
@@ -273,9 +273,9 @@ class UTestInterfaceSNMP(UTestInterface):
         except UException, e:
             raise e
 
-    def setValue(self, name, value, supplierID):
+    def set_value(self, name, value, supplierID):
 
-        ret, err = self.validateParameter(name)
+        ret, err = self.validate_parameter(name)
 
         if ret == False:
             raise TestSuiteValidateError("(snmp): 'setValue' ERR: '%s'" % err)
@@ -283,23 +283,23 @@ class UTestInterfaceSNMP(UTestInterface):
         # todo Реализовать функцию setValue
         raise TestSuiteException("(snmp): 'setValue' function not supported)")
 
-    def validateConfiguration(self):
+    def validate_configuration(self):
         # todo Реализовать функцию проверки конфигурации
         return [True, ""]
 
-    def validateParameter(self, name):
+    def validate_parameter(self, name):
 
         try:
-            vname, vnode, fname = self.parseID(name)
+            vname, vnode, fname = self.parse_id(name)
             if vname == '':
                 return [False, "(snmp): Unknown ID for '%s'" % str(name)]
 
-            param = self.getParameter(vname)
+            param = self.get_parameter(vname)
 
             if not param:
                 return [False, "Unknown OID or ObjectName for '%s'" % str(name)]
 
-            node = self.getNode(vnode)
+            node = self.get_node(vnode)
 
             if not node:
                 return [False, "(snmp): Unknown node ('%s') for '%s'" % (vnode, str(name))]

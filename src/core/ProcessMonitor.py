@@ -248,7 +248,7 @@ class ProcessMonitor():
         self.thr = None
         self.after_run_pause = after_run_pause
 
-    def addChild(self, ch):
+    def add_child(self, ch):
         # print "ProcessMonitor: add child " + ch.name
         if ch not in self.plist:
             self.plist.append(ch)
