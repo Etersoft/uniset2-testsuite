@@ -84,8 +84,12 @@ class TestSuiteInterface():
             fullname = os.path.join(pluginDir, name)
             if os.path.isfile(fullname):
                 ext = os.path.splitext(name)
-                if len(ext)>1 and ext[1] == '.py':
+                if len(ext) > 1 and ext[1] == '.py':
                     m = __import__(os.path.splitext(name)[0])
+                    if not hasattr(m, 'uts_plugin_name'):
+                        raise TestSuiteException(
+                            "(TestSuite::load_plugins): plugin '%s' has no attribute 'uts_plugin_name' " % fullname)
+
                     self.plugins[m.uts_plugin_name()] = m
 
     def plugins_count(self):
@@ -360,8 +364,8 @@ class TestSuiteInterface():
         errors = []
 
         for k, ui in self.ui_list.items():
-            if not hasattr(ui,'checked') or not ui.checked:
-                ui.checked = True # защита от повторной проверки
+            if not hasattr(ui, 'checked') or not ui.checked:
+                ui.checked = True  # защита от повторной проверки
                 ok, err = ui.validate_configuration()
                 if not ok:
                     errors.append(str(err))
