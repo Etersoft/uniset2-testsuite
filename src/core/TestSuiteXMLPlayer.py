@@ -174,7 +174,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
             if not self.tsi.is_iterface_exist(c_type):
                 self.tsi.set_result(
-                    make_fail_result("Unknown scenario type='%s' Must be '%s'" % (c_type, self.tsi.iterfacesAsString()),
+                    make_fail_result("Unknown scenario type='%s' Must be '%s'" % (c_type, self.tsi.iterfaces_as_str()),
                                      "(TestSuiteXMLPlayer:initConfig)"), True)
                 raise TestSuiteException(
                     "(TestSuiteXMLPlayer:initConfig): Unknown scenario type='%s' Must be 'uniset' or 'modbus' or 'snmp'" % c_type)
