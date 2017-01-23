@@ -79,6 +79,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         # список разрешающих запуск теста тегов
         self.tags = list()
 
+        # список отключённых для проверки тегов
+        self.disable_tags = list()
+
         # def __del__(self):
         # os.chdir(self.rootworkdir)
 
@@ -280,11 +283,39 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if len(tags_str) == 0:
             return
 
+        self.tags = self.get_tags(tags_str)
+
+    def add_disable_tags(self, tags_str):
+
+        if len(tags_str) == 0:
+            return
+
+        self.disable_tags.extend(self.get_tags(tags_str))
+
+    def del_disable_tags(self, tags_str):
+
+        if len(tags_str) == 0:
+            return
+
+        check_list = self.get_tags(tags_str)
+
+        if len(check_list) == 0:
+            return
+
+        for t in check_list:
+            if t in self.disable_tags:
+                self.disable_tags.remove(t)
+
+    def get_tags(self, tags_str):
+
+        if len(tags_str) == 0:
+            return list()
+
         taglist = tags_str.split('#')
         if len(taglist) == 1:
-            self.tags = taglist
-        else:
-            self.tags = taglist[1:]
+            return taglist
+
+        return taglist[1:]
 
     def add_to_global_replace(self, lst):
 
@@ -875,9 +906,15 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if len(self.tags) == 0:
             return True
 
+        # Проверять надо по списку представляющему собой то, что есть в tags но нет в disable_tags
+        check_list = [i for i in self.tags if i not in self.disable_tags]
+
+        if len(check_list) == 0:
+            return True
+
         taglist = tag.split('#')
         for t in taglist:
-            if t in self.tags:
+            if t in check_list:
                 return True
 
         return False
@@ -1342,9 +1379,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         result['call_level'] = self.call_level
         result['xmlnode'] = testnode
         result['tags'] = to_str(self.replace(testnode.prop('tags')))
+        result['disable_tags'] = to_str(self.replace(testnode.prop('disable_tags')))
         result['tag'] = self.first_tag(result['tags'])
         result['nrecur'] = self.tsi.nrecur
         result['item_type'] = 'test'
+
+        self.add_disable_tags(result['disable_tags'])
 
         testname = "'%s'" % result['name']
 
@@ -1363,6 +1403,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             result['text'] = testname
             result['type'] = t_NONE
             self.del_from_test_replace(spec_replace_list)
+            self.del_disable_tags(result['disable_tags'])
             return result
 
         self.call_stack.append(result)
@@ -1385,6 +1426,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             result['type'] = t_IGNORE
             self.tsi.set_result(result, False)
             self.del_from_test_replace(spec_replace_list)
+            self.del_disable_tags(result['disable_tags'])
             # сохраняем ещё ссылку на предыдущий элемент
             result['prev'] = prevStackItem
             return result
@@ -1437,6 +1479,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.wait_finish_reset_thread()
             self.del_from_test_replace(spec_replace_list)
             self.del_from_test_replace(r_list)
+            self.del_disable_tags(result['disable_tags'])
             self.test_conf = ""
             tres = self.get_cumulative_result(result['items'])
             ttime = tm_finish - tm_start

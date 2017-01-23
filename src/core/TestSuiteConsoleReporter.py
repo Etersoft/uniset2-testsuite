@@ -17,6 +17,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         self.colsep = ":"  # символ разделитель столбцов (по умолчанию)
         self.col_comment_width = 50
+        self.col_tree_width = 45
         self.log_numstr = 0
         self.log_show_numline = False
         self.printlog = False
@@ -79,7 +80,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
                 txt2 = '%4s %s' % (self.log_numstr, txt2)
 
             # if self.log_show_comments or self.log_show_test_comment:
-            txt2 = "%s\t\t%s" % (txt2, t_comment)
+            txt2 = "%s %s" % (txt2.ljust(self.col_tree_width), t_comment)
 
             if self.show_test_filename:
                 txt2 = "[%35s]   %s" % (item['filename'], txt2)
