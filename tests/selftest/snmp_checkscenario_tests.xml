@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario type="snmp">
+	<Config>
+        <aliases>
+            <item default="1" type="snmp" alias="ups" snmp="conf/snmp-ups.xml"/>
+        </aliases>
+	</Config>
+    <TestList>
+        <test num="1" name="SNMP read tests" comm="Чтение по snmp" ignore="1">
+			<check test="battManSystemStatus@node1>1" comment="bat status"/>
+        </test>
+    </TestList>
+</TestScenario>

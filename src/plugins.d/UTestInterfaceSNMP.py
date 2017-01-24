@@ -7,6 +7,7 @@ import uniset2.UGlobal as uglobal
 import pysnmp
 import subprocess
 import os
+import re
 from pysnmp.entity.rfc3413.oneliner import cmdgen as snmp
 from UTestInterface import *
 from TestSuiteGlobal import *
@@ -113,6 +114,7 @@ class UTestInterfaceSNMP(UTestInterface):
         defaultTimeout = self.get_int_prop(node, "defaultTimeout", 1)
         defaultRetries = self.get_int_prop(node, "defaultRetries", 1)
         defaultPort = self.get_int_prop(node, "defaultPort", 161)
+        defaultMIBfile = self.get_prop(node, "defaultMIBfile", '')
 
         # elif defaultProtocolVersion == 3:
         #     defaultPass =
@@ -144,6 +146,7 @@ class UTestInterfaceSNMP(UTestInterface):
             item['port'] = self.get_int_prop(node, "port", defaultPort)
             item['timeout'] = self.get_int_prop(node, "timeout", defaultTimeout)
             item['retries'] = self.get_int_prop(node, "retries", defaultRetries)
+            item['mibfile'] = self.get_prop(node, "mibfile", defaultMIBfile)
 
             self.nodes[item['name']] = item
 
@@ -364,6 +367,40 @@ class UTestInterfaceSNMP(UTestInterface):
 
         return True
 
+    def get_variables_from_mib(self, mibfile):
+
+        if not os.path.isfile(mibfile):
+            raise TestSuiteValidateError(
+                "(snmp): get_variables_from_mib : ERR: file not found '%s'" % (mibfile))
+
+        cmd = "snmptranslate -Tz -m %s" % mibfile
+        ret = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        lines = ret.communicate()[0].split('\n')
+        rcheck = re.compile(r'^"(.*)"\s{0,}"(.*)"$')
+        vars = dict()
+
+        for l in lines:
+            ret = rcheck.findall(l)
+            if not ret:
+                continue
+
+            v = ret[0]
+            if len(v) < 2:
+                raise TestSuiteValidateError(
+                    "(snmp): get_variables_from_mib : ERR: BAD FILE FORMAT for string '%s'" % l)
+
+            vars[v[0]] = v[1]
+
+        return vars
+
+    @staticmethod
+    def check_oid(oid,mibs):
+        for m in mibs:
+            if oid in m:
+                return True
+
+        return False
+
     def validate_configuration(self):
         """
         Проверка конфигурации snmp
@@ -379,8 +416,26 @@ class UTestInterfaceSNMP(UTestInterface):
         # 1. Проверка доступности узлов
         for k, node in self.nodes.items():
             if not self.ping(node['ip']):
-                errors.append("\t(snmp): CONF[%s] ERROR: %s not available" % (self.confile, node['ip']))
+                errors.append("\t(snmp): CONF[%s] ERROR: '%s' not available" % (self.confile, node['ip']))
                 res_ok = False
+
+        # Проверка переменных через MIB-файлы
+        mibfiles = list()
+        for k, node in self.nodes.items():
+            if node['mibfile']:
+                if node['mibfile'] not in mibfiles:
+                    mibfiles.append(node['mibfile'])
+
+        if len(mibfiles) > 0:
+            mibs = list()
+            for f in mibfiles:
+                mibs.append(self.get_variables_from_mib(f))
+
+            # Ищем переменные во всех загруженных словарях..
+            for oid, var in self.mibparams.items():
+                if not self.check_oid(oid,mibs):
+                    errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND OID '%s' in mibfiles.." % (self.confile, oid))
+                    res_ok = False
 
         err = ''
         if len(errors) > 0:

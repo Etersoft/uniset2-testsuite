@@ -12,7 +12,7 @@
 			<check test="uptime@node1>1" comment="Uptime"/>
 			<check test="uptimeName@node2>=1" comment="Статус батареи" config="snmp2"/>
         </test>
-        <test num="1" name="SNMP write tests" comm="Запись по snmp">
+        <test num="2" name="SNMP write tests" comm="Запись по snmp">
 			<action set="sysName@node3=10" comment="save sysName"/>
 			<action set="sysServ2@node3=10" comment="save sysServ"/>
         </test>
