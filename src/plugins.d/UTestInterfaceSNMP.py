@@ -142,6 +142,11 @@ class UTestInterfaceSNMP(UTestInterface):
             item['retries'] = self.get_int_prop(node, "retries", defaultRetries)
             item['mibfile'] = self.get_prop(node, "mibfile", defaultMIBfile)
 
+            if item['name'] in self.nodes:
+                raise TestSuiteValidateError(
+                    "(snmp):  <Parameters> : ERR: node name '%s' ALEREADY EXIST ['%s']" % (
+                        item['name'], xml.getFileName()))
+
             self.nodes[item['name']] = item
 
             node = xml.nextNode(node)
@@ -177,6 +182,11 @@ class UTestInterfaceSNMP(UTestInterface):
 
             item['r_community'] = self.get_prop(node, "r_community", defaultReadCommunity)
             item['w_community'] = self.get_prop(node, "w_community", defaultWriteCommunity)
+
+            if item['name'] in self.mibparams:
+                raise TestSuiteValidateError(
+                    "(snmp):  <Parameters> : ERR: name '%s' ALEREADY EXIST ['%s']" % (
+                        item['name'], xml.getFileName()))
 
             self.mibparams[item['name']] = item
 
