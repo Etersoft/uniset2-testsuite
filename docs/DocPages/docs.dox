@@ -605,18 +605,19 @@
 \code
 <?xml version='1.0' encoding='utf-8'?>
 <SNMP>
-  <Nodes defaultProtocolVersion="2c" defaultTimeout='1' defaultRetries='2' defaultPort='161'>
+  <Nodes defaultProtocolVersion="2c" defaultTimeout='1' defaultRetries='2' defaultPort='161' defaultMIBfile="conf/powernet414.mib">
     <item name="node1" ip="192.94.214.205" comment="UPS1" protocolVersion="2" timeout='1' retries='2'/>
     <item name="node2" ip="test.net-snmp.org" comment="UPS2"/>
-    <item name="node3" ip="10.16.11.3" comment="UPS3"/>
+    <item name="node3" ip="10.16.11.3" comment="UPS3" mibfile="conf/powernet414.mib"/>
   </Nodes>
 
-  <Parameters defaultCommunity="demopublic">
-    <item name="uptime" OID="1.3.6.1.2.1.1.3.0" community="demopublic"/>
-	<item name="uptimeName" ObjectName="sysUpTime.0" community="demopublic"/>
+  <Parameters defaultReadCommunity="demopublic" defaultWriteCommunity="demoprovate">
+    <item name="uptime" OID="1.3.6.1.2.1.1.3.0" r_community="demopublic"/>
+	<item name="uptimeName" ObjectName="sysUpTime.0"/>
     <item name="bstatus" OID="1.3.6.1.2.1.33.1.2.1.0" ObjectName="BatteryStatus"/>
     <item name="btime" OID=".1.3.6.1.2.1.33.1.2.2.0" ObjectName="TimeOnBattery"/>
     <item name="bcharge" OID=".1.3.6.1.2.1.33.1.2.4.0" ObjectName="BatteryCharge"/>
+    <item name="sysName" ObjectName="sysName.0" w_community="demoprivate" r_community="demopublic"/>
   </Parameters>
 </SNMP>
 \endcode
@@ -627,6 +628,7 @@
 	- \b timeout - таймаут на одну попытку связи, в секундах. Не обязательный параметр. По умолчанию 1 сек.
 	- \b retries - количество попыток считать параметр.  Не обязательный параметр. По умолчанию 2.
 	- \b port - Порт для связи с устройством. Не обязательный параметр. По умолчанию 161.
+	- \b mibilfe - mib-файл, по которому проверяется наличие указанных параметров. Не обязательный параметр, если не указан, проверка не делается.
 	- \b comment - коментарий к названию. Не обязательный параметр, на данный момент не используется.
 
 	Непосредственно в секции <\b Nodes> можно задать параметры по умолчанию для всех узлов.
@@ -634,17 +636,20 @@
 	- \b defaultTimeout
 	- \b defaultRetries
 	- \b defaultPort
+	- \b defaultMIBfile
 
 	Секция <\b Parameters> задаёт список парамеров, которые будут участвовать в тестах:
 	- \b name - название параметра используемое в дальнейшем в тесте
-	- \b community - установка 'community string' (см. snmp протокол).
+	- \b r_community - установка 'community string' при чтении параметра (см. snmp протокол).
+	- \b w_community - установка 'community string' для записи параметра (см. snmp протокол).
 	- \b OID - идентификатор параметра в соответсвии с протоклом SNMP.
 	- \b ObjectName - название параметра в соответсвии с протоклом SNMP. Не обязательный параметр.
 
 	Параметры \b OID и \b ObjectName являются взаимозаменяемыми. Если заданы оба параметра, используется \b OID.
 
 	Непосредственно в секции <\b Parameters> можно задать параметры по умолчанию для всех узлов.
-	- \b defaultCommunity
+	- \b defaultReadCommunity
+	- \b defaultWriteCommunity
 
   \section uts_multiInterface_Scenario Использование нескольких интерфейсов обмена в одном сценарии
    Система позволяет в одном сценарии одновременно обращаться и через uniset интерфейс и через ModbusTCP. Для этого

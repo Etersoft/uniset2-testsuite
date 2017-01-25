@@ -45,7 +45,7 @@ Documentation for uniset2-testsuite
 Summary: SNMP plugin for uniset2-testsuite
 Group: Development/Python
 Requires: %name = %version-%release 
-Requires: python-module-pysnmp4
+Requires: python-module-netsnmp
 %description snmp
 SNMP Plugin for uniset2-testsuite
 
@@ -105,6 +105,9 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %changelog
 * Thu Jan 26 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt3
 - minor fixed (gitlab.set issue #5)
+
+* Wed Jan 25 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt2.1
+- change snmp python interface: pysnmp --> netsnmp
 
 * Mon Jan 23 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt2
 - add 'disable_tags' property for <test> (gitlab.set issue #5)
