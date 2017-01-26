@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.5
-Release: alt3
+Release: alt3.1
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -15,6 +15,7 @@ BuildRequires: python-module-uniset2 >= 2.6-alt10
 
 Requires: python-module-uniset2 >= 2.6-alt10
 Provides: python2.7(UTestInterface)
+Provides: python2.7(TestSuiteGlobal)
 # BuildArch: noarch
 
 %if_enabled doc
@@ -45,7 +46,7 @@ Documentation for uniset2-testsuite
 Summary: SNMP plugin for uniset2-testsuite
 Group: Development/Python
 Requires: %name = %version-%release 
-Requires: python-module-netsnmp
+Requires: net-snmp-clients
 %description snmp
 SNMP Plugin for uniset2-testsuite
 
@@ -103,6 +104,9 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %endif
 
 %changelog
+* Fri Jan 27 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt3.1
+- (snmp): use system utility and pipe
+
 * Thu Jan 26 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt3
 - minor fixed (gitlab.set issue #5)
 

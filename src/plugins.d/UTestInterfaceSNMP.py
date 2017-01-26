@@ -5,9 +5,7 @@ from uniset2.UniXML import UniXML
 from uniset2.pyUExceptions import UException
 import uniset2.UGlobal as uglobal
 import subprocess
-import os
 import re
-import netsnmp
 from UTestInterface import *
 from TestSuiteGlobal import *
 
@@ -16,18 +14,18 @@ from TestSuiteGlobal import *
 
 <?xml version='1.0' encoding='utf-8'?>
 <SNMP>
-  <Nodes defaultProtocolVersion="2c" defaultTimeout='1' defaultRetries='2' defaultPort='161'>
-    <item name="node1" ip="192.94.214.205" comment="UPS1" protocolVersion="1" timeout='1' retries='2'/>
+  <Nodes defaultProtocolVersion="2c" defaultTimeout='1' defaultRetries='2'>
+    <item name="node1" ip="192.94.214.205" comment="UPS1" protocolVersion="2" timeout='1' retries='2'/>
     <item name="node2" ip="test.net-snmp.org" comment="UPS2"/>
-    <item name="node3" ip="demo.snmplabs.com" comment="DDD"/
+    <item name="ups3" ip="demo.snmplabs.com" comment="DDD"/>
   </Nodes>
 
-  <Parameters defaultCommunity="demopublic">
-    <item name="uptime" OID="1.3.6.1.2.1.1.3.0" community="demopublic" ObjectName="SNMPv2-MIB::sysUpTime.0"/>
-    <item name="bstatus" OID="1.3.6.1.2.1.33.1.2.1.0" ObjectName="BatteryStatus"/>
-    <item name="btime" OID=".1.3.6.1.2.1.33.1.2.2.0" ObjectName="TimeOnBattery"/>
-    <item name="bcharge" OID=".1.3.6.1.2.1.33.1.2.4.0" ObjectName="BatteryCharge"/>
-    <item name="sysServ" ObjectName="sysServices.0" community="public"/>
+  <Parameters defaultReadCommunity="demopublic" defaultWriteCommunity="demoprivate">
+    <item name="uptime" OID=".1.3.6.1.2.1.1.3.0" r_community="demopublic"/>
+	<item name="uptimeName" community="demopublic" ObjectName="sysUpTime.0"/>
+    <item name="sysServ" ObjectName="sysServices.0" r_community="public"/>
+	<item name="sysName" ObjectName="sysName.0" w_community="demoprivate" r_community="demopublic"/>
+	<item name="sysServ2" ObjectName="sysServices.0" w_community="demoprivate"/>
   </Parameters>
 </SNMP>
 '''
@@ -36,7 +34,7 @@ from TestSuiteGlobal import *
 class UTestInterfaceSNMP(UTestInterface):
     def __init__(self, **kwargs):
 
-        UTestInterface.__init__(self, "snmp", **kwargs)
+        UTestInterface.__init__(self, uts_plugin_name(), **kwargs)
 
         snmpConFile = None
 
@@ -59,8 +57,24 @@ class UTestInterfaceSNMP(UTestInterface):
         self.mibparams = dict()
         self.nodes = dict()
         self.confile = snmpConFile
-
         self.initFromFile(snmpConFile)
+
+        # разбор ответа
+        self.replycheck = re.compile(r'^(.*): (.*)$')
+        self.re_timeticks = re.compile(r'^\((\d{1,})\)')
+
+        self.snmpget_errors_text = [''
+                                    'No Such Instance currently exists at this OID',
+                                    'Timeout: No Response from',
+                                    ]
+
+        self.snmpset_errors_text = [''
+                                    'Unknown Object Identifier',
+                                    'Reason: noAccess',
+                                    'Error',
+                                    'Timeout',
+                                    'Bad variable type'
+                                    ]
 
     def initFromFile(self, xmlfile):
 
@@ -88,13 +102,13 @@ class UTestInterfaceSNMP(UTestInterface):
         return defval
 
     @staticmethod
-    def get_prot_version(protocolVersion, defval=2):
+    def get_prot_version(protocolVersion, defval='2'):
 
         if protocolVersion == '1':  # SNMPv1
-            return 1
+            return '1'
 
         if protocolVersion == '2' or protocolVersion == '2c':  # SNMPv2c
-            return 2
+            return '2c'
 
         return defval
 
@@ -206,105 +220,154 @@ class UTestInterfaceSNMP(UTestInterface):
 
         try:
             return self.mibparams[name]
-        except (KeyError,ValueError):
+        except (KeyError, ValueError):
             return None
 
     def get_node(self, name):
 
         try:
             return self.nodes[name]
-        except (KeyError,ValueError):
+        except (KeyError, ValueError):
             return None
 
     def get_value(self, name):
 
+        ret, err = self.validate_parameter(name)
+
+        if ret == False:
+            raise TestSuiteValidateError("(snmp): get_value : ERR: '%s'" % err)
+
+        id, nodename, sname = self.parse_id(name)
+
+        param = self.get_parameter(id)
+        node = self.get_node(nodename)
+
+        return self.snmp_get(param, node)
+
+    def snmp_get(self, param, node):
+
+        var_name = None
+        if param['OID']:
+            var_name = param['OID']
+        elif param['ObjectName']:
+            var_name = param['ObjectName']
+        else:
+            raise TestSuiteValidateError("(snmp): get_value : Unknown OID for '%s'" % param['name'])
+
+        s_out = ''
+        s_err = ''
+
+        cmd = "snmpget -v %s -c %s -t %d -r %d -O v %s %s" % (
+            node['version'],
+            param['r_community'],
+            uglobal.to_int(node['timeout']),
+            uglobal.to_int(node['retries']),
+            node['ip'],
+            var_name
+        )
+
         try:
 
-            ret, err = self.validate_parameter(name)
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True, shell=True)
+            s_out = p.stdout.read(120)
+            s_err = p.stderr.read(120)
 
-            if ret == False:
-                raise TestSuiteValidateError("(snmp): get_value : ERR: '%s'" % err)
+        except Exception, e:
+            raise TestSuiteValidateError("(snmp): get_value error: %s for %s" % (e.message, var_name))
 
-            id, nodename, sname = self.parse_id(name)
+        if not s_out or len(s_out) == 0:
+            raise TestSuiteValidateError("(snmp): get_value error: NO READ DATA for %s" % var_name)
 
-            param = self.get_parameter(id)
-            node = self.get_node(nodename)
+        # поверка ответа на ошибки
+        for err in self.snmpget_errors_text:
+            if err in s_out:
+                raise TestSuiteValidateError("(snmp): get_value error: %s" % s_out.replace("\n", " "))
 
-            varName = None
+        for err in self.snmpget_errors_text:
+            if err in s_err:
+                raise TestSuiteValidateError("(snmp): get_value error: %s" % s_err.replace("\n", " "))
 
-            if param['OID']:
-                varName = netsnmp.Varbind(param['OID'])
-            elif param['ObjectName']:
-                varName = netsnmp.Varbind(param['ObjectName'])
-            else:
-                raise TestSuiteValidateError("(snmp): get_value : Unknown OID for '%s'" % name)
+        ret = self.replycheck.findall(s_out)
+        if not ret or len(ret) == 0:
+            raise TestSuiteValidateError("(snmp): get_value error: BAD REPLY FORMAT: %s" % s_out.replace("\n", " "))
 
-            # netsnmp.verbose = 1
-            sess = netsnmp.Session(DestHost=node['ip'],
-                                   RemotePort=node['port'],
-                                   Version=node['version'],
-                                   Community=param['r_community'],
-                                   Timeout=uglobal.to_int(node['timeout']) * 1000000,
-                                   Retries=node['retries']
-                                   )
+        val = self.parse_value(ret[0])
+        if val == None:
+            raise TestSuiteValidateError("(snmp): get_value error: UNKNOWN VALUE: %s" % s_out.replace("\n", " "))
 
-            varlist = netsnmp.VarList(varName)
+        return val
 
-            ret = sess.get(varlist)
+    def parse_value(self, lst):
 
-            if sess.ErrorNum != 0:
-                raise TestSuiteValidateError(
-                    "(snmp): '%s' get value error: [%d] '%s'" % (varName.tag, sess.ErrorNum, sess.ErrorStr))
+        vtype = lst[0].upper()
+        sval = lst[1]
 
-            if not ret or len(ret[0]) <= 0:
-                raise TestSuiteValidateError("(snmp): get_value error: NO READ DATA for %s" % varName.tag)
+        if vtype == 'INTEGER':
+            return uglobal.to_int(sval)
 
-            return ret[0]
+        if vtype == 'STRING':
+            return sval
 
-        except UException, ex:
-            raise TestSuiteException("(snmp): getValue: err: %s" % ex.getError())
+        if vtype == 'TIMETICKS':
+            ret = self.re_timeticks.findall(sval)
+            if not ret or len(ret) == 0:
+                return None
+
+            lst = ret[0]
+            if not lst or len(lst) < 1:
+                return None
+
+            return uglobal.to_int(lst[0])
+
+        return None
 
     def set_value(self, name, value, supplierID):
+        ret, err = self.validate_parameter(name)
 
+        if ret == False:
+            raise TestSuiteValidateError("(snmp): set_value : ERR: '%s'" % err)
+
+        id, nodename, sname = self.parse_id(name)
+
+        param = self.get_parameter(id)
+        node = self.get_node(nodename)
+
+        self.snmp_set(param, node, value)
+
+    def snmp_set(self, param, node, value):
+
+        var_name = None
+
+        #  \todo Пока-что поддерживается только type INTEGER'''
+        var_type = "i"
+
+        if param['OID']:
+            var_name = param['OID']
+        elif param['ObjectName']:
+            var_name = param['ObjectName']
+        else:
+            raise TestSuiteValidateError("(snmp): get_value : Unknown OID for '%s'" % param['name'])
+
+        s_err = ''
         try:
+            cmd = "snmpset -v %s -c %s -t %d -r %d %s %s %s %s" % (
+                node['version'],
+                param['w_community'],
+                uglobal.to_int(node['timeout']),
+                uglobal.to_int(node['retries']),
+                node['ip'],
+                var_name, var_type, value)
 
-            ret, err = self.validate_parameter(name)
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True, shell=True)
+            s_err = p.stderr.read(120)
 
-            if ret == False:
-                raise TestSuiteValidateError("(snmp): set_value : ERR: '%s'" % err)
+        except Exception, e:
+            raise TestSuiteValidateError("(snmp): set_value err: %s for %s" % (e.message, var_name))
 
-            id, nodename, sname = self.parse_id(name)
-
-            param = self.get_parameter(id)
-            node = self.get_node(nodename)
-
-            varinfo = None
-
-            if param['OID']:
-                varinfo = netsnmp.Varbind(param['OID'], val=value, type='INTEGER')
-            elif param['ObjectName']:
-                varinfo = netsnmp.Varbind(param['ObjectName'], val=value, type='INTEGER')
-            else:
-                raise TestSuiteValidateError("(snmp): set_value : Unknown OID for '%s'" % name)
-
-            sess = netsnmp.Session(DestHost=node['ip'],
-                                   RemotePort=node['port'],
-                                   Version=node['version'],
-                                   Community=param['w_community'],
-                                   Timeout=uglobal.to_int(node['timeout']) * 1000000,
-                                   Retries=node['retries']
-                                   )
-
-            varlist = netsnmp.VarList(varinfo)
-            sess.set(varlist)
-
-            if sess.ErrorNum == 0:
-                return
-
-            raise TestSuiteValidateError("(snmp): '%s' set value error: [%d] '%s'" % (varinfo.tag, sess.ErrorNum, sess.ErrorStr))
-
-        except UException, ex:
-            raise TestSuiteException("(snmp): set_value : err: %s" % ex.getError())
+        if len(s_err) > 0:
+            for err in self.snmpset_errors_text:
+                if err in s_err:
+                    raise TestSuiteValidateError("(snmp): set_value err: %s" % s_err.replace("\n", " "))
 
     def ping(self, ip):
         """
