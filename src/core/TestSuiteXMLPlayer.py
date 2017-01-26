@@ -1691,7 +1691,7 @@ if __name__ == "__main__":
         show_test_filename = ts.checkArgParam("--show-test-filename", False)
         if show_test_tree:
             check_scenario = True
-            check_scenario_ignorefailed = True
+            # check_scenario_ignorefailed = True
             show_result = False
 
         cf = conflist.split(',')

@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.5
-Release: alt2
+Release: alt3
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -103,6 +103,9 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %endif
 
 %changelog
+* Thu Jan 26 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt3
+- minor fixed (gitlab.set issue #5)
+
 * Mon Jan 23 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt2
 - add 'disable_tags' property for <test> (gitlab.set issue #5)
 
