@@ -275,17 +275,18 @@ class UTestInterfaceSNMP(UTestInterface):
         except Exception, e:
             raise TestSuiteValidateError("(snmp): get_value error: %s for %s" % (e.message, var_name))
 
-        if not s_out or len(s_out) == 0:
-            raise TestSuiteValidateError("(snmp): get_value error: NO READ DATA for %s" % var_name)
+        # поверка ответа на ошибки
+        for err in self.snmpget_errors:
+            if err in s_err:
+                raise TestSuiteValidateError("(snmp): get_value error: %s" % s_err.replace("\n", " "))
 
         # поверка ответа на ошибки
         for err in self.snmpget_errors:
             if err in s_out:
                 raise TestSuiteValidateError("(snmp): get_value error: %s" % s_out.replace("\n", " "))
 
-        for err in self.snmpget_errors:
-            if err in s_err:
-                raise TestSuiteValidateError("(snmp): get_value error: %s" % s_err.replace("\n", " "))
+        if not s_out or len(s_out) == 0:
+            raise TestSuiteValidateError("(snmp): get_value error: NO READ DATA for %s" % var_name)
 
         ret = self.replycheck.findall(s_out)
         if not ret or len(ret) == 0:
