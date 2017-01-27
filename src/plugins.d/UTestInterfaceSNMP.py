@@ -318,7 +318,7 @@ class UTestInterfaceSNMP(UTestInterface):
             if not lst or len(lst) < 1:
                 return None
 
-            return uglobal.to_int(lst[0])
+            return uglobal.to_int(lst)
 
         return None
 

@@ -8,7 +8,7 @@
 	</Config>
     <TestList>
         <test name="SNMP read tests" comm="Чтение по snmp">
-			<check test="sysServ@ups3>1" comment="serv"/>
+<!--			<check test="sysServ@ups3>1" comment="serv"/> -->
 			<check test="uptime@node1>1" comment="Uptime"/>
 			<check test="uptimeName@node2>=1" comment="Статус батареи" config="snmp2"/>
         </test>
