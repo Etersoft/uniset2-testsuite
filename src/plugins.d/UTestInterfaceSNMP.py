@@ -57,26 +57,26 @@ class UTestInterfaceSNMP(UTestInterface):
         self.mibparams = dict()
         self.nodes = dict()
         self.confile = snmpConFile
-        self.initFromFile(snmpConFile)
+        self.init_from_file(snmpConFile)
 
         # разбор ответа
         self.replycheck = re.compile(r'^(.*): (.*)$')
         self.re_timeticks = re.compile(r'^\((\d{1,})\)')
 
-        self.snmpget_errors_text = [''
+        self.snmpget_errors = [''
                                     'No Such Instance currently exists at this OID',
                                     'Timeout: No Response from',
-                                    ]
+                               ]
 
-        self.snmpset_errors_text = [''
+        self.snmpset_errors = [''
                                     'Unknown Object Identifier',
                                     'Reason: noAccess',
                                     'Error',
                                     'Timeout',
                                     'Bad variable type'
-                                    ]
+                               ]
 
-    def initFromFile(self, xmlfile):
+    def init_from_file(self, xmlfile):
 
         xml = UniXML(xmlfile)
         self.init_nodes(xml)
@@ -279,11 +279,11 @@ class UTestInterfaceSNMP(UTestInterface):
             raise TestSuiteValidateError("(snmp): get_value error: NO READ DATA for %s" % var_name)
 
         # поверка ответа на ошибки
-        for err in self.snmpget_errors_text:
+        for err in self.snmpget_errors:
             if err in s_out:
                 raise TestSuiteValidateError("(snmp): get_value error: %s" % s_out.replace("\n", " "))
 
-        for err in self.snmpget_errors_text:
+        for err in self.snmpget_errors:
             if err in s_err:
                 raise TestSuiteValidateError("(snmp): get_value error: %s" % s_err.replace("\n", " "))
 
@@ -365,7 +365,7 @@ class UTestInterfaceSNMP(UTestInterface):
             raise TestSuiteValidateError("(snmp): set_value err: %s for %s" % (e.message, var_name))
 
         if len(s_err) > 0:
-            for err in self.snmpset_errors_text:
+            for err in self.snmpset_errors:
                 if err in s_err:
                     raise TestSuiteValidateError("(snmp): set_value err: %s" % s_err.replace("\n", " "))
 
