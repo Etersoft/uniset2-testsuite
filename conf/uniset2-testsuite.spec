@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.5
-Release: alt3.1
+Release: alt4
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -104,6 +104,9 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %endif
 
 %changelog
+* Fri Jan 27 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt4
+- update version
+
 * Fri Jan 27 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt3.1
 - (snmp): use system utility and pipe
 
