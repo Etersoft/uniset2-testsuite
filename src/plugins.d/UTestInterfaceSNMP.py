@@ -6,6 +6,8 @@ from uniset2.pyUExceptions import UException
 import uniset2.UGlobal as uglobal
 import subprocess
 import re
+import glob
+import os
 from UTestInterface import *
 from TestSuiteGlobal import *
 
@@ -56,6 +58,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
         self.mibparams = dict()
         self.nodes = dict()
+        self.mibdirs = dict()
         self.confile = snmpConFile
         self.init_from_file(snmpConFile)
 
@@ -80,6 +83,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
         xml = UniXML(xmlfile)
         self.init_nodes(xml)
+        self.init_mibdirs(xml)
         self.init_parameters(xml)
 
     def get_conf_filename(self):
@@ -122,7 +126,6 @@ class UTestInterfaceSNMP(UTestInterface):
         defaultTimeout = self.get_int_prop(node, "defaultTimeout", 1)
         defaultRetries = self.get_int_prop(node, "defaultRetries", 1)
         defaultPort = self.get_int_prop(node, "defaultPort", 161)
-        defaultMIBfile = self.get_prop(node, "defaultMIBfile", '')
 
         # elif defaultProtocolVersion == 3:
         #     defaultPass =
@@ -154,14 +157,49 @@ class UTestInterfaceSNMP(UTestInterface):
             item['port'] = self.get_int_prop(node, "port", defaultPort)
             item['timeout'] = self.get_int_prop(node, "timeout", defaultTimeout)
             item['retries'] = self.get_int_prop(node, "retries", defaultRetries)
-            item['mibfile'] = self.get_prop(node, "mibfile", defaultMIBfile)
 
             if item['name'] in self.nodes:
                 raise TestSuiteValidateError(
-                    "(snmp):  <Parameters> : ERR: node name '%s' ALEREADY EXIST ['%s']" % (
+                    "(snmp):  <Nodes> : ERR: node name '%s' ALEREADY EXIST ['%s']" % (
                         item['name'], xml.getFileName()))
 
             self.nodes[item['name']] = item
+
+            node = xml.nextNode(node)
+
+    def init_mibdirs(self, xml):
+
+        node = xml.findNode(xml.getDoc(), "MIBdirs")[0]
+        if node is None:
+            return
+            # raise TestSuiteValidateError("(snmp): section <MIBdirs> not found in %s" % xml.getFileName())
+
+        defaultMask = self.get_prop(node, "defaultMask", '')
+
+        node = xml.firstNode(node.children)
+        while node is not None:
+
+            item = dict()
+
+            item['path'] = uglobal.to_str(node.prop("path"))
+            if item['path'] == "":
+                raise TestSuiteValidateError(
+                    "(snmp): <MIBdirs> : unknown path='' for string '%s' in file %s" % (
+                        str(node), xml.getFileName()))
+
+            item['mask'] = uglobal.to_str(self.get_prop(node,"mask",defaultMask))
+
+            if item['path'] in self.nodes:
+                raise TestSuiteValidateError(
+                    "(snmp):  <MIBdirs> : ERR: path='%s' ALEREADY EXIST ['%s']" % (
+                        item['path'], xml.getFileName()))
+
+            if not os.path.isdir(item['path']):
+                raise TestSuiteValidateError(
+                    "(snmp):  <MIBdirs> : ERR: path='%s' NOT FOUND ['%s']" % (
+                        item['path'], xml.getFileName()))
+
+            self.mibdirs[item['path']] = item
 
             node = xml.nextNode(node)
 
@@ -440,10 +478,19 @@ class UTestInterfaceSNMP(UTestInterface):
 
         # Проверка переменных через MIB-файлы
         mibfiles = list()
-        for k, node in self.nodes.items():
-            if node['mibfile']:
-                if node['mibfile'] not in mibfiles:
-                    mibfiles.append(node['mibfile'])
+        for k, mibdir in self.mibdirs.items():
+            if not os.path.isdir(mibdir['path']):
+                errors.append("\t(snmp): CONF[%s] ERROR: MIB-directory '%s' not found" % (self.confile, mibdir['path']))
+                res_ok = False
+
+            mibmask = mibdir['mask']
+            if mibmask and len(mibmask) == 0:
+                mibmask='*'
+
+            mdir = "%s/%s" % (mibdir['path'], mibmask)
+            for f in glob.glob(mdir):
+                if os.path.isfile(f) and f not in mibfiles:
+                    mibfiles.append(f)
 
         if len(mibfiles) > 0:
             mibs = list()
