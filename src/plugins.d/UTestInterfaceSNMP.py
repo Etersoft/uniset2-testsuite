@@ -392,7 +392,7 @@ class UTestInterfaceSNMP(UTestInterface):
             raise TestSuiteValidateError(
                 "(snmp): get_variables_from_mib : ERR: file not found '%s'" % mibfile)
 
-        cmd = "snmptranslate -Tz -m %s" % mibfile
+        cmd = "snmptranslate -Tz -On -m %s" % mibfile
         ret = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         lines = ret.communicate()[0].split('\n')
         rcheck = re.compile(r'^"(.*)"\s{0,}"(.*)"$')
@@ -452,8 +452,8 @@ class UTestInterfaceSNMP(UTestInterface):
 
             # Ищем переменные во всех загруженных словарях..
             for oid, var in self.mibparams.items():
-                if not self.check_oid(oid, mibs):
-                    errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND OID '%s' in mibfiles.." % (self.confile, oid))
+                if not self.check_oid(var['OID'], mibs):
+                    errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND OID '%s (%s)' in mibfiles.." % (self.confile, var['OID'], oid))
                     res_ok = False
 
         err = ''
