@@ -64,16 +64,16 @@ class UTestInterfaceSNMP(UTestInterface):
         self.re_timeticks = re.compile(r'^\((\d{1,})\)')
 
         self.snmpget_errors = [''
-                                    'No Such Instance currently exists at this OID',
-                                    'Timeout: No Response from',
+                               'No Such Instance currently exists at this OID',
+                               'Timeout: No Response from',
                                ]
 
         self.snmpset_errors = [''
-                                    'Unknown Object Identifier',
-                                    'Reason: noAccess',
-                                    'Error',
-                                    'Timeout',
-                                    'Bad variable type'
+                               'Unknown Object Identifier',
+                               'Reason: noAccess',
+                               'Error',
+                               'Timeout',
+                               'Bad variable type'
                                ]
 
     def init_from_file(self, xmlfile):
@@ -303,7 +303,7 @@ class UTestInterfaceSNMP(UTestInterface):
         vtype = lst[0].upper()
         sval = lst[1]
 
-        if vtype == 'INTEGER':
+        if vtype == 'INTEGER' or vtype == 'GAUGE32' or vtype == 'COUNTER32' or vtype == 'UNSIGNED32':
             return uglobal.to_int(sval)
 
         if vtype == 'STRING':
@@ -453,7 +453,8 @@ class UTestInterfaceSNMP(UTestInterface):
             # Ищем переменные во всех загруженных словарях..
             for oid, var in self.mibparams.items():
                 if not self.check_oid(var['OID'], mibs):
-                    errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND OID '%s (%s)' in mibfiles.." % (self.confile, var['OID'], oid))
+                    errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND OID '%s (%s)' in mibfiles.." % (
+                    self.confile, var['OID'], oid))
                     res_ok = False
 
         err = ''
