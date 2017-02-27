@@ -22,6 +22,8 @@ PROJECT=$1
 test -n "$PROJECT" || PROJECT=$PKGNAME
 
 [ -z "$GEN" ] && GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
+[ -z "$GEN_noarch" ] && GEN_noarch=$GEN
+
 [ -a "$GEN" ] || GEN="genbasedir --create --progress --topdir=$TOPDIR $PLATFORM $PROJECT"
 [ -a "$GEN_noarch" ] || GEN="genbasedir --create --progress --topdir=$TOPDIR noarch $PROJECT"
 
