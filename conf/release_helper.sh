@@ -9,7 +9,6 @@ REL=eter
 MAILDOMAIN=server
 
 [ -z "$TOPDIR" ] && TOPDIR=/var/ftp/pub/Ourside
-[ -z "$GEN" ] && GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
 
 PKGNAME=uniset2-testsuite
 SPECNAME=uniset2-testsuite.spec
@@ -22,6 +21,7 @@ fi
 PROJECT=$1
 test -n "$PROJECT" || PROJECT=$PKGNAME
 
+[ -z "$GEN" ] && GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
 [ -a "$GEN" ] || GEN="genbasedir --create --progress --topdir=$TOPDIR $PLATFORM $PROJECT"
 [ -a "$GEN_noarch" ] || GEN="genbasedir --create --progress --topdir=$TOPDIR noarch $PROJECT"
 
