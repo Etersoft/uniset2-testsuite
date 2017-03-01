@@ -5,5 +5,9 @@
 			<check test="QGX_isOn_S@ses=0" timeout="15000" comment="Включен"/>
 			<check test="QGX_isOff_S@ses=1" timeout="15000" comment="Выключен"/>
 		</test>
+        <test name="out chesk" replace="[delay]:0,[X]:3">
+			<check file="tests-replace-bug2.xml" replace="[delay]:5000" link="ALL" test="outlink"/>
+		</test>
+
     </TestList>
 </TestScenario>

@@ -386,7 +386,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if v is None or len(v) < 1 or v[0] == v[1]:
                 continue
 
-            res.append([self.replace(v[0]), self.replace(v[1])])
+            #res.append([self.replace(v[0]), self.replace(v[1])])
+            res.append([v[0], v[1]])
 
         return res
 
