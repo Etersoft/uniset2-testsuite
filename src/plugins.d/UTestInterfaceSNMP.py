@@ -425,7 +425,11 @@ class UTestInterfaceSNMP(UTestInterface):
         return True
 
     def get_variables_from_mib(self, mibfile):
-
+        '''
+        Создание словаря [oid]=name по указанному mib-файлу
+        :param mibfile: mib-файл
+        :return: словарь [oid]=name
+        '''
         if not os.path.isfile(mibfile):
             raise TestSuiteValidateError(
                 "(snmp): get_variables_from_mib : ERR: file not found '%s'" % mibfile)
@@ -446,7 +450,8 @@ class UTestInterfaceSNMP(UTestInterface):
                 raise TestSuiteValidateError(
                     "(snmp): get_variables_from_mib : ERR: BAD FILE FORMAT for string '%s'" % l)
 
-            vars[v[0]] = v[1]
+            # словарь: [oid] = name
+            vars[v[1]] = v[0]
 
         return vars
 
@@ -493,16 +498,26 @@ class UTestInterfaceSNMP(UTestInterface):
                     mibfiles.append(f)
 
         if len(mibfiles) > 0:
-            mibs = list()
+            mibs = list() # список словарей [oid]=name
+            mibs_names = list() # список словарей [name]=oid
             for f in mibfiles:
-                mibs.append(self.get_variables_from_mib(f))
+                d = self.get_variables_from_mib(f)
+                mibs.append(d)
+                d2 = dict((v,k) for k, v in d.iteritems())
+                mibs_names.append(d2)
 
             # Ищем переменные во всех загруженных словарях..
-            for oid, var in self.mibparams.items():
-                if not self.check_oid(var['OID'], mibs):
-                    errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND OID '%s (%s)' in mibfiles.." % (
-                    self.confile, var['OID'], oid))
-                    res_ok = False
+            for oname, var in self.mibparams.items():
+                if var['OID']:
+                    if not self.check_oid(var['OID'], mibs):
+                        errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND OID '%s (%s)' in mibfiles.." % (
+                        self.confile, var['OID'], oname))
+                        res_ok = False
+                if var['ObjectName']:
+                    if not self.check_oid(var['ObjectName'], mibs_names):
+                        errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND ObjectName '%s (%s)' in mibfiles.." % (
+                        self.confile, var['ObjectName'], oname))
+                        res_ok = False
 
         err = ''
         if len(errors) > 0:
