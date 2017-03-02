@@ -234,6 +234,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
             item['r_community'] = self.get_prop(node, "r_community", defaultReadCommunity)
             item['w_community'] = self.get_prop(node, "w_community", defaultWriteCommunity)
+            item['ignoreCheckMIB'] = self.get_int_prop(node, "ignoreCheckMIB", 0)
 
             if item['name'] in self.mibparams:
                 raise TestSuiteValidateError(
@@ -508,11 +509,16 @@ class UTestInterfaceSNMP(UTestInterface):
 
             # Ищем переменные во всех загруженных словарях..
             for oname, var in self.mibparams.items():
+
+                if var['ignoreCheckMIB'] != 0:
+                    continue
+
                 if var['OID']:
                     if not self.check_oid(var['OID'], mibs):
                         errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND OID '%s (%s)' in mibfiles.." % (
                         self.confile, var['OID'], oname))
                         res_ok = False
+
                 if var['ObjectName']:
                     if not self.check_oid(var['ObjectName'], mibs_names):
                         errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND ObjectName '%s (%s)' in mibfiles.." % (

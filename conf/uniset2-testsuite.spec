@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.5
-Release: alt5
+Release: alt6
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -104,6 +104,9 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %endif
 
 %changelog
+* Thu Mar 02 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt6
+- (snmp): add ignoreCheckMIB parameter
+
 * Thu Mar 02 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt5
 - fixed bug in replace..
 
