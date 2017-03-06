@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
+import os
 
 import datetime
 import copy
@@ -1591,6 +1593,10 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
 if __name__ == "__main__":
 
+    path = os.environ.get('UNISET_TESTSUITE_DATADIR', '/usr/share/uniset2-testsuite')
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
     #    import os
     #    import termios
     #    old_settings = termios.tcgetattr(sys.stdin)
@@ -1601,7 +1607,7 @@ if __name__ == "__main__":
     global_result = None
 
     try:
-        ts = TestSuiteInterface()
+        ts = TestSuiteInterface(datadir=path)
 
         plugDirs = ['./plugins.d', ts.get_plugins_dir()]
         for d in plugDirs:

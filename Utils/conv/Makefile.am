@@ -1,2 +1,2 @@
-pyexecdir=$(pkgpythondir)
-pyexec_SCRIPTS = *.py
+pyexecdir=$(bindir)
+pyexec_SCRIPTS = @PACKAGE@-*

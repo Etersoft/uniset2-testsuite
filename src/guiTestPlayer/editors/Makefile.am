@@ -1,3 +1,3 @@
 #pyexec_SCRIPTS 	= *.py
-editordir     = $(pkgdatadir)/player/editors
+editordir     = $(pkgdatadir)/gtkplayer/editors
 editor_DATA   = *.ui *.py
