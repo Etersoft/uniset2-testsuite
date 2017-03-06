@@ -1,2 +1,2 @@
 py_DATA = *.py
-pydir=$(pkgpythondir)/plugins.d
+pydir=$(pkgdatadir)/plugins.d

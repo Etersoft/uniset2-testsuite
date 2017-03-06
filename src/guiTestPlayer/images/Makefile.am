@@ -1,2 +1,2 @@
-imgdir     = $(pkgdatadir)/player/images
+imgdir     = $(pkgdatadir)/gtkplayer/images
 img_DATA   = *.png

@@ -93,7 +93,7 @@ class guiTestSuitePlayer():
         cf = conflist.split(',')
 
         is_system_run_flag = sys.argv[0].startswith("./")
-        self.datdir = ( "/usr/share/uniset2-testsuite/player/" if not is_system_run_flag else "./" )
+        self.datdir = ( "/usr/share/uniset2-testsuite/gtkplayer/" if not is_system_run_flag else "./" )
         self.imgdir = self.datdir + "images/"
         self.moddir = self.datdir + "editors/"
 
@@ -1830,6 +1830,14 @@ class guiTestSuitePlayer():
 
 
 if __name__ == "__main__":
+
+    path = os.environ.get('UNISET_TESTSUITE_DATADIR', '/usr/share/uniset2-testsuite')
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+    playerdir = os.path.join(path, "gtkplayer")
+    if playerdir not in sys.path:
+        sys.path.insert(0, playerdir)
 
     try:
         player = guiTestSuitePlayer()

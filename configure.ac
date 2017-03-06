@@ -50,10 +50,12 @@ AC_CONFIG_FILES([Makefile
 				docs/dox.cfg
 				src/Makefile
 				src/core/Makefile
+				src/core/uniset2-testsuite-xmlplayer
 				src/plugins.d/Makefile
 				Utils/Makefile
 				Utils/conv/Makefile
 				Utils/tst-make/Makefile
+				src/guiTestPlayer/uniset2-testsuite-gtkplayer
 				src/guiTestPlayer/Makefile
 				src/guiTestPlayer/editors/Makefile
 				src/guiTestPlayer/images/Makefile])
