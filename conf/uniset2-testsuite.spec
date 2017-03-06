@@ -4,7 +4,7 @@
 
 Name: uniset2-testsuite
 Version: 2.5
-Release: alt5.M80P.6
+Release: alt5.M80P.6.1
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -95,7 +95,7 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %python_sitelibdir_noarch/%name/ScenarioParamEditor*
 %python_sitelibdir_noarch/%name/dlg*
 %_bindir/uniset2-testsuite-gtkplayer
-%dir %_datadir/%name
+# %dir %_datadir/%name
 %_datadir/%name/player/*.ui
 %_datadir/%name/player/editors
 %_datadir/%name/player/images/*
@@ -106,8 +106,11 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %endif
 
 %changelog
-* Mon Mar 06 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt5.M80P.6
+* Mon Mar 06 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt5.M80P.6.1
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Mon Mar 06 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt6.1
+- minor fixes in spec
 
 * Thu Mar 02 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt6
 - (snmp): add ignoreCheckMIB parameter
