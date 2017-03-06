@@ -17,7 +17,6 @@
 		- \ref uts_Check_EQUAL
 		- \ref uts_Check_GREAT
 		- \ref uts_Check_LESS
-		- \ref uts_Check_MULTICHECK
 		- \ref uts_Check_LINK
 		- \ref uts_Check_OUTLINK
 		- \ref uts_Check_HOLD
@@ -37,7 +36,6 @@
    - \ref uts_Tags
    - \ref uts_ShowTestTree
    - \ref uts_CallTrace
-   - \ref uts_Editor
 
 	\section uts_Common Общая часть
      В самом общем виде процесс тестирования можно сформулировать как "подать некоторое воздействие на систему и проверить реакцию".
@@ -48,9 +46,10 @@
      - uniset
      - MobusTCP
      - SNMP
-     
+    
+    Встроенная система плагинов, позволяет лего расширять список поддерживаемых интерфесов путём добавления своих реализаций.
+    
     Подача тестовых воздействий и проверка реакции записывается в виде тестового сценария, который можно проигрывать сколько угодно раз.
-
 
    \section uts_TestScenario Тестовый сценарий.
    В общем случае сценарий может быть написан в любом виде. Главное при этом, чтобы был для этого "вида" написан "проигрыватель".
@@ -62,6 +61,7 @@
 На данный момент поддерживается два вида сценариев:
  - uniset
  - modbus
+ - snmp
  
  Тип сценария записывается в теге \b \<TestList type="..."> ("modbus" или "uniset"). Эти два вида различаются только способом задания параметров.
 
@@ -74,7 +74,7 @@
 <Config>
 ...
 </Config>
-<TestList type="uniset" logfile="result.test2.txt" logfile_trunc="1">
+<TestList type="uniset">
 	<test num="2" name="DG1 Running">
 		<check test="SES1_CtlMode_AS=2"  comm="SES1: mode=PultControl"/>
 		<action set="DG1_Start_S=1"  reset_time="300" rval="0" comm="start DG1"/>
@@ -291,10 +291,9 @@
   - 3. equal (=)
   - 4. great (>,>=)
   - 5. less  (<,<=)
-  - 6. multicheck
-  - 7. link
-  - 8. outlink
-  - 9. "проверка постоянства" (проверка выполнения заданного условия в течение времени)
+  - 6. link
+  - 7. outlink
+  - 8. "проверка постоянства" (проверка выполнения заданного условия в течение времени)
 
  \note Для всех проверок обрабатывается флаг \b ignore="1" - пропустить данную проверку.
  \note Для всех видов тестов (кроме link,outlink) разрешено использование полей \b timeout и \b check_pause.
@@ -306,44 +305,39 @@
 
  \note Если \a holdtime > 0, то провека будет повторяться каждые \a check_pause миллисекунд, пока она успешна в течение указанного времени
 
-  \subsection uts_Check_FALSE 1. 'FALSE'. Проверка ложности значения.
+  \subsection uts_Check_FALSE 1. '=0'. Проверка ложности значения.
 \code
   <check test="101=0" />
   <check test="CheckSensorName=0" />
 \endcode
    При этом если указывается идентификатор(или имя) аналогового датчика. То происходит сравнение с нулём (0).
   
-  \subsection uts_Check_TRUE 2. 'TRUE'. Проверка истинности значения.
+  \subsection uts_Check_TRUE 2. '!=0'. Проверка истинности значения.
 \code
   <check test="101!=0" />
   <check test="CheckSensorName!=0" />
 \endcode
    При этом если указывается идентификатор(или имя) аналогового датчика. То происходит сравнение "не ноль"
   
-  \subsection uts_Check_EQUAL 3. 'EQUAL'. Проверка условия эквивалетности значения.
+  \subsection uts_Check_EQUAL 3. '='. Проверка условия эквивалетности значения.
 \code
   <check test="101=1" />
   <check test="CheckSensorName=10" />
 \endcode
   
-  \subsection uts_Check_GREAT 4. 'GREAT'. Проверка условия, что значение больше (или равно) заданному
+  \subsection uts_Check_GREAT 4. '> или >='. Проверка условия, что значение больше (или равно) заданному
 \code
   <check test="101>=1" />
   <check test="CheckSensorName>10" />
 \endcode
   
-  \subsection uts_Check_LESS 5. 'LESS'. Проверка условия, что значение меньше (или равно) заданному
+  \subsection uts_Check_LESS 5. '< или <='. Проверка условия, что значение меньше (или равно) заданному
 \code
   <check test="101<=1" />
   <check test="CheckSensorName<10" />
 \endcode
 
-  \subsection uts_Check_MULTICHECK 6. 'MULTICHECK'. Проверка сразу нескольких условий.
-\code
-   <check test="multicheck" id="101=1,CheckSensorName=10,CheckSensorName2=23,102=0"/>
-\endcode
-
-  \subsection uts_Check_LINK 7. 'LINK'. Ссылка на другой тест в данном файле.
+  \subsection uts_Check_LINK 6. 'LINK'. Ссылка на другой тест в данном файле.
 	\a link - это ссылка на тест находящийся в этом же файле. При этом чтобы сослаться на тест, необходимо указать два поля
 	prop=value. Т.е. будет осуществлён поиск теста у которого prop="value"
     Ниже представлен пример, в котором в тесте 22 идёт ссылка на тест 21, но не по полю 'name', а по полю num="1".
@@ -360,7 +354,7 @@
 	</test>
 \endcode
    
-  \subsection uts_Check_OUTLINK 8. 'OUTLINK'. Ссылка на другой файл.
+  \subsection uts_Check_OUTLINK 7. 'OUTLINK'. Ссылка на другой файл.
 	\a outlink - позволяет ссылаться на тест в другом файле. Формат записи аналогичен \a 'link' только добавляется задание файла.
 \code
 	<test num="2" name="Test N22" ignore_failed="1">
@@ -373,7 +367,7 @@
 
 	\b ignore_runlist - [0,1] игнорировать (или нет) список запускаемых процессов (\<RunList>)
    
-\subsection uts_Check_HOLD 9. HOLD.. Проверка постоянства условия в течение заданного времени
+\subsection uts_Check_HOLD 8. 'HOLD' Проверка постоянства условия в течение заданного времени
 
 Если в <check> указано поле \b holdtime="..msec.." то этот тест превращается в проверку \b постоянства выполнения заданного условия
 в течение указанного времени. Поддерживаются все предыдущие "условия".
@@ -384,10 +378,10 @@
    <check test="101=30" holdtime="5000"/>
    <check test="101<=100" holdtime="1000"/>
 \endcode
-\warning Если указаны поля timeout=".." и holdtime=".." то (действует) имеет больший приоритет \b holdtime.
+\warning Если указаны поля timeout=".." и holdtime=".." то действует (имеет больший приоритет) \b holdtime.
 
    \section uts_Compare "Сравнение"(compare)
-   Проверка \b compare позвояет сравнивать значения двух датчиков между собой. При этом доступны следующие виды проверок:
+   Проверка \b compare позволяет сравнивать значения двух датчиков между собой. При этом доступны следующие виды проверок:
    - \b >,\b >\b=  - больше, больше либо равно
    - \b <,\b <\b=  - меньше, меньше либо равно
    - \b =,\b !\b=  - равно, не равно
@@ -452,7 +446,7 @@
      Задаётся в секции \<TestList>. Пример:
 \code
 ...
-<TestList logfile="result.test2.txt" logfile_trunc="1" global_replace="MyGlobalVar:val2,MyGlobalVar2:val2">
+<TestList replace="MyGlobalVar:val2,MyGlobalVar2:val2">
 ...
 \endcode
   
@@ -483,7 +477,7 @@
  
   \section uts_Nodes Работа с удалёнными узлами
   
-  Собственно работа заложена в способе задания id. См. "Формат записи поля 'id'".
+  Собственно работа заложена в способе задания id (cм. "Формат записи поля 'id'").
   Т.е. при задании идентификатора узла \a "id@nodename", будет идти обращение к узлу 'node'
   в соответствии с секцией \<nodes> в конфигурационном файле.
   
@@ -501,9 +495,9 @@
 <TestScenario>
 <Config>
 <aliases>
-	<item alias="default" confile="configure.xml"/>
-	<item alias="c1" confile="configure1.xml"/>
-	<item alias="c2" confile="configure2.xml"/>
+	<item type="uniset" alias="default" confile="configure.xml"/>
+	<item type="uniset" alias="c1" confile="configure1.xml"/>
+	<item type="uniset" alias="c2" confile="configure2.xml"/>
   </aliases>
 </Config>
 <TestList>
@@ -513,8 +507,10 @@
 \endcode
      В данном случае задаётся три файла, и им присваиваются короткие имена.
      
-  2. Второй способ, в параметрах командной строки
-     При запуске uniset-testsuite-xmlplayer --confile configure.xml,c1@configure1.xml,c2@configure2.xml,...
+  2. Второй способ, в параметрах командной строки, при запуске 
+\code
+  uniset-testsuite-xmlplayer --confile configure.xml,c1@configure1.xml,c2@configure2.xml,...
+\endcode
 
   Первый файл в списке устанавливается по умолчанию, если не будет указан в файле теста другой файл.
 
@@ -561,8 +557,8 @@
   \code
 <Config>
   <aliases>
-	<item default="1" alias="c1" mbslave="localhost:2048" config="reglist.xml"/>
-	<item alias="c2" mbslave="localhost:2049"/>
+	<item type="modbus" default="1" alias="c1" mbslave="localhost:2048" config="reglist.xml"/>
+	<item type="modbus" alias="c2" mbslave="localhost:2049"/>
   </aliases>
 </Config>
   \endcode
@@ -668,12 +664,12 @@
 	</RunList>
     <Config>
         <aliases>
-            <item alias="c1" confile="configure.xml"/>
-            <item alias="c2" mbslave="localhost:2049" type="modbus"/>
-            <item alias="c3" type="snmp" snmp="snmp.xml"/>
+            <item type="uniset" alias="c1" confile="configure.xml"/>
+            <item type="modbus" alias="c2" mbslave="localhost:2049"/>
+            <item type="snmp" alias="c3" snmp="snmp.xml"/>
         </aliases>
     </Config>
-	<TestList logfile="result.multitest.txt" logfile_trunc="1">
+	<TestList>
      <test name="Test simple read" ignore_failed="1">
             <check test="0x10!=0"/>
             <check test="0x24:0x04!=0"/>
@@ -830,23 +826,5 @@
 	В случае если тестовый сценарий был \b type='uniset', то помимо вывода дерева вызовов, так же выводится информация о том,
 	какой объект менял датчик (на котором произошёл вылет), когда это было последний раз,
 	а так же информацию по всем заказчикам которые заказали этот датчик.
-	Т.к. выводится очень много информации, то можно погасить её параметром \b --calltrace-disable-extended-info
-
-  \section uts_Editor Редактор
-     Самое простое это напрямую редактировать xml-файлы сценариев в любом удобном текстовом редакторе.
-  Их формат достаточно простой и методом "копирования" можно писать довольно быстро.
-
-    Но во время наладки самого сценария иногда удобнее прямо "на ходу", подправлять какие-то параметры.
-  Для этих целей в графический плээр встроен простейший редактор сценариев. Позволяющий добавлять тесты и проверки,
-  а так же редактировать параметры существующих. Но не более того.
-
-  Редактирование параметров осуществляется двойным кликом на элементе ("тесте" или "проверке").
-  Остальные меню доступны по правому клику мыши.
-
-  Помимо этого, в меню "Параметры/Параметры сценария" можно отредактировать список запускаемых процессов
-  и используемых конфигурационных файлов.
-
-  \note Данный редактор позволяет редактировать не все детали сценариев. Поэтому в некоторых случаях,
-  редактирование параметров реализуется непосредственно правкой в xml-файле.
-
+	Т.к. выводится очень много информации, то можно отключить её вывод параметром \b --calltrace-disable-extended-info
 */
