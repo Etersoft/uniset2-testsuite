@@ -15,7 +15,6 @@ from TestSuiteGlobal import *
 
 TS_PROJECT_NAME = 'uniset2-testsuite'
 
-
 class logid():
     Type = 0
     Time = 1
@@ -28,7 +27,7 @@ class logid():
 
 
 class TestSuiteInterface():
-    def __init__(self):
+    def __init__(self, **kwargs):
 
         self.ignorefailed = False
         self.ui_list = dict()
@@ -49,6 +48,9 @@ class TestSuiteInterface():
         self.envPrefix = "UNISET_TESTSUITE"
 
         self.plugins = dict()
+        self.datadir = '/usr/share/uniset2-testsuite'
+        if 'datadir' in kwargs:
+            self.datadir = kwargs['datadir']
 
     @staticmethod
     def get_alias_name(cname):
@@ -60,12 +62,9 @@ class TestSuiteInterface():
         s = v[0].split('.')
         return [s[0], v[0]]
 
-    @staticmethod
-    def get_plugins_dir():
-        for p in sys.path:
-            d = os.path.join(p, TS_PROJECT_NAME)
-            if os.path.isdir(d):
-                return os.path.join(d, 'plugins.d')
+    def get_plugins_dir(self):
+        if os.path.isdir(self.datadir):
+                return os.path.join(self.datadir, 'plugins.d')
 
         return ''
 

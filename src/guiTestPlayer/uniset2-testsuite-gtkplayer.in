@@ -1,0 +1,10 @@
+#!/bin/sh
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+datadir=@datadir@
+sysconfdir=@sysconfdir@
+
+export UNISET_TESTSUITE_DATADIR=${datadir}/@PACKAGE@ 
+exec env python ${datadir}/@PACKAGE@/guiTestSuitePlayer-gtk.py $*

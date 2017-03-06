@@ -4,7 +4,7 @@
 
 Name: uniset2-testsuite
 Version: 2.5
-Release: alt5.M80P.6.1
+Release: alt6.M80P.7
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -18,7 +18,7 @@ BuildRequires: python-module-uniset2 >= 2.6-alt10
 Requires: python-module-uniset2 >= 2.6-alt10
 Provides: python2.7(UTestInterface)
 Provides: python2.7(TestSuiteGlobal)
-# BuildArch: noarch
+BuildArch: noarch
 
 %if_enabled doc
 BuildRequires: doxygen
@@ -63,42 +63,24 @@ SNMP Plugin for uniset2-testsuite
 %install
 %make_install install DESTDIR=%buildroot
 
-mkdir -p %buildroot/%_bindir/
-ln -s %python_sitelibdir_noarch/%name/TestSuiteXMLPlayer.py %buildroot/%_bindir/uniset2-testsuite-xmlplayer
-ln -s %python_sitelibdir_noarch/%name/guiTestSuitePlayer-gtk.py %buildroot/%_bindir/uniset2-testsuite-gtkplayer
-ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-testsuite-conv
-
-#%if_enabled doc
-#  mkdir -p %buildroot/%_docdir/%name
-#  mv %buildroot/%_docdir/%name/html/* %buildroot/%_docdir/%name/
-#  rmdir %buildroot/%_docdir/%name/html
-#%endif
-
 %files
-%dir %python_sitelibdir_noarch/%name
-#%dir %python_sitelibdir_noarch/%name/plugins.d
-%python_sitelibdir_noarch/%name/*
-%_bindir/uniset2-testsuite-xmlplayer
-%_bindir/uniset2-testsuite-conv
-%exclude %python_sitelibdir_noarch/%name/gui*Player*
-%exclude %python_sitelibdir_noarch/%name/Gtk*
-%exclude %python_sitelibdir_noarch/%name/ScenarioParamEditor*
-%exclude %python_sitelibdir_noarch/%name/dlg*
-%exclude %python_sitelibdir_noarch/%name/plugins.d/*SNMP.py
+%_datadir/%name/*.*
+%_bindir/%name-xmlplayer
+%_bindir/%name-conv
+%exclude %_datadir/%name/plugins.d/*SNMP.py
 
 %files snmp
-%python_sitelibdir_noarch/%name/plugins.d/*SNMP.py
+%_datadir/%name/plugins.d/*SNMP.py
 
 %files gui
-%python_sitelibdir_noarch/%name/guiTestSuitePlayer-gtk.py
-%python_sitelibdir_noarch/%name/GtkProcessMonitor.py
-%python_sitelibdir_noarch/%name/ScenarioParamEditor*
-%python_sitelibdir_noarch/%name/dlg*
-%_bindir/uniset2-testsuite-gtkplayer
-# %dir %_datadir/%name
-%_datadir/%name/player/*.ui
-%_datadir/%name/player/editors
-%_datadir/%name/player/images/*
+%_datadir/%name/gtkplayer/guiTestSuitePlayer-gtk.py
+%_datadir/%name/gtkplayer/GtkProcessMonitor.py
+%_datadir/%name/gtkplayer/ScenarioParamEditor*
+%_datadir/%name/gtkplayer/dlg*.py
+%_bindir/%name-gtkplayer
+%_datadir/%name/gtkplayer/*.ui
+%_datadir/%name/gtkplayer/editors/*
+%_datadir/%name/gtkplayer/images/*
 
 %if_enabled doc
 %files doc
@@ -106,8 +88,12 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %endif
 
 %changelog
-* Mon Mar 06 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt5.M80P.6.1
+* Tue Mar 07 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt6.M80P.7
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Tue Mar 07 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt7
+- add bash wrapper for run
+- pack files to /usr/share/uniset2-testsuite
 
 * Mon Mar 06 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt6.1
 - minor fixes in spec
