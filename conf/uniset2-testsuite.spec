@@ -1,8 +1,10 @@
+# This spec is backported to ALTLinux p8 automatically by rpmbph script from etersoft-build-utils.
+#
 %def_enable doc
 
 Name: uniset2-testsuite
 Version: 2.5
-Release: alt6
+Release: alt5.M80P.6
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -104,6 +106,9 @@ ln -s %python_sitelibdir_noarch/%name/%name-conv.py %buildroot/%_bindir/uniset2-
 %endif
 
 %changelog
+* Mon Mar 06 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt5.M80P.6
+- backport to ALTLinux p8 (by rpmbph script)
+
 * Thu Mar 02 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt6
 - (snmp): add ignoreCheckMIB parameter
 
