@@ -129,10 +129,14 @@ def is_executable(filename):
 class TestSuiteReporter():
     """ Базовый класс для формирователей отчётов """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.start_time = time.time()
         self.finish_time = time.time()
-        self.showTestTreeMode = False
+        self.log_show_test_tree = False
+
+        for k,v in kwargs.items():
+            if hasattr(self, k):
+                setattr(self,k,v)
 
     def print_log(self, item):
         pass
@@ -141,7 +145,7 @@ class TestSuiteReporter():
         pass
 
     def setShowTestTreeMode(self, state):
-        self.showTestTreeMode = state
+        self.log_show_test_tree = state
 
     def make_report(self, results, checkScenarioMode=False):
         pass

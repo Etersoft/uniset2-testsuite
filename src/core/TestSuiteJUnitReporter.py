@@ -7,21 +7,25 @@ from TestSuiteGlobal import *
 
 
 class TestSuiteJUnitReporter(TestSuiteReporter):
-    def __init__(self):
-        TestSuiteReporter.__init__(self)
+    def __init__(self, **kwargs):
+        TestSuiteReporter.__init__(self, **kwargs)
 
-        self.logfilename = ""
+        self.log_junit_filename = ""
+
+        for k,v in kwargs.items():
+            if hasattr(self, k):
+                setattr(self,k,v)
 
     def set_logfile(self, fname, trunc=False):
-        self.logfilename = fname
-        if self.logfilename == "" or self.logfilename == None:
+        self.log_junit_filename = fname
+        if self.log_junit_filename == "" or self.log_junit_filename == None:
             return
         if trunc:
-            logfile = open(self.logfilename, 'w')
+            logfile = open(self.log_junit_filename, 'w')
             logfile.close()
 
     def get_logfile(self):
-        return self.logfilename
+        return self.log_junit_filename
 
     def print_log(self, item):
         pass

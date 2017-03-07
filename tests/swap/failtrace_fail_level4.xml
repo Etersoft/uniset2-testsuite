@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
     <TestList>
-        <test name="4.1">
+        <test name="test4.1">
             <check file="failtrace_passed_test.xml" link="ALL" test="outlink"/>
         </test>
-        <test name="4.2: Finish fail test">
+        <test name="test4.2: Finish fail test">
             <check test="UnknownID=10"/>
         </test>
     </TestList>

@@ -1641,6 +1641,7 @@ if __name__ == "__main__":
             print '--show-test-type          - Display the test type'
             print '--hide-time               - Hide elasped time'
             print '--col-comment-width val   - Width for column "comment"'
+            print "--logfile filename        - Save log to filename"
             print ''
             print '--test-name test1,prop2=test2,prop3=test3,...  - Run tests from list. By default prop=name'
             print '--ignore-run-list                - Ignore <RunList>'
@@ -1679,13 +1680,15 @@ if __name__ == "__main__":
             show_actlog = False
             show_log = False
 
+        logfile = ts.getArgParam("--logfile", "")
+        junit_logfile = ts.getArgParam("--junit", "")
+
         ignore_runlist = ts.checkArgParam("--ignore-run-list", False)
         showtimestamp = ts.checkArgParam("--show-timestamp", False)
         ignore_nodes = ts.checkArgParam("--ignore-nodes", False)
         tout = ts.getArgInt("--default-timeout", 5000)
         check_pause = ts.getArgInt("--default-check-pause", 500)
         col_comment_width = ts.getArgInt("--col-comment-width", 50)
-        junit = ts.getArgParam("--junit", "")
         coloring_out = ts.checkArgParam('--no-coloring-output', False)
         print_calltrace = ts.checkArgParam('--print-calltrace', False)
         print_calltrace_limit = ts.getArgInt('--print-calltrace-limit', 20)
@@ -1707,27 +1710,34 @@ if __name__ == "__main__":
         ts.set_ignore_nodes(ignore_nodes)
         ts.set_show_test_tree_mode(show_test_tree)
 
-        consoleRepoter = TestSuiteConsoleReporter()
-        consoleRepoter.set_notimestamp(showtimestamp == False)
-        consoleRepoter.set_show_comments(show_comments)
-        consoleRepoter.set_show_numline(show_numstr)
-        consoleRepoter.set_hide_time(hide_time)
-        consoleRepoter.set_show_test_type(show_test_type)
-        consoleRepoter.set_col_comment_width(col_comment_width)
-        consoleRepoter.set_show_test_comment(show_test_comment)
-        consoleRepoter.no_coloring_output = coloring_out
-        consoleRepoter.printlog = show_log
-        consoleRepoter.printactlog = show_actlog
-        consoleRepoter.calltrace_disable_extinfo = calltrace_disable_extinfo
-        consoleRepoter.setShowTestTreeMode(show_test_tree)
-        consoleRepoter.show_test_filename = show_test_filename
-        # consoleRepoter.printresult = show_result
+        rconf = dict()
+        rconf['log_notimestamp'] = (showtimestamp == False)
+        rconf['log_show_comments'] = show_comments
+        rconf['log_show_numline'] = show_numstr
+        rconf['log_hide_time'] = hide_time
+        rconf['log_show_test_type'] = show_test_type
+        rconf['log_col_comment_width'] = col_comment_width
+        rconf['log_show_test_comment'] = show_test_comment
+        rconf['log_no_coloring_output'] = coloring_out
+        rconf['log_show'] = show_log
+        rconf['log_show_actions'] = show_actlog
+        rconf['log_calltrace_disable_extinfo'] = calltrace_disable_extinfo
+        rconf['log_show_test_tree'] = show_test_tree
+        rconf['log_show_test_filename'] = show_test_filename
+        rconf['log_junit_filename'] = junit_logfile
+        rconf['log_filename'] = logfile
+
+        consoleRepoter = TestSuiteConsoleReporter(**rconf)
+
         ts.add_repoter(consoleRepoter)
 
-        if len(junit) > 0:
-            junitRepoter = TestSuiteJUnitReporter()
-            junitRepoter.set_logfile(junit)
+        if len(junit_logfile) > 0:
+            junitRepoter = TestSuiteJUnitReporter(**rconf)
             ts.add_repoter(junitRepoter)
+
+        if len(logfile) > 0:
+            logfileRepoter = TestSuiteLogFileReporter(**rconf)
+            ts.add_repoter(logfileRepoter)
 
         ts.set_check_scenario_mode(check_scenario)
         if check_scenario_ignorefailed:
@@ -1741,7 +1751,6 @@ if __name__ == "__main__":
         player.show_result_report = show_result
         player.default_timeout = tout
         player.default_check_pause = check_pause
-        player.junit = junit
         player.set_tags(tags)
         if len(supplier_name) > 0:
             player.set_supplier_name(supplier_name)

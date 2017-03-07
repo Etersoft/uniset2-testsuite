@@ -8,22 +8,26 @@ from TestSuiteConsoleReporter import *
 
 
 class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
-    def __init__(self):
-        TestSuiteConsoleReporter.__init__(self)
+    def __init__(self, **kwargs):
+        TestSuiteConsoleReporter.__init__(self, **kwargs)
 
-        self.logfilename = ""
+        self.log_filename = ""
         self.log_flush = False
 
+        for k,v in kwargs.items():
+            if hasattr(self, k):
+                setattr(self,k,v)
+
     def set_logfile(self, fname, trunc=False):
-        self.logfilename = fname
-        if self.logfilename == "" or self.logfilename == None:
+        self.log_filename = fname
+        if self.log_filename == "" or self.log_filename == None:
             return
         if trunc:
-            logfile = open(self.logfilename, 'w')
+            logfile = open(self.log_filename, 'w')
             logfile.close()
 
     def get_logfile(self):
-        return self.logfilename
+        return self.log_filename
 
     def print_log(self, item):
 
@@ -40,10 +44,10 @@ class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
             sys.stdout.flush()
 
     def write_logfile(self, txt):
-        if self.logfilename == "" or self.logfilename == None:
+        if self.log_filename == "" or self.log_filename == None:
             return
         try:
-            logfile = open(self.logfilename, 'a')
+            logfile = open(self.log_filename, 'a')
             logfile.writelines(txt)
             logfile.writelines('\n')
             logfile.close()

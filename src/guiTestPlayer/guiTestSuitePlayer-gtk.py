@@ -1840,7 +1840,7 @@ if __name__ == "__main__":
         sys.path.insert(0, playerdir)
 
     try:
-        player = guiTestSuitePlayer()
+        player = guiTestSuitePlayer(datadir=path, playerdir=playerdir)
         gtk.main()
         exit(0)
 
