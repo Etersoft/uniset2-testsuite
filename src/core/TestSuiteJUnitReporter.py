@@ -3,29 +3,27 @@
 
 from TestSuiteGlobal import *
 
-''' Вывод в формате junit '''
-
 
 class TestSuiteJUnitReporter(TestSuiteReporter):
-    def __init__(self, **kwargs):
+    '''
+    Класс реализующий вывод отчёта в формате junit
+    '''
+
+    def __init__(self, arg_prefix='junit', **kwargs):
         TestSuiteReporter.__init__(self, **kwargs)
 
-        self.log_junit_filename = ""
+        self.junit_filename = ""
 
-        for k,v in kwargs.items():
-            if hasattr(self, k):
-                setattr(self,k,v)
+        TestSuiteReporter.commandline_to_attr(self, arg_prefix, 'junit')
 
-    def set_logfile(self, fname, trunc=False):
-        self.log_junit_filename = fname
-        if self.log_junit_filename == "" or self.log_junit_filename == None:
-            return
-        if trunc:
-            logfile = open(self.log_junit_filename, 'w')
-            logfile.close()
+    def is_enabled(self):
+        return (len(self.junit_filename) > 0)
 
-    def get_logfile(self):
-        return self.log_junit_filename
+    @staticmethod
+    def print_help(prefix='junit'):
+        print 'TestSuiteJUnitReporter (--' + prefix + ')'
+        print '--------------------------------------------'
+        print '--' + prefix + '-filename name  - Save junit report to file'
 
     def print_log(self, item):
         pass
@@ -34,67 +32,98 @@ class TestSuiteJUnitReporter(TestSuiteReporter):
         pass
 
     def make_report(self, results, checkScenarioMode=False):
-        pass
-        # try:
-        #
-        #     beg = False
-        #     t_stack = []
-        #     testlist = []
-        #     t_name = ""
-        #     for l in self.tsi.log_list:
-        #         i = self.tsi.re_log.findall(l)
-        #
-        #         if len(i) == 0 or len(i[0]) < logid.Num:
-        #             print 'UNKNOWN LOG FORMAT: %s' % str(l)
-        #             continue
-        #
-        #         r = i[0]
-        #         if r[logid.TestType] == 'BEGIN':
-        #             beg = True
-        #             t_name = r[logid.Txt]
-        #             t_stack = []
-        #         elif r[logid.TestType] == 'FINISH' and beg == True:
-        #             t_info = self.tsi.re_tinfo.findall(r[logid.Txt])
-        #             t_r = t_info[0]
-        #             t_sec = int(t_r[1]) * 60 * 60 + int(t_r[1]) * 60 + int(t_r[3])
-        #             t_time = "%d.%s" % (t_sec, t_r[4])
-        #
-        #             testlist.append([t_name, r[logid.Result], t_time, r[logid.Txt], t_stack, l])
-        #             beg = False
-        #             t_stack = []
-        #         elif beg == True:
-        #             t_stack.append([r, l])
-        #
-        #     repfile = open(repfilename, "w")
-        #     repfile.writelines('<?xml version="1.0" encoding="UTF-8"?>\n')
-        #     repfile.writelines('<testsuite name="%s" tests="%d">\n' % (self.filename, len(testlist)))
-        #
-        #     tnum = 1
-        #     for r in testlist:
-        #         if r[1] == t_PASSED:
-        #             repfile.writelines('  <testcase name="%s" time="%s" id="%d"/>\n' % (r[0], r[2], tnum))
-        #         else:
-        #             repfile.writelines('  <testcase name="%s" time="%s" id="%d">\n' % (r[0], r[2], tnum))
-        #             if r[1] == t_IGNORE:
-        #                 repfile.writelines('    </skipped>\n')
-        #             elif r[1] != t_PASSED:
-        #                 repfile.writelines('    <failure>%s</failure>\n' % (r[3]))
-        #                 repfile.writelines('    <system-err>\n')
-        #                 for l in r[4]:
-        #                     if l[0][logid.Result] == 'FAILED':
-        #                         repfile.writelines('%s\n' % str(l[1]))
-        #                 repfile.writelines('    </system-err>\n')
-        #
-        #                 repfile.writelines('    <system-out>\n')
-        #                 for l in r[4]:
-        #                     repfile.writelines('%s\n' % str(l[1]))
-        #                 repfile.writelines('    </system-out>\n')
-        #
-        #             repfile.writelines('  </testcase>\n')
-        #
-        #         tnum += 1
-        #
-        #     repfile.writelines('</testsuite>\n')
-        #     repfile.close()
-        # except IOError:
-        #     pass
+
+        if self.show_test_tree or checkScenarioMode:
+            return
+
+        try:
+            repfile = open(self.junit_filename, "w")
+            repfile.writelines('<?xml version="1.0" encoding="UTF-8"?>\n')
+
+            t_stat = self.get_statistics(results)
+
+            repfile.writelines('<testsuite name="%s" tests="%d" failures="%d" skipped="%d">\n' % (
+            self.junit_filename, t_stat['all_num'],t_stat['fail_num'], t_stat['skip_num']))
+
+            self.write_results(repfile, results, 1)
+
+            repfile.writelines('</testsuite>\n')
+            repfile.close()
+
+        except IOError, e:
+            print "(TestSuiteJUnitReporter): error: %s" % e.message
+
+    def write_results(self, repfile, results, tnum):
+
+        for res in results:
+
+            if res['item_type'] != 'test':
+                continue
+
+            tnum = self.write_item(repfile, res, tnum)
+
+        return tnum
+
+    def write_item(self, repfile, res, tnum):
+
+        if res['result'] == t_PASSED:
+            repfile.writelines('  <testcase name="%s" time="%s" id="%d"/>\n' % (res['name'], res['time'], tnum))
+        else:
+            repfile.writelines('  <testcase name="%s" time="%s" id="%d">\n' % (res['name'], res['time'], tnum))
+            if res['result'] == t_IGNORE:
+                repfile.writelines('    </skipped>\n')
+            elif res['result'] == t_FAILED:
+                repfile.writelines('    <failure>%s</failure>\n' % self.get_test_error(res))
+                # repfile.writelines('    <system-err>\n')
+                # repfile.writelines('    </system-err>\n')
+                # repfile.writelines('    <system-out>\n')
+                # repfile.writelines('    </system-out>\n')
+            elif res['result'] != t_PASSED:
+                repfile.writelines('    <failure>%s</failure>\n' % (res['text']))
+                # repfile.writelines('    <system-err>\n')
+                # for l in r[4]:
+                #     if l[0][logid.Result] == 'FAILED':
+                #         repfile.writelines('%s\n' % str(l[1]))
+                # repfile.writelines('    </system-err>\n')
+                #
+                # repfile.writelines('    <system-out>\n')
+                # for l in r[4]:
+                #     repfile.writelines('%s\n' % str(l[1]))
+                # repfile.writelines('    </system-out>\n')
+
+            repfile.writelines('  </testcase>\n')
+
+        tnum += 1
+        return tnum
+
+    def get_test_error(self, res):
+        # надо пройтись по items.. и собрать все FAILED (по идее он будет один)
+        if len(res['items']) == 0:
+            return res['text']
+
+        err_text = ''
+        for i in res['items']:
+            if i['result'] == t_FAILED:
+                if len(err_text) > 0:
+                    err_text = '%s\n%s' % (err_text, i['text'])
+                else:  # добавление первого элемента
+                    err_text = '%s' % i['text']
+
+        return err_text
+
+    def get_statistics(self, results):
+        t_stat = dict()
+        t_stat['all_num'] = len(results)
+        t_stat['pass_num'] = 0
+        t_stat['fail_num'] = 0
+        t_stat['skip_num'] = 0
+
+        for t in results:
+            if t['result'] == t_PASSED:
+                t_stat['pass_num'] += 1
+            elif t['result'] == t_FAILED:
+                t_stat['fail_num'] += 1
+            elif t['result'] == t_IGNORE:
+                t_stat['skip_num'] += 1
+
+        return t_stat

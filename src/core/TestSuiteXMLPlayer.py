@@ -1636,8 +1636,11 @@ if __name__ == "__main__":
             TestSuiteConsoleReporter.print_help()
             print ''
             TestSuiteLogFileReporter.print_help()
+            print ''
+            TestSuiteJUnitReporter.print_help()
             # print '--show-filename-in-report - Show filename in result report'
             # print "--logfile filename        - Save log to filename"
+            print ''
             exit(0)
 
         testfile = getArgParam('--testfile', "")
@@ -1677,9 +1680,8 @@ if __name__ == "__main__":
         if logfileRepoter.is_enabled():
             ts.add_repoter(logfileRepoter)
 
-        junit_logfile = getArgParam("--junit", "")
-        if len(junit_logfile) > 0:
-            junitRepoter = TestSuiteJUnitReporter()
+        junitRepoter = TestSuiteJUnitReporter()
+        if junitRepoter.is_enabled():
             ts.add_repoter(junitRepoter)
 
         ts.set_check_scenario_mode(check_scenario)

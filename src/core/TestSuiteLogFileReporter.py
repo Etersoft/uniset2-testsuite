@@ -23,10 +23,12 @@ class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
         TestSuiteReporter.commandline_to_attr(self, arg_prefix, 'logfile')
         self.log_no_coloring_output = True
 
-        if self.is_enabled() and self.logfile_trunc:
-            self.logfile = open(self.logfile_name, 'w')
-        else:
-            self.logfile = open(self.logfile_name, 'a')
+        if self.is_enabled():
+            mode = 'a'
+            if self.logfile_trunc:
+                mode = 'w'
+
+            self.logfile = open(self.logfile_name, mode)
 
     def __del__(self):
         if self.logfile:
@@ -42,7 +44,7 @@ class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
         print '--' + prefix + '-flush          - flush every write'
 
     def is_enabled(self):
-        return ( len(self.logfile_name) > 0 )
+        return (len(self.logfile_name) > 0)
 
     def finish_test_event(self):
         old_stdout = sys.stdout
@@ -101,7 +103,7 @@ class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
         sys.stdout = self.logfile
         sys.stderr = self.logfile
         try:
-            TestSuiteConsoleReporter.make_report(self,results,check_scenario_mode)
+            TestSuiteConsoleReporter.make_report(self, results, check_scenario_mode)
             sys.stdout.flush()
         except:
             pass
