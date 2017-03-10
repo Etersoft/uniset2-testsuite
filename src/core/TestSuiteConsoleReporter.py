@@ -7,6 +7,7 @@ import string
 from TestSuiteGlobal import *
 from uniset2.UGlobal import *
 from uniset2.pyUExceptions import UException
+from TestSuiteReporter import *
 
 
 class TestSuiteConsoleReporter(TestSuiteReporter):

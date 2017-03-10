@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from TestSuiteGlobal import *
+from TestSuiteReporter import *
 
 
 class TestSuiteJUnitReporter(TestSuiteReporter):
@@ -31,9 +32,9 @@ class TestSuiteJUnitReporter(TestSuiteReporter):
     def print_actlog(self, act):
         pass
 
-    def make_report(self, results, checkScenarioMode=False):
+    def make_report(self, results, check_scenario_mode=False):
 
-        if self.show_test_tree or checkScenarioMode:
+        if self.show_test_tree or check_scenario_mode:
             return
 
         try:

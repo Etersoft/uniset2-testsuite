@@ -15,6 +15,7 @@ from TestSuiteInterface import *
 from GtkProcessMonitor import *
 from dlg_xlist import *
 from ScenarioParamEditor import *
+from TestSuiteGlobal import *
 
 
 # универсальный код для диалогов
@@ -82,8 +83,8 @@ class guiTestSuitePlayer():
 
         self.tsi = TestSuiteInterface()
 
-        testfile = self.tsi.getArgParam("--testfile", "")
-        conflist = self.tsi.getArgParam("--confile", "")
+        testfile = get_arg_param("--testfile", "")
+        conflist = get_arg_param("--confile", "")
         # show_log = ts.checkArgParam("--show-test-log",False)
         #        show_actlog = ts.checkArgParam("--show-actions-log",False)
         #        show_result = ts.checkArgParam("--show-result-report",False)
