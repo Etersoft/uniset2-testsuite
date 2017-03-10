@@ -1634,6 +1634,8 @@ if __name__ == "__main__":
             print '--confile [conf.xml,alias1@conf.xml,..]  - Configuration file for uniset test scenario.'
             print ''
             TestSuiteConsoleReporter.print_help()
+            print ''
+            TestSuiteLogFileReporter.print_help()
             # print '--show-filename-in-report - Show filename in result report'
             # print "--logfile filename        - Save log to filename"
             exit(0)
@@ -1646,8 +1648,6 @@ if __name__ == "__main__":
         conflist = getArgParam('--confile', "")
 
         show_result = checkArgParam('--show-result-report', False)
-        logfile = getArgParam("--logfile", "")
-        junit_logfile = getArgParam("--junit", "")
 
         ignore_runlist = checkArgParam("--ignore-run-list", False)
         ignore_nodes = checkArgParam("--ignore-nodes", False)
@@ -1673,13 +1673,14 @@ if __name__ == "__main__":
         consoleRepoter = TestSuiteConsoleReporter()
         ts.add_repoter(consoleRepoter)
 
+        logfileRepoter = TestSuiteLogFileReporter()
+        if logfileRepoter.is_enabled():
+            ts.add_repoter(logfileRepoter)
+
+        junit_logfile = getArgParam("--junit", "")
         if len(junit_logfile) > 0:
             junitRepoter = TestSuiteJUnitReporter()
             ts.add_repoter(junitRepoter)
-
-        if len(logfile) > 0:
-            logfileRepoter = TestSuiteLogFileReporter()
-            ts.add_repoter(logfileRepoter)
 
         ts.set_check_scenario_mode(check_scenario)
         if check_scenario_ignorefailed:

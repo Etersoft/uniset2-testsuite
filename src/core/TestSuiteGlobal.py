@@ -142,6 +142,9 @@ class TestSuiteReporter():
             if hasattr(self, k):
                 setattr(self, k, v)
 
+    def is_enabled(self):
+        return False
+
     def print_log(self, item):
         pass
 

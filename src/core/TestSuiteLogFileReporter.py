@@ -4,55 +4,108 @@
 import sys
 from TestSuiteConsoleReporter import *
 
-''' Запись отчёта в лог файл (надо сделать Singleton-ом!) '''
-
 
 class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
-    def __init__(self, **kwargs):
-        TestSuiteConsoleReporter.__init__(self, **kwargs)
+    '''
+    Класс реализующий вывод лога в файл. Управляется аргументами командной строки
+    начинающимися с префикса --logfile-xxxx.
+    Построен на основе TestSuiteConsoleReporter, просто перенапрявляет вывод вместо экрана в файл.
+    '''
 
-        self.log_filename = ""
-        self.log_flush = False
+    def __init__(self, arg_prefix='logfile', **kwargs):
+        TestSuiteConsoleReporter.__init__(self, 'log', **kwargs)
 
-        for k,v in kwargs.items():
-            if hasattr(self, k):
-                setattr(self,k,v)
+        self.logfile_name = ""
+        self.logfile_flush = False
+        self.logfile_trunc = False
+        self.logfile = None
 
-    def set_logfile(self, fname, trunc=False):
-        self.log_filename = fname
-        if self.log_filename == "" or self.log_filename == None:
-            return
-        if trunc:
-            logfile = open(self.log_filename, 'w')
-            logfile.close()
+        TestSuiteReporter.commandline_to_attr(self, arg_prefix, 'logfile')
+        self.log_no_coloring_output = True
 
-    def get_logfile(self):
-        return self.log_filename
+        if self.is_enabled() and self.logfile_trunc:
+            self.logfile = open(self.logfile_name, 'w')
+        else:
+            self.logfile = open(self.logfile_name, 'a')
+
+    def __del__(self):
+        if self.logfile:
+            self.logfile.close()
+
+    @staticmethod
+    def print_help(prefix='logfile'):
+
+        print 'TestSuiteLogFileReporter (--' + prefix + ')'
+        print '--------------------------------------------'
+        print '--' + prefix + '-name filename  - Save log to file'
+        print '--' + prefix + '-trunc          - Truncate logile'
+        print '--' + prefix + '-flush          - flush every write'
+
+    def is_enabled(self):
+        return ( len(self.logfile_name) > 0 )
+
+    def finish_test_event(self):
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = self.logfile
+        sys.stderr = self.logfile
+        try:
+            TestSuiteConsoleReporter.finish_test_event(self)
+            if self.logfile_flush:
+                sys.stdout.flush()
+        except:
+            pass
+
+        finally:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
 
     def print_log(self, item):
 
-        txt = self.make_log(item)
-        self.write_logfile(txt)
-        if self.log_flush:
-            sys.stdout.flush()
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = self.logfile
+        sys.stderr = self.logfile
+        try:
+            TestSuiteConsoleReporter.print_log(self, item)
+            if self.logfile_flush:
+                sys.stdout.flush()
+        except:
+            pass
+
+        finally:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
 
     def print_actlog(self, act):
 
-        txt = self.make_actlog(act)
-        self.write_logfile(txt)
-        if self.log_flush:
-            sys.stdout.flush()
-
-    def write_logfile(self, txt):
-        if self.log_filename == "" or self.log_filename == None:
-            return
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = self.logfile
+        sys.stderr = self.logfile
         try:
-            logfile = open(self.log_filename, 'a')
-            logfile.writelines(txt)
-            logfile.writelines('\n')
-            logfile.close()
-        except IOError:
+            TestSuiteConsoleReporter.print_actlog(self, act)
+            if self.logfile_flush:
+                sys.stdout.flush()
+        except:
             pass
 
+        finally:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+
     def make_report(self, results, check_scenario_mode=False):
-        pass
+
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = self.logfile
+        sys.stderr = self.logfile
+        try:
+            TestSuiteConsoleReporter.make_report(self,results,check_scenario_mode)
+            sys.stdout.flush()
+        except:
+            pass
+
+        finally:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr

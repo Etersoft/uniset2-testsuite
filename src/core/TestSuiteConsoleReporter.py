@@ -62,6 +62,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         print '--' + prefix + '-no-coloring-output      - Disable colorization output'
         print '--' + prefix + '-calltrace-disable-extended-info - Disable show calltrace extended information'
 
+    def is_enabled(self):
+        return True
+
     def finish_test_event(self):
 
         if self.log_show_tests:
