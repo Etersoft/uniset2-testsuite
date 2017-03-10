@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <SNMP>
   <Nodes defaultProtocolVersion="2c" defaultTimeout='1' defaultRetries='2' defaultPort='161'>
-    <item name="node1" ip="192.94.214.205" comment="UPS1" protocolVersion="2" timeout='1' retries='2'/>
-    <item name="node2" ip="test.net-snmp.org" comment="UPS2"/>
-    <item name="ups3" ip="demo.snmplabs.com" comment="DDD"/>
+    <item name="node1" ip="192.94.214.205" comment="Node1" protocolVersion="2" timeout='1' retries='2'/>
+    <item name="node2" ip="test.net-snmp.org" comment="Node2"/>
+    <item name="node3" ip="demo.snmplabs.com" comment="Node3"/>
   </Nodes>
 
   <Parameters defaultReadCommunity="demopublic" defaultWriteCommunity="demoprivate">

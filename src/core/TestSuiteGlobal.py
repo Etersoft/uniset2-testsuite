@@ -4,6 +4,7 @@
 import uniset2.UGlobal as UGlobal
 import time
 import os
+import sys
 
 # различные глобальные вспомогательные функции
 t_NONE = ''
@@ -14,6 +15,7 @@ t_BREAK = 'BREAK'
 t_PAUSE = 'PAUSE'
 t_WARNING = 'WARNING'
 t_UNKNOWN = 'UNKNOWN'
+
 
 # class TItem():
 #     def __init__(self, **kwargs ):
@@ -102,6 +104,7 @@ def get_replace_list(raw_str):
 
     return slist
 
+
 def is_executable(filename):
     """Проверка что файл можно запустить"""
 
@@ -126,17 +129,18 @@ def is_executable(filename):
 
     return False
 
+
 class TestSuiteReporter():
     """ Базовый класс для формирователей отчётов """
 
     def __init__(self, **kwargs):
         self.start_time = time.time()
         self.finish_time = time.time()
-        self.log_show_test_tree = False
+        self.show_test_tree = False
 
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             if hasattr(self, k):
-                setattr(self,k,v)
+                setattr(self, k, v)
 
     def print_log(self, item):
         pass
@@ -144,8 +148,8 @@ class TestSuiteReporter():
     def print_actlog(self, act):
         pass
 
-    def setShowTestTreeMode(self, state):
-        self.log_show_test_tree = state
+    def set_show_test_tree_mode(self, state):
+        self.show_test_tree = state
 
     def make_report(self, results, checkScenarioMode=False):
         pass
@@ -168,6 +172,73 @@ class TestSuiteReporter():
     def finish_test_event(self):
         pass
 
+    @staticmethod
+    def commandline_to_attr(object, arg_name, attr_def_prefix=''):
+        '''
+        Вспомогательная функция преобразования аргументов командной строки
+        в атрибуты класса, если в классе уже существует атрибут совпадающий по имени с
+        тем что указан в командной строке. При этом в аргументах командной строки ищутся
+        параметры вида --arg-name-xxx и в класс добавляется атрибут 'xxx'.
+        Все '-' в названии заменяются на '_'.
+        Если в аргументах указан параметр --arg-name-xxx value, то в качестве значения атрибута класса
+        выставляется 'value'.
+        Если в аргументах указан только параметр --arg-name-xxx и всё, то в качестве значения выставляется 'True'.
+
+        :param object: объект для добавления атрибутов
+        :param arg_prefix: префикс для поиска аргументов (ищутся '--arg-name-xxxx')
+        :param attr_def_prefix: префикс при поиске атрибутов в классе (т.е. в классе проверяются аттрибуты 'attr_def_prefix_xxx')
+        :return: сколько найдено аргументов
+        '''
+        anum = 0
+        arg_prefix = '--' + arg_name + '-'
+        prefix_len = len(arg_prefix)
+        for i in range(0, len(sys.argv)):
+            if sys.argv[i].startswith(arg_prefix):
+                attr_name = sys.argv[i][prefix_len:].replace('-', '_')
+                attr_value = True
+
+                if len(attr_name) == 0:
+                    continue
+
+                attr_name = attr_def_prefix + '_' + attr_name
+
+                if (i + 1) < len(sys.argv) and not sys.argv[i + 1].startswith('-'):
+                    attr_value = sys.argv[i + 1]
+
+                if hasattr(object, attr_name):
+                    setattr(object, attr_name, attr_value)
+                    anum += 1
+
+        return anum
+
+    def getArgParam(param, defval=""):
+        for i in range(0, len(sys.argv)):
+            if sys.argv[i] == param:
+                if i + 1 < len(sys.argv):
+                    return sys.argv[i + 1]
+                else:
+                    break
+
+        return defval
+
+    def getArgInt(param, defval=0):
+        for i in range(0, len(sys.argv)):
+            if sys.argv[i] == param:
+                if i + 1 < len(sys.argv):
+                    return to_int(sys.argv[i + 1])
+                else:
+                    break
+
+        return defval
+
+    def checkArgParam(param, defval=""):
+        for i in range(0, len(sys.argv)):
+            if sys.argv[i] == param:
+                return True
+
+        return defval
+
+
 class TestSuiteException(Exception):
     def __init__(self, err='', test_time=-1, item=None):
         Exception.__init__(self)
@@ -186,6 +257,7 @@ class TestSuiteException(Exception):
 
     def getFinishTime(self):
         return self.ftime
+
 
 class TestSuiteValidateError(TestSuiteException):
     def __init__(self, err=''):

@@ -205,8 +205,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def init_testList(self, xml):
         xml.begnode = xml.findNode(xml.getDoc(), "TestList")[0]
         if xml.begnode is not None:
-            trunc = to_int(self.replace(xml.begnode.prop("logfile_trunc")))
-            logfile = self.replace(xml.begnode.prop("logfile"))
+            # trunc = to_int(self.replace(xml.begnode.prop("logfile_trunc")))
+            # logfile = self.replace(xml.begnode.prop("logfile"))
             # FIXME: Временно ведение лог файл отключено
             # if len(logfile)>0:
             #     logRepoter = TestSuiteLogFileReporter()
@@ -388,7 +388,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             if v is None or len(v) < 1 or v[0] == v[1]:
                 continue
 
-            #res.append([self.replace(v[0]), self.replace(v[1])])
+            # res.append([self.replace(v[0]), self.replace(v[1])])
             res.append([v[0], v[1]])
 
         return res
@@ -1436,24 +1436,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         curnode = self.begin(testnode)
 
-        # FIXME: Временно ведение лог файл отключено
-        # mylog = to_str(self.replace(testnode.prop('logfile')))
-        # mylog_trunc = to_int(self.replace(testnode.prop('logfile_trunc')))
-        # if mylog != "":
-        #     self.tsi.set_logfile(mylog, mylog_trunc)
-        # elif self.tsi.get_logfile() != logfile:
-        #     self.tsi.set_logfile(logfile)
-
         r_list = get_replace_list(to_str(self.replace(testnode.prop('replace'))))
         r_list = self.replace_list(r_list)
         self.add_to_test_replace(r_list)
 
         self.tsi.set_ignorefailed(to_int(self.replace(testnode.prop('ignore_failed'))))
         self.test_conf = self.replace(testnode.prop('config'))
-
-        # чисто визуальное отделение нового теста
-        #        if self.tsi.printlog == True and self.tsi.nrecur<=0:
-        #           print "---------------------------------------------------------------------------------------------------------------------"
 
         info = make_info_item(testname, 'BEGIN', result)
         info['nrecur'] = self.tsi.nrecur
@@ -1622,26 +1610,11 @@ if __name__ == "__main__":
             print "check directory: %s" % ' '.join(plugDirs)
             exit(1)
 
-        if ts.checkArgParam('--help', False) == True or ts.checkArgParam('-h', False) == True:
-            print 'Usage: %s [--confile [configure.xml|alias@conf1.xml,alias2@conf2.xml,..]  --testfile scenario.xml' % \
+        if checkArgParam('--help', False) == True or checkArgParam('-h', False) == True:
+            print 'Usage: %s [--confile [configure.xml|alias@conf1.xml,alias2@conf2.xml,..]  --testfile scenario.xml [..other options..]' % \
                   sys.argv[0]
             print '\n'
-            print '--confile [conf.xml,alias1@conf.xml,..]  - Configuration file for uniset test scenario.'
-            print '--testfile tests.xml      - Test scenarion file.'
-            print '--show-test-log           - Show test log'
-            print '--show-action-log         - Show actions log'
-            print '--show-result-report      - Show result report '
-            print '--show-result-only        - Show only result report (ignore --show-action-log, --show-test-log)'
-            print '--show-filename-in-report - Show filename in result report'
-            print ''
-            print '--show-comments           - Display all comments (test,check,action)'
-            print '--show-numline            - Display line numbers'
-            print '--show-timestamp          - Display the time'
-            print '--show-test-comment       - Display test comment'
-            print '--show-test-type          - Display the test type'
-            print '--hide-time               - Hide elasped time'
-            print '--col-comment-width val   - Width for column "comment"'
-            print "--logfile filename        - Save log to filename"
+            print '--testfile tests.xml                     - Test scenarion file.'
             print ''
             print '--test-name test1,prop2=test2,prop3=test3,...  - Run tests from list. By default prop=name'
             print '--ignore-run-list                - Ignore <RunList>'
@@ -1657,51 +1630,38 @@ if __name__ == "__main__":
             print "--check-scenario-ignore-failed   - Enable 'check scenario mode'. Ignore for all tests result and checks"
             print "--play-tags '#tag1#tag2#tag3..'  - Play tests only with the specified tag"
             print "--show-test-tree                 - Show tree of tests"
-            print "--show-test-filename             - Show test filename"
             print ''
+            print '--confile [conf.xml,alias1@conf.xml,..]  - Configuration file for uniset test scenario.'
+            print ''
+            TestSuiteConsoleReporter.print_help()
+            # print '--show-filename-in-report - Show filename in result report'
+            # print "--logfile filename        - Save log to filename"
             exit(0)
 
-        testfile = ts.getArgParam('--testfile', "")
+        testfile = getArgParam('--testfile', "")
         if testfile == "":
             print '(TestSuiteXMLPlayer): Unknown testfile. Use --testfile\n'
             exit(1)
 
-        conflist = ts.getArgParam('--confile', "")
-        show_log = ts.checkArgParam('--show-test-log', False)
-        show_actlog = ts.checkArgParam('--show-action-log', False)
-        show_result = ts.checkArgParam('--show-result-report', False)
-        show_comments = ts.checkArgParam('--show-comments', False)
-        show_numstr = ts.checkArgParam('--show-numline', False)
-        hide_time = ts.checkArgParam('--hide-time', False)
-        show_test_type = ts.checkArgParam('--show-test-type', False)
-        show_test_comment = ts.checkArgParam('--show-test-comment', False)
-        show_result_only = ts.checkArgParam('--show-result-only', False)
-        if show_result_only:
-            show_actlog = False
-            show_log = False
+        conflist = getArgParam('--confile', "")
 
-        logfile = ts.getArgParam("--logfile", "")
-        junit_logfile = ts.getArgParam("--junit", "")
+        show_result = checkArgParam('--show-result-report', False)
+        logfile = getArgParam("--logfile", "")
+        junit_logfile = getArgParam("--junit", "")
 
-        ignore_runlist = ts.checkArgParam("--ignore-run-list", False)
-        showtimestamp = ts.checkArgParam("--show-timestamp", False)
-        ignore_nodes = ts.checkArgParam("--ignore-nodes", False)
-        tout = ts.getArgInt("--default-timeout", 5000)
-        check_pause = ts.getArgInt("--default-check-pause", 500)
-        col_comment_width = ts.getArgInt("--col-comment-width", 50)
-        coloring_out = ts.checkArgParam('--no-coloring-output', False)
-        print_calltrace = ts.checkArgParam('--print-calltrace', False)
-        print_calltrace_limit = ts.getArgInt('--print-calltrace-limit', 20)
-        calltrace_disable_extinfo = ts.checkArgParam('--calltrace-disable-extended-info', False)
-        supplier_name = ts.getArgParam("--supplier-name", "")
-        check_scenario = ts.checkArgParam("--check-scenario", False)
-        check_scenario_ignorefailed = ts.checkArgParam("--check-scenario-ignore-failed", False)
-        tags = ts.getArgParam("--play-tags", "")
-        show_test_tree = ts.checkArgParam("--show-test-tree", False)
-        show_test_filename = ts.checkArgParam("--show-test-filename", False)
+        ignore_runlist = checkArgParam("--ignore-run-list", False)
+        ignore_nodes = checkArgParam("--ignore-nodes", False)
+        tout = getArgInt("--default-timeout", 5000)
+        check_pause = getArgInt("--default-check-pause", 500)
+        print_calltrace = checkArgParam('--print-calltrace', False)
+        print_calltrace_limit = getArgInt('--print-calltrace-limit', 20)
+        supplier_name = getArgParam("--supplier-name", "")
+        check_scenario = checkArgParam("--check-scenario", False)
+        check_scenario_ignorefailed = checkArgParam("--check-scenario-ignore-failed", False)
+        tags = getArgParam("--play-tags", "")
+        show_test_tree = checkArgParam("--show-test-tree", False)
         if show_test_tree:
             check_scenario = True
-            # check_scenario_ignorefailed = True
             show_result = False
 
         cf = conflist.split(',')
@@ -1710,33 +1670,15 @@ if __name__ == "__main__":
         ts.set_ignore_nodes(ignore_nodes)
         ts.set_show_test_tree_mode(show_test_tree)
 
-        rconf = dict()
-        rconf['log_notimestamp'] = (showtimestamp == False)
-        rconf['log_show_comments'] = show_comments
-        rconf['log_show_numline'] = show_numstr
-        rconf['log_hide_time'] = hide_time
-        rconf['log_show_test_type'] = show_test_type
-        rconf['log_col_comment_width'] = col_comment_width
-        rconf['log_show_test_comment'] = show_test_comment
-        rconf['log_no_coloring_output'] = coloring_out
-        rconf['log_show'] = show_log
-        rconf['log_show_actions'] = show_actlog
-        rconf['log_calltrace_disable_extinfo'] = calltrace_disable_extinfo
-        rconf['log_show_test_tree'] = show_test_tree
-        rconf['log_show_test_filename'] = show_test_filename
-        rconf['log_junit_filename'] = junit_logfile
-        rconf['log_filename'] = logfile
-
-        consoleRepoter = TestSuiteConsoleReporter(**rconf)
-
+        consoleRepoter = TestSuiteConsoleReporter()
         ts.add_repoter(consoleRepoter)
 
         if len(junit_logfile) > 0:
-            junitRepoter = TestSuiteJUnitReporter(**rconf)
+            junitRepoter = TestSuiteJUnitReporter()
             ts.add_repoter(junitRepoter)
 
         if len(logfile) > 0:
-            logfileRepoter = TestSuiteLogFileReporter(**rconf)
+            logfileRepoter = TestSuiteLogFileReporter()
             ts.add_repoter(logfileRepoter)
 
         ts.set_check_scenario_mode(check_scenario)
@@ -1755,7 +1697,7 @@ if __name__ == "__main__":
         if len(supplier_name) > 0:
             player.set_supplier_name(supplier_name)
 
-        testname = ts.getArgParam("--test-name", "")
+        testname = getArgParam("--test-name", "")
         testlist = player.get_tests_list(testname)
 
         global_player = player
@@ -1781,9 +1723,6 @@ if __name__ == "__main__":
             global_result = player.play_by_name(player.xml, testlist)
         else:
             global_result = player.play_all()
-
-        # if print_calltrace:
-        #     player.print_calltrace()
 
         exit(0)
 

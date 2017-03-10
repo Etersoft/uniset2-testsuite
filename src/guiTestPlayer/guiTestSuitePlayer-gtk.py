@@ -1462,7 +1462,7 @@ class guiTestSuitePlayer():
             xmlnode.setProp("timeout", "0")
 
             # а так же включаем игнорирование "неудачи", т.е. сами обрабатываем..
-            old_ignorefailed = self.player.tsi.get_ignorefailed()
+            old_ignorefailed = self.player.tsi.is_ignorefailed()
             self.player.tsi.set_ignorefailed(True)
 
             while t_now < t_end:

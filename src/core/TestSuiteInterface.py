@@ -180,36 +180,6 @@ class TestSuiteInterface():
     def set_default_ui(self, ui):
         self.default_ui = ui
 
-    @staticmethod
-    def getArgParam(param, defval=""):
-        for i in range(0, len(sys.argv)):
-            if sys.argv[i] == param:
-                if i + 1 < len(sys.argv):
-                    return sys.argv[i + 1]
-                else:
-                    break
-
-        return defval
-
-    @staticmethod
-    def getArgInt(param, defval=0):
-        for i in range(0, len(sys.argv)):
-            if sys.argv[i] == param:
-                if i + 1 < len(sys.argv):
-                    return to_int(sys.argv[i + 1])
-                else:
-                    break
-
-        return defval
-
-    @staticmethod
-    def checkArgParam(param, defval=""):
-        for i in range(0, len(sys.argv)):
-            if sys.argv[i] == param:
-                return True
-
-        return defval
-
     def add_testsuite_environ_variable(self, varname, value):
         """
         Добавление testsuite-переменной окружения (т.е. с префиксом)
@@ -244,7 +214,7 @@ class TestSuiteInterface():
     def set_ignorefailed(self, state):
         self.ignorefailed = state
 
-    def get_ignorefailed(self):
+    def is_ignorefailed(self):
         return self.ignorefailed
 
     def is_check_scenario_mode(self):
@@ -261,9 +231,12 @@ class TestSuiteInterface():
 
     def set_show_test_tree_mode(self, state):
         self.showTestTreeMode = state
+        for r in self.reporters:
+            r.set_show_test_tree_mode(state)
 
     def add_repoter(self, reporter):
         self.reporters.append(reporter)
+        reporter.set_show_test_tree_mode(self.is_show_test_tree_mode())
 
     def start_tests(self):
         tm = time.time()
