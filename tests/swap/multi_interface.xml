@@ -12,7 +12,7 @@
             <item alias="c2" mbslave="localhost:2049" type="modbus"/>
         </aliases>
     </Config>
-    <TestList logfile="result.multitest.txt" logfile_trunc="1">
+    <TestList>
         <test ignore_failed="1" name="Test N21" num="1">
             <action set="Test_DI =1" config="c1"/>
             <check test="Test_DI=1" config="c1"/>

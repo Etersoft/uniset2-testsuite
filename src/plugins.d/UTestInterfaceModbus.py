@@ -44,7 +44,7 @@ class UTestInterfaceModbus(UTestInterface):
     @staticmethod
     def parse_id(pname):
 
-        mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(pname, "0x04")
+        mbaddr, mbreg, mbfunc, nbit, vtest_type = get_mbquery_param(pname, "0x04")
         return [str(mbreg), str(mbaddr), pname]
 
     def validate_configuration(self):
@@ -54,8 +54,8 @@ class UTestInterfaceModbus(UTestInterface):
     def validate_parameter(self, pname):
 
         try:
-            if self.itype == "modbus":
-                mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(pname, "0x04")
+            if self.itest_type == "modbus":
+                mbaddr, mbreg, mbfunc, nbit, vtest_type = get_mbquery_param(pname, "0x04")
                 err = []
                 if not mbaddr:
                     err.append("Unknown mbaddr")
@@ -75,24 +75,24 @@ class UTestInterfaceModbus(UTestInterface):
     def get_value(self, name):
 
         try:
-            mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(name, "0x04")
+            mbaddr, mbreg, mbfunc, nbit, vtest_type = get_mbquery_param(name, "0x04")
             if not mbaddr or not mbreg or not mbfunc:
                 raise TestSuiteValidateError(
-                    "(modbus:getValue): parse id='%s' failed. Must be 'mbreg@mbaddr:mbfunc:nbit:vtype'" % name)
+                    "(modbus:getValue): parse id='%s' failed. Must be 'mbreg@mbaddr:mbfunc:nbit:vtest_type'" % name)
 
             if self.mbi.isWriteFunction(mbfunc):
                 raise TestSuiteValidateError(
                     "(modbus:getValue): for id='%s' mbfunc=%d is WriteFunction. Must be 'read'." % (name, mbfunc))
 
-            return self.mbi.mbread(mbaddr, mbreg, mbfunc, vtype, nbit)
+            return self.mbi.mbread(mbaddr, mbreg, mbfunc, vtest_type, nbit)
 
         except UException, e:
             raise TestSuiteException(e.getError())
 
     def set_value(self, name, value, supplierID):
         try:
-            # ip,port,mbaddr,mbreg,mbfunc,vtype,nbit = ui.get_modbus_param(s_id)
-            mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(name, "0x06")
+            # ip,port,mbaddr,mbreg,mbfunc,vtest_type,nbit = ui.get_modbus_param(s_id)
+            mbaddr, mbreg, mbfunc, nbit, vtest_type = get_mbquery_param(name, "0x06")
             if not mbaddr or not mbreg or not mbfunc:
                 raise TestSuiteValidateError(
                     "(modbus:setValue): parse id='%s' failed. Must be 'mbreg@mbaddr:mbfunc'" % name)

@@ -3,7 +3,7 @@
         &lt;item after_run_pause="0" chdir="../../Utils/SharedMemory/" ignore_run_failed="1" ignore_terminated="1"
               name="SharedMemory" script="./start_fg.sh" silent_mode="1"/>
     </RunList>
-    &lt;TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101">
+    &lt;TestList replace="MyGlobalVar2:104,MyGlobalVar:101">
         &lt;test name="compare: Equal test">
             &lt;action set="111=10"/>
             &lt;action set="112=10"/>

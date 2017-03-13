@@ -27,12 +27,12 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.log_show_tests = False
         self.log_show_actions = False
         self.log_show_timestamp = False
-        self.log_show_test_type = False
+        self.log_show_type = False
         self.log_show_comments = False
         self.log_show_test_comment = False
         self.log_hide_time = False
         self.log_hide_msec = False
-        self.log_show_test_type = False
+        self.log_show_type = False
         self.log_no_coloring_output = False
         self.log_calltrace_disable_extended_info = False
         self.log_show_test_filename = False
@@ -46,7 +46,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
     @staticmethod
     def print_help(prefix='log'):
 
-        print 'TestSuiteConsoleReporter (--' + prefix +')'
+        print 'TestSuiteConsoleReporter (--' + prefix + ')'
         print '--------------------------------------------'
         print '--' + prefix + '-show-tests              - Show tests log'
         print '--' + prefix + '-show-actions            - Show actions log'
@@ -56,7 +56,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         print '--' + prefix + '-show-timestamp          - Display the time'
         print '--' + prefix + '-show-test-filename      - Display test filename in test tree'
         print '--' + prefix + '-show-test-comment       - Display test comment'
-        print '--' + prefix + '-show-test-type          - Display the test type'
+        print '--' + prefix + '-show-test-type          - Display the test test type'
         print '--' + prefix + '-hide-time               - Hide elasped time'
         print '--' + prefix + '-hide-msec               - Hide milliseconds'
         print '--' + prefix + '-col-comment-width val   - Width for column "comment"'
@@ -76,7 +76,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         txt = self.make_log(item)
 
         if self.show_test_tree:
-            if item['item_type'] == 'test' and item['type'] != 'FINISH':
+            if item['item_type'] == 'TEST' and item['test_type'] != 'FINISH':
                 print txt
             return
 
@@ -86,7 +86,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
     def make_log(self, item):
 
         t_comment = item['comment']
-        t_test = item['type']
+        t_test = item['test_type']
         txt = item['text']
         t_result = item['result']
         try:
@@ -100,13 +100,13 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
 
         ntab = False
-        if item['item_type'] == 'check' or item['item_type'] == 'action':
+        if item['item_type'] == 'CHECK' or item['item_type'] == 'ACTION':
             ntab = True
 
-        txt2 = self.set_tab_space(txt, item['nrecur'], ntab)
+        txt2 = self.set_tab_space(txt, item['level'], ntab)
 
         if self.show_test_tree:
-            if item['item_type'] == 'test' and item['type'] != 'FINISH':
+            if item['item_type'] == 'TEST' and item['test_type'] != 'FINISH':
                 self.numstr += 1
 
             if self.log_show_numline:
@@ -126,7 +126,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             self.colorize_result(t_result), self.colsep, t_test, self.colsep,
             self.colorize_text(t_result, t_test, txt2)))
 
-        if not self.log_show_test_type:
+        if not self.log_show_type:
             txt = str('[%s] %s %s' % (
                 self.colorize_result(t_result), self.colsep, self.colorize_text(t_result, t_test, txt2)))
 
@@ -149,7 +149,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         if not self.log_hide_time:
             txt = '%s %s %s' % (etm, self.colsep, txt)
 
-        if self.log_show_test_type:
+        if self.log_show_type:
             txt = '%6s %s %s' % ("CHECK", self.colsep, txt)
 
         if self.log_show_timestamp:
@@ -165,7 +165,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         txt = self.make_actlog(act)
 
         if self.show_test_tree:
-            if act['item_type'] == 'test' and act['type'] != 'FINISH':
+            if act['item_type'] == 'TEST' and act['test_type'] != 'FINISH':
                 print txt
             return
 
@@ -175,7 +175,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
     def make_actlog(self, act):
 
         t_comment = act['comment']
-        t_act = act['type']
+        t_act = act['test_type']
         txt = act['text']
         t_result = act['result']
 
@@ -190,13 +190,13 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
 
         ntab = False
-        if act['item_type'] == 'action' or act['item_type'] == 'check':
+        if act['item_type'] == 'ACTION' or act['item_type'] == 'CHECK':
             ntab = True
 
-        txt2 = self.set_tab_space(txt, act['nrecur'], ntab)
+        txt2 = self.set_tab_space(txt, act['level'], ntab)
 
         if self.show_test_tree:
-            if act['item_type'] == 'test' and act['type'] != 'FINISH':
+            if act['item_type'] == 'TEST' and act['test_type'] != 'FINISH':
                 self.numstr += 1
 
             if self.log_show_numline:
@@ -215,7 +215,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         txt = str('[%7s] %s%8s%s %s' % (
             self.colorize_result(t_result), self.colsep, t_act, self.colsep, self.colorize_text(t_result, t_act, txt2)))
 
-        if not self.log_show_test_type:
+        if not self.log_show_type:
             txt = str('[%7s] %s %s' % (
                 self.colorize_result(t_result), self.colsep, self.colorize_text(t_result, t_act, txt2)))
 
@@ -238,7 +238,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         if not self.log_hide_time:
             txt = '%s %s %s' % (etm, self.colsep, txt)
 
-        if self.log_show_test_type:
+        if self.log_show_type:
             txt = '%6s %s %s' % ('ACTION', self.colsep, txt)
 
         if self.log_show_timestamp:
@@ -249,14 +249,14 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         return txt
 
-    def make_report(self, results, check_scenario_mode=False):
+    def make_report(self, tree_tests, check_scenario_mode=False):
 
         if self.show_test_tree:
             return
 
         filename = ''
-        if len(results) > 0:
-            filename = results[0]['filename']
+        if len(tree_tests) > 0:
+            filename = tree_tests[0]['filename']
 
         csm = ""
         if check_scenario_mode is True:
@@ -272,11 +272,17 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         print "%s\n%s" % (head, head2)
         i = 1
         ttime = 0
-        for res in results:
+
+        for res in tree_tests:
+
+            # Выводим только тесты первого(0) уровня
+            if res['level'] != 0:
+                continue
+
             td = datetime.timedelta(0, res['time'])
+
             print '%s. [%s] - %40s |%s|' % (
-                string.rjust(str(i), 3), self.colorize_result(res['result']), string.ljust(res['name'], 45),
-                td)
+                string.rjust(str(i), 3), self.colorize_result(res['result']), string.ljust(res['name'], 45), td)
             i = i + 1
             ttime = ttime + res['time']
 
@@ -376,11 +382,11 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         return t_comment
 
     @staticmethod
-    def set_tab_space(txt, nrecur, ntab):
+    def set_tab_space(txt, level, ntab):
         # сдвиг "уровня" в зависимости от рекурсии
         s_tab = ""
-        if nrecur > 0:
-            for i in range(0, nrecur):
+        if level > 0:
+            for i in range(0, level):
                 s_tab = '%s.   ' % s_tab
         txt = '%s%s' % (s_tab, txt)
 
@@ -484,8 +490,8 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             stime = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(sensorChangeInfo.tv_sec))
             # При выводе делаем nanosec --> millisec
             print "(%d)'%s' ==> last update %s.%d value=%d owner=%d\n" % (
-            faultySensor[0], fail_item['faulty_sensor'], stime, sensorChangeInfo.tv_nsec / 1000000,
-            sensorChangeInfo.value, sensorChangeInfo.supplier)
+                faultySensor[0], fail_item['faulty_sensor'], stime, sensorChangeInfo.tv_nsec / 1000000,
+                sensorChangeInfo.value, sensorChangeInfo.supplier)
 
             # Получаем информацию о том кто заказывал этот датчик
             # возврщется массив запрошенных датчиков с кратким описанием и списоком заказчиков по каждому датчику

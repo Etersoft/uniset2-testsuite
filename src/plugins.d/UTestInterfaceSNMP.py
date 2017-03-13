@@ -79,7 +79,7 @@ class UTestInterfaceSNMP(UTestInterface):
                                'Reason: noAccess',
                                'Error',
                                'Timeout',
-                               'Bad variable type'
+                               'Bad variable test_type'
                                ]
 
     def init_from_file(self, xmlfile):
@@ -342,16 +342,16 @@ class UTestInterfaceSNMP(UTestInterface):
 
     def parse_value(self, lst):
 
-        vtype = lst[0].upper()
+        vtest_type = lst[0].upper()
         sval = lst[1]
 
-        if vtype == 'INTEGER' or vtype == 'GAUGE32' or vtype == 'COUNTER32' or vtype == 'UNSIGNED32':
+        if vtest_type == 'INTEGER' or vtest_type == 'GAUGE32' or vtest_type == 'COUNTER32' or vtest_type == 'UNSIGNED32':
             return uglobal.to_int(sval)
 
-        if vtype == 'STRING':
+        if vtest_type == 'STRING':
             return sval
 
-        if vtype == 'TIMETICKS':
+        if vtest_type == 'TIMETICKS':
             ret = self.re_timeticks.findall(sval)
             if not ret or len(ret) == 0:
                 return None
@@ -381,7 +381,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
         var_name = None
 
-        #  \todo Пока-что поддерживается только type INTEGER'''
+        #  \todo Пока-что поддерживается только test_type INTEGER'''
         var_type = "i"
 
         if param['OID']:

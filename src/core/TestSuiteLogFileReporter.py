@@ -96,14 +96,14 @@ class TestSuiteLogFileReporter(TestSuiteConsoleReporter):
             sys.stdout = old_stdout
             sys.stderr = old_stderr
 
-    def make_report(self, results, check_scenario_mode=False):
+    def make_report(self, tree_tests, check_scenario_mode=False):
 
         old_stdout = sys.stdout
         old_stderr = sys.stderr
         sys.stdout = self.logfile
         sys.stderr = self.logfile
         try:
-            TestSuiteConsoleReporter.make_report(self, results, check_scenario_mode)
+            TestSuiteConsoleReporter.make_report(self, tree_tests, check_scenario_mode)
             sys.stdout.flush()
         except:
             pass

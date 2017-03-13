@@ -10,6 +10,7 @@ from uniset2.UGlobal import *
 from uniset2.pyUExceptions import UException
 from uniset2.pyUConnector import *
 from UTestInterface import *
+from TestSuiteGlobal import TestSuiteException, TestSuiteValidateError
 
 
 class UTestInterfaceUniSet(UTestInterface):

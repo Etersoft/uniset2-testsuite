@@ -31,13 +31,20 @@ t_UNKNOWN = 'UNKNOWN'
 #         self.item_type = ''  # action,check,test
 #         self.tag = ''  # первый тег на котором "сработал" фильтр
 #         self.tags = ''  # теги
-#         self.nrecur = 0  # уровень рекурсии
+#         self.level = 0  # уровень рекурсии
 #         self.start_time = time.time()
 #
 #         for k,v in kwargs.items():
-#             if k not in self.__dict__:
-#                 self.__dict__[k] = v
+#             if hasattr(object, k):
+#                 setattr(object, k, v)
 
+def copy_dict_attrs(source_dict):
+    res = dict()
+    for k, v in source_dict.items():
+        if not k in res:
+            res[k] = v
+
+    return res
 
 def make_default_item():
     item = dict()
@@ -46,15 +53,16 @@ def make_default_item():
     item['call_level'] = None
     item['result'] = t_NONE
     item['text'] = ''
-    item['items'] = []
+    item['items'] = list()
     item['xmlnode'] = None
     item['filename'] = ''
     item['prev'] = None
     item['item_type'] = ''  # action,check,test
     item['tag'] = ''  # первый тег на котором "сработал" фильтр
     item['tags'] = ''  # теги
-    item['nrecur'] = 0  # уровень рекурсии
+    item['level'] = 0  # уровень где вызывается тест (уровень рекурсии)
     item['start_time'] = time.time()
+    item['test_type'] = '' # TEST, EQUAL, OUTLINK, LINK, =, !=, >, >=, <, <=, MSLEEP, SCRIPT, и т.п. (см. docs)
 
     # датчик на котором произошёл вылет теста (в формате name@node)
     # так же в этом поле может быть два датчика (в случае <compare> проверок)
@@ -65,22 +73,22 @@ def make_default_item():
     return item
 
 
-def make_fail_result(text, ftype='(TestSuiteXMLPlayer)', copyFrom=None):
+def make_fail_result(text, ftest_type='(TestSuiteXMLPlayer)', copyFrom=None):
     fail = make_default_item()
     if copyFrom:
-        fail = copyFrom
+        fail = copy_dict_attrs(copyFrom)
     fail['result'] = t_FAILED
     fail['text'] = text
-    fail['type'] = ftype
+    fail['test_type'] = ftest_type
     return fail
 
 
-def make_info_item(text, ftype='(TestSuiteXMLPlayer)', copy_from=None):
+def make_info_item(text, ftest_type='(TestSuiteXMLPlayer)', copy_from=None):
     info = make_default_item()
     if copy_from:
-        info = copy_from
+        info = copy_dict_attrs(copy_from)
 
-    info['type'] = ftype
+    info['test_type'] = ftest_type
     info['text'] = text
     return info
 

@@ -14,7 +14,7 @@
         <item script="./start_mbslave2.sh" args="0x01" silent_mode="1" chdir="../../Utils/Modbus/" ignore_terminated="0"
               ignore_run_failed="0" name="MBSlave2"/>
     </RunList>
-    <TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:Test_AI1,MyGlobalVar:101">
+    <TestList replace="MyGlobalVar2:Test_AI1,MyGlobalVar:101">
         <test name="compare: Equal test">
             <action set="111=10"/>
             <action set="112=10"/>

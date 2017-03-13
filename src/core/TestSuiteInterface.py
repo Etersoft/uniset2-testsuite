@@ -15,6 +15,7 @@ from TestSuiteGlobal import *
 
 TS_PROJECT_NAME = 'uniset2-testsuite'
 
+
 class logid():
     Type = 0
     Time = 1
@@ -34,7 +35,7 @@ class TestSuiteInterface():
         self.default_ui = None
         # self.params = uniset2.Params_inst()
         self.ignore_nodes = False
-        self.nrecur = 0
+        self.level = 0
         self.supplierID = uniset2.DefaultSupplerID
         self.checkScenarioMode = False
         self.checkScenarioMode_ignorefailed = False
@@ -64,7 +65,7 @@ class TestSuiteInterface():
 
     def get_plugins_dir(self):
         if os.path.isdir(self.datadir):
-                return os.path.join(self.datadir, 'plugins.d')
+            return os.path.join(self.datadir, 'plugins.d')
 
         return ''
 
@@ -146,7 +147,7 @@ class TestSuiteInterface():
         self.ui_list[alias] = ui
         return ui
 
-    def add_interface(self, xmlnode, already_ignore=True):
+    def add_interface(self, xmlnode, default_itype, already_ignore=True):
 
         alias = xmlnode.prop('alias')
 
@@ -157,7 +158,10 @@ class TestSuiteInterface():
 
             return self.ui_list[alias]
 
-        itype = xmlnode.prop('type')
+        itype = to_str(xmlnode.prop('type'))
+        if itype == '':
+            itype = default_itype
+
         if itype not in self.plugins:
             raise TestSuiteValidateError("(add_interface): not found plugin for '%s'" % itype)
 
@@ -254,10 +258,10 @@ class TestSuiteInterface():
             except Exception:
                 pass
 
-    def print_call_trace(self, results, call_limits):
+    def print_call_trace(self, call_trace, call_limits):
         for r in self.reporters:
             try:
-                r.make_call_trace(results, call_limits)
+                r.make_call_trace(call_trace, call_limits)
             except Exception:
                 pass
 
@@ -285,7 +289,7 @@ class TestSuiteInterface():
 
     def finish_test_event(self):
 
-        if self.is_show_test_tree_mode() or self.nrecur > 0:
+        if self.is_show_test_tree_mode() or self.level > 0:
             return
 
         for r in self.reporters:
@@ -361,7 +365,7 @@ class TestSuiteInterface():
 
     def isTrue(self, s_id, t_out, t_check, item, ui):
 
-        item['type'] = 'TRUE'
+        item['test_type'] = 'TRUE'
         item['ui'] = ui
 
         t_tick = round(t_out / t_check)
@@ -391,7 +395,7 @@ class TestSuiteInterface():
             item['faulty_sensor'] = s_id
             self.set_result(item, True)
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['text'] = '(%s=true) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -401,7 +405,7 @@ class TestSuiteInterface():
 
     def holdTrue(self, s_id, t_out, t_check, item, ui):
 
-        item['type'] = 'TRUE'
+        item['test_type'] = 'TRUE'
         item['ui'] = ui
         t_tick = round(t_out / t_check)
         t_sleep = (t_check / 1000.)
@@ -434,7 +438,7 @@ class TestSuiteInterface():
             self.set_result(item, False)
             return True
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['text'] = 'HOLD (%s=true) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -444,7 +448,7 @@ class TestSuiteInterface():
 
     def isFalse(self, s_id, t_out, t_check, item, ui):
 
-        item['type'] = 'FALSE'
+        item['test_type'] = 'FALSE'
         item['ui'] = ui
 
         t_tick = round(t_out / t_check)
@@ -474,7 +478,7 @@ class TestSuiteInterface():
             item['faulty_sensor'] = s_id
             self.set_result(item, True)
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['text'] = '(%s=false) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -484,7 +488,7 @@ class TestSuiteInterface():
 
     def holdFalse(self, s_id, t_out, t_check, item, ui):
 
-        item['type'] = 'FALSE'
+        item['test_type'] = 'FALSE'
         item['ui'] = ui
         t_tick = round(t_out / t_check)
         t_sleep = (t_check / 1000.)
@@ -517,7 +521,7 @@ class TestSuiteInterface():
             self.set_result(item, False)
             return True
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['text'] = 'HOLD (%s=false) error: %s' % (s_id, e.getError())
             item['faulty_sensor'] = s_id
@@ -527,7 +531,7 @@ class TestSuiteInterface():
 
     def isEqual(self, s_id, val, t_out, t_check, item, ui):
 
-        item['type'] = 'EQUAL'
+        item['test_type'] = 'EQUAL'
         item['ui'] = ui
         t_tick = round(t_out / t_check)
         t_sleep = (t_check / 1000.)
@@ -573,12 +577,13 @@ class TestSuiteInterface():
 
             self.set_result(item, True)
 
-        except (UException, TestSuiteValidateError), e:
+        except (TestSuiteException, TestSuiteValidateError), ex:
+
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
-                item['text'] = '%s(%s)=%s(%s) error: %s' % (s_id[0], v1, s_id[1], v2, e.getError())
+                item['text'] = '%s(%s)=%s(%s) error: %s' % (s_id[0], v1, s_id[1], v2, ex.getError())
             else:
-                item['text'] = '(%s=%s) error: %s' % (s_id, val, e.getError())
+                item['text'] = '(%s=%s) error: %s' % (s_id, val, ex.getError())
             item['result'] = t_FAILED
 
             self.set_result(item, True)
@@ -587,7 +592,7 @@ class TestSuiteInterface():
 
     def holdEqual(self, s_id, val, t_out, t_check, item, ui):
 
-        item['type'] = 'EQUAL'
+        item['test_type'] = 'EQUAL'
         item['ui'] = ui
         t_tick = round(t_out / t_check)
         t_sleep = (t_check / 1000.)
@@ -636,7 +641,7 @@ class TestSuiteInterface():
             self.set_result(item, False)
             return True
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -650,7 +655,7 @@ class TestSuiteInterface():
 
     def isNotEqual(self, s_id, val, t_out, t_check, item, ui):
 
-        item['type'] = 'NOTEQUAL'
+        item['test_type'] = 'NOTEQUAL'
         item['ui'] = ui
 
         t_tick = round(t_out / t_check)
@@ -698,7 +703,7 @@ class TestSuiteInterface():
 
             self.set_result(item, True)
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -712,7 +717,7 @@ class TestSuiteInterface():
 
     def holdNotEqual(self, s_id, val, t_out, t_check, item, ui):
 
-        item['type'] = 'NOTEQUAL'
+        item['test_type'] = 'NOTEQUAL'
         item['ui'] = ui
 
         t_tick = round(t_out / t_check)
@@ -764,7 +769,7 @@ class TestSuiteInterface():
             self.set_result(item, False)
             return True
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -778,7 +783,7 @@ class TestSuiteInterface():
 
     def isGreat(self, s_id, val, t_out, t_check, item, ui, cond='>='):
 
-        item['type'] = 'GREAT'
+        item['test_type'] = 'GREAT'
         item['ui'] = ui
         t_tick = round(t_out / t_check)
         t_sleep = (t_check / 1000.)
@@ -825,7 +830,7 @@ class TestSuiteInterface():
 
             self.set_result(item, True)
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -839,7 +844,7 @@ class TestSuiteInterface():
 
     def holdGreat(self, s_id, val, t_out, t_check, item, ui, cond='>='):
 
-        item['type'] = 'GREAT'
+        item['test_type'] = 'GREAT'
         item['ui'] = ui
         t_tick = round(t_out / t_check)
         t_sleep = (t_check / 1000.)
@@ -892,7 +897,7 @@ class TestSuiteInterface():
             self.set_result(item, False)
             return True
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -906,7 +911,7 @@ class TestSuiteInterface():
 
     def isLess(self, s_id, val, t_out, t_check, item, ui, cond='<='):
 
-        item['type'] = 'LESS'
+        item['test_type'] = 'LESS'
         item['ui'] = ui
         t_tick = round(t_out / t_check)
         t_sleep = (t_check / 1000.)
@@ -951,7 +956,7 @@ class TestSuiteInterface():
 
             self.set_result(item, True)
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -965,7 +970,7 @@ class TestSuiteInterface():
 
     def holdLess(self, s_id, val, t_out, t_check, item, ui, cond='<='):
 
-        item['type'] = 'LESS'
+        item['test_type'] = 'LESS'
         item['ui'] = ui
         t_tick = round(t_out / t_check)
         t_sleep = (t_check / 1000.)
@@ -1017,7 +1022,7 @@ class TestSuiteInterface():
             self.set_result(item, False)
             return True
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             item['result'] = t_FAILED
             item['faulty_sensor'] = s_id
             if len(s_id) == 2:
@@ -1031,7 +1036,7 @@ class TestSuiteInterface():
 
     def msleep(self, msec, act):
 
-        act['type'] = 'SLEEP'
+        act['test_type'] = 'SLEEP'
         act['text'] = 'sleep %d msec' % msec
         act['result'] = t_PASSED
         self.set_action_result(act, False)
@@ -1046,7 +1051,7 @@ class TestSuiteInterface():
 
         try:
             act['text'] = '%s=%d' % (s_id, s_val)
-            act['type'] = 'SETVALUE'
+            act['test_type'] = 'SETVALUE'
             act['ui'] = ui
 
             if ui is None:
@@ -1066,7 +1071,7 @@ class TestSuiteInterface():
             self.set_action_result(act, False)
             return True
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             act['text'] = '(%s=%s) error: %s' % (s_id, s_val, e.getError())
             act['result'] = t_FAILED
             act['faulty_sensor'] = s_id
@@ -1076,7 +1081,7 @@ class TestSuiteInterface():
 
     def runscript(self, script_name, act, silent=True, throwIfFailed=True):
         try:
-            act['type'] = 'SCRIPT'
+            act['test_type'] = 'SCRIPT'
             act['text'] = '%s' % script_name
 
             if self.is_check_scenario_mode():
@@ -1127,7 +1132,7 @@ class TestSuiteInterface():
             self.set_action_result(act, False)
             return True
 
-        except (UException, TestSuiteValidateError), e:
+        except TestSuiteException, e:
             act['result'] = t_FAILED
             act['text'] = '\'%s\' error: %s' % (script_name, e.getError())
             self.set_action_result(act, throwIfFailed)

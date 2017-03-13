@@ -6,7 +6,7 @@
         <item after_run_pause="0" chdir="../../Utils/SharedMemory/" ignore_run_failed="1" ignore_terminated="1"
               name="SharedMemory2" script="./start2_fg.sh" silent_mode="0"/>
     </RunList>
-    <TestList logfile="j2.txt" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101">
+    <TestList replace="MyGlobalVar2:104,MyGlobalVar:101">
         <test name="simple test">
             <check test="101@3001=0"/>
         </test>

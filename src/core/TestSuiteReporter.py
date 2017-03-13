@@ -19,21 +19,52 @@ class TestSuiteReporter():
                 setattr(self, k, v)
 
     def is_enabled(self):
+        '''
+        Включен ли данный Reporter
+        :return: None
+        '''
         return False
 
+    def set_show_test_tree_mode(self, state):
+        '''
+        Установка флага для режима вывод дерева тестов
+        :param state: TRUE или FALSE
+        :return: None
+        '''
+        self.show_test_tree = state
+
     def print_log(self, item):
+        '''
+        Вывод лога
+        :param item: текущий тест (см. TestSuiteGlobal::make_default_item)
+        :return: None
+        '''
         pass
 
     def print_actlog(self, act):
+        '''
+        Вывод лога для действий (action)
+        :param act: текущее действие (см. TestSuiteGlobal::make_default_item)
+        :return: None
+        '''
         pass
 
-    def set_show_test_tree_mode(self, state):
-        self.show_test_tree = state
-
-    def make_report(self, results, check_scenario_mode=False):
+    def make_report(self, tree_tests, check_scenario_mode=False):
+        '''
+        Формирование отчёта. Функция вызывается в конце тестирования
+        :param tree_tests: Линейный список тестов (без учёта вложенности). Не содержит IGNORE тесты!
+        :param check_scenario_mode: флаг режима проверки сценария
+        :return: None
+        '''
         pass
 
-    def make_call_trace(self, results, call_limit):
+    def make_call_trace(self, call_trace, call_limit):
+        '''
+        Формирование call-trace
+        :param call_trace: список вызовов тестов
+        :param call_limit: ограничение на уровень вывода trace
+        :return: None
+        '''
         pass
 
     def start_tests(self, tm=None):
