@@ -39,7 +39,7 @@
 
 	\section uts_Common Общая часть
      В самом общем виде процесс тестирования можно сформулировать как "подать некоторое воздействие на систему и проверить реакцию".
-     \b uniset-testsuite предназначен для автоматизации этого процесса. При этом система тестирования расчитана на взаимодействие
+     \b uniset-testsuite предназначен для автоматизации этого процесса. При этом система расчитана на взаимодействие
      с тестируемой системой по цифровому протоколу.
      
      На данный момент поддерживаются следующие интерфейсы:
@@ -49,7 +49,7 @@
     
     Встроенная система плагинов, позволяет лего расширять список поддерживаемых интерфесов путём добавления своих реализаций.
     
-    Подача тестовых воздействий и проверка реакции записывается в виде тестового сценария, который можно проигрывать сколько угодно раз.
+    Подача тестовых воздействий и проверка реакции записывается в виде тестового сценария, который можно исполнять сколько угодно раз.
 
    \section uts_TestScenario Тестовый сценарий.
    В общем случае сценарий может быть написан в любом виде. Главное при этом, чтобы был для этого "вида" написан "проигрыватель".
@@ -58,43 +58,46 @@
    \section uts_Scenario Сценарий
 
    Сценарий представляет из себя xml-файл с инструкциями. При этом все тесты необходимо распологать между тегами \<TestList>..\</TestList>. 
-На данный момент поддерживается два вида сценариев:
+На данный момент поддерживаются сценарии:
  - uniset
  - modbus
  - snmp
  
- Тип сценария записывается в теге \b \<TestList type="..."> ("modbus" или "uniset"). Эти два вида различаются только способом задания параметров.
-
+ Тип сценария записывается в теге \b \<TestList type="xxx">.
  Отдельно можно указывать тип для конкретной конфигурации. См. \ref uts_multiInterface_Scenario.
 
- Ниже приведён пример записи uniset-сценария из двух тестов.
+ Ниже приведён пример записи uniset-сценария из трёх тестов.
 \code
-<?xml version = '1.0' encoding = 'utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
-<Config>
-...
-</Config>
-<TestList type="uniset">
-	<test num="2" name="DG1 Running">
-		<check test="SES1_CtlMode_AS=2"  comm="SES1: mode=PultControl"/>
-		<action set="DG1_Start_S=1"  reset_time="300" rval="0" comm="start DG1"/>
-		<check test="SEES1_State_AS=9"  comm="SES1: state=Running" timeout="15000" check_pause="200"/>
-		<check test="DG1_LampON_C!=0" />
-		<action msleep="2000" />
-		<check test="DG1_Start_C=0" />
-		<check test="DG1_Stop_C=0" />
-	</test>
-	<test num="3" name="QG1 ON">
-		<check test="SEES1_State_AS=9"  comm="SES1: state=Running"/>
-		<action set="QG1_On_S=1"  reset_time="300" rval="0" comm="QG1 on command"/>
-		<check test="QG1_State_AS=1"  timeout="8000" check_pause="500" comm="QG1: state=ON"/>
-		<check test="SEES1_State_AS=1"  comm="SES1: state=ON"/>
-		<check test="QG1_LampON_C!=0" comm="QG1: lamp ON"/>
-		<action msleep="2000" />
-		<check test="QG1_On_C=0" comm="QG1: on command OFF"/>
-		<check test="QG1_Off_C=0" comm="QG1: off command OFF"/>
-		<check test="SEES1_NotAloneWorking_C!=0" />
-    </test>
+ <Config>
+ ...
+ </Config>
+ <RunList after_run_pause="3000">
+ ...
+ </RunList>
+ <TestList>
+  <test name="Stopped" comment="Проверка что без команды 'ничего не делаем'">
+   <action set="OnControl_S=0" comment="Снимаем команду 'начать работу'"/>
+   <check test="CmdLoad_C=0" comment="команда 'наполнить' не меняется" holdtime="3000"/>
+   <check test="CmdUnload_C=0" comment="команда 'опустошить' не меняется" holdtime="3000"/>
+   <check test="Level_AS=0" comment="уровень не меняется" holdtime="6000"/>
+  </test>
+  <test name="Processing" comment="Проверка работы процесса">
+   <action set="OnControl_S=1" comment="Подаём команду 'начать работу'"/>
+   <check test="CmdLoad_C=1" comment="Подана команда 'наполнение'"/>
+   <check test="CmdUnload_C=0" comment="Cнята команда 'опустошение'"/>
+   <check test="Level_AS>=90" comment="Цистерна наполняется.." timeout="15000"/>
+   <check test="CmdLoad_C=0" comment="Снята команда 'наполнение'"/>
+   <check test="CmdUnload_C=1" comment="Подана команда 'опустошение'"/>
+   <check test="Level_AS<=10" comment="Цистерна опустошается.." timeout="15000"/>
+  </test>
+  <test name="Stopped" comment="Проверка остановки процесса">
+   <action set="OnControl_S=0" comment="Снимаем команду 'начать работу'"/>
+   <check test="CmdLoad_C=0" comment="команда 'наполнить' не меняется" holdtime="3000"/>
+   <check test="CmdUnload_C=0" comment="команда 'опустошить' не меняется" holdtime="3000"/>
+   <check test="Level_AS<=80" comment="Уровень не меняется" holdtime="10000"/>
+  </test>
 </TestList>
 </TestScenario>
 \endcode
@@ -146,7 +149,7 @@
 </TestScenario>
 \endcode
 
- При этом для всего сценария можно задать следующие параметры:
+ При этом в секции \b TestList для сценария можно задать следующие параметры:
 
  \b notimestamp="1"  - "1" означает не выводить дату и время при прохождении тестов
 
@@ -194,6 +197,7 @@
 			vtU2		// беззнаковое целое (4 байта). В виде строки задаётся как "U2".
 		};
 \endcode
+	\warning Следует иметь ввиду, что в текущей реализации работа ведётся только с целыми значениями, поэтому все 'float'-значения округляются до целых.
 
    При этом для функций записи регистра используются только поля \b mbreg, \b mbaddr, \b mbfunc.
    Поля \b mbaddr, \b mbfunc так же являются не обязательными.
@@ -201,7 +205,7 @@
 	
    \section uts_Test Тесты
    
-   Каждый тест заключается в теги \<test>...\</test>. Все тесты проигрываются последовательно.
+   Каждый тест заключается в теги \<test>...\</test>. Все тесты исполняются последовательно.
 
    Возможные действия деляться на три вида
    - \b "action" - 'выставление датчика'
@@ -226,7 +230,7 @@
   Где в set - можно задавать, как число или как имя.
   reset_time - Время в мсек. через которое датчик примет значение заданное параметром rval.
   \note Следует иметь ввиду, что сброс значения происходит параллельно работе теста.
-  Т.е. тест продолжается сразу после выставления значения.
+  Т.е. тест продолжается сразу после выставления значения. Но переход к следующему тесту будет осуществлён, только после "сброса"(reset_time).
   
   Помимо этого разрешается выставление сразу нескольких значений.
      Датчики и их значения перечисляются через запятую. И записываются в формате "id1=val,id2@host2=val2,...".
@@ -546,7 +550,7 @@
   \code
 <Config>
   <aliases>
-	<item type="modbus" default="1" alias="c1" mbslave="localhost:2048" config="reglist.xml"/>
+	<item type="modbus" default="1" alias="c1" mbslave="localhost:2048"/>
 	<item type="modbus" alias="c2" mbslave="localhost:2049"/>
   </aliases>
 </Config>

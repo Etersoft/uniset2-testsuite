@@ -1612,7 +1612,6 @@ if __name__ == "__main__":
             print '--ignore-nodes                   - Do not use \'@node\' or do not check node available for check scenario mode'
             print '--default-timeout msec           - Default <check timeout=\'..\' ../>.\''
             print '--default-check-pause msec       - Default <check check_pause=\'..\' ../>.\''
-            print '--junit filename                 - Disable colorization output'
             print '--print-calltrace                - Display test call trace with test file name. If test-suite FAILED.'
             print '--print-calltrace-limit N        - How many recent calls to print. Default: 20.'
             print '--supplier-name name             - ObjectName for testsuite under which the value is stored in the SM. Default: AdminID.'
@@ -1630,8 +1629,6 @@ if __name__ == "__main__":
             TestSuiteLogFileReporter.print_help()
             print ''
             TestSuiteJUnitReporter.print_help()
-            # print '--show-filename-in-report - Show filename in result report'
-            # print "--logfile filename        - Save log to filename"
             print ''
             exit(0)
 
