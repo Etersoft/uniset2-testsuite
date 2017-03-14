@@ -6,7 +6,7 @@
 			<item alias="c2" mbslave="localhost:2049" type="modbus"/>
         </aliases>
     </Config>
-    <TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:Test_AI1,MyGlobalVar:101">
+    <TestList replace="MyGlobalVar2:Test_AI1,MyGlobalVar:101">
         <test name="check: Equal test">
             <action set="111=10"/>
             <action set="112=10"/>

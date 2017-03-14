@@ -8,16 +8,15 @@
 	</Config>
     <TestList>
         <test name="SNMP read tests" comm="Чтение по snmp">
-<!--			<check test="sysServ@ups3>1" comment="serv"/> -->
+<!--			<check test="sysServ@node3>1" comment="serv"/> -->
 			<check test="uptime@node1>1" comment="Uptime"/>
 			<check test="uptimeName@node2>=1" comment="Статус батареи" config="snmp2"/>
         </test>
 		<test name="SNMP: FAIL READ" ignore_failed="1">
 			<check test="sysServ2@node2>=1" comment="fail read test" config="snmp2"/>
 		</test>
-		<test name="SNMP write tests" comm="Запись по snmp">
-			<action set="sysName@ups3=10" comment="save sysName"/>
-			<action set="sysServ2@ups3=10" comment="save sysServ"/>
+		<test name="SNMP write tests" comm="Запись по snmp" ignore_failed="1">
+			<action set="sysName@node2=10" comment="save sysName"/>
         </test>
 		<test name="SNMP: FAIL WRITE" ignore_failed="1">
 			<action set="sysServ2@node1=10" comment="FAIL SAVE TEST"/>

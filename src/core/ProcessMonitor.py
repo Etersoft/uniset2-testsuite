@@ -87,7 +87,7 @@ class ChildProcess():
 def waitncpid(w_pid, timeout_sec=-1):
     """
 
-    :rtype :
+    :rtest_type :
     """
     tick = timeout_sec
     while True:
@@ -235,11 +235,13 @@ class MonitorThread(threading.Thread):
 # ---------------------------------------------------------
 class ProcessMonitor():
     def __init__(self, plist_=None, check_msec=2000, after_run_pause=0):
+        '''
 
-        """
+        :param plist_: list of process
+        :param check_msec: check time
+        :param after_run_pause: pause after run process
+        '''
 
-        :type check_msec: value of miliseconds
-        """
         if not plist_:
             plist_ = []
         self.plist = plist_
@@ -249,7 +251,7 @@ class ProcessMonitor():
         self.after_run_pause = after_run_pause
 
     def add_child(self, ch):
-        # print "ProcessMonitor: add child " + ch.name
+
         if ch not in self.plist:
             self.plist.append(ch)
 
@@ -288,8 +290,8 @@ class ProcessMonitor():
 
     def check(self):
         """
-        Проверка корректности
-        :return: True если всё ok
+        Check process
+        :return: True if OK
         """
         for p in self.plist:
             if p.check() == False:

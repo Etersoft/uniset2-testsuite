@@ -136,7 +136,7 @@ class XListDialog():
         return True
 
     def on_button_press_event(self, object, event):
-        if event.button == 1 and event.type == gtk.gdk._2BUTTON_PRESS:
+        if event.button == 1 and event.test_type == gtk.gdk._2BUTTON_PRESS:
             (model, iter) = self.tv.get_selection().get_selected()
             if not iter:
                 return False

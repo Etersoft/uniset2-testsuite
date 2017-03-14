@@ -5,21 +5,23 @@ from TestSuiteGlobal import *
 
 
 class UTestInterface():
-    """Базовый интерфейс для тестирования"""
+    '''
+    Базовый интерфейс для тестирования
+    '''
 
-    def __init__(self, itype, **kwargs):
-        self.itype = itype
+    def __init__(self, itest_type, **kwargs):
+        self.itest_type = itest_type
         self.ignore_nodes = False
 
     def set_ignore_nodes(self, state):
-        """
+        '''
         set ignore 'node' for tests (id@node)
         :param state: TRUE or FALSE
-        """
+        '''
         self.ignore_nodes = state
 
     def get_interface_type(self):
-        return self.itype
+        return self.itest_type
 
     def get_conf_filename(self):
         return ''

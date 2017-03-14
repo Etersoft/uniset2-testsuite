@@ -4,6 +4,7 @@
 import uniset2.UGlobal as UGlobal
 import time
 import os
+import sys
 
 # различные глобальные вспомогательные функции
 t_NONE = ''
@@ -14,6 +15,7 @@ t_BREAK = 'BREAK'
 t_PAUSE = 'PAUSE'
 t_WARNING = 'WARNING'
 t_UNKNOWN = 'UNKNOWN'
+
 
 # class TItem():
 #     def __init__(self, **kwargs ):
@@ -29,13 +31,20 @@ t_UNKNOWN = 'UNKNOWN'
 #         self.item_type = ''  # action,check,test
 #         self.tag = ''  # первый тег на котором "сработал" фильтр
 #         self.tags = ''  # теги
-#         self.nrecur = 0  # уровень рекурсии
+#         self.level = 0  # уровень рекурсии
 #         self.start_time = time.time()
 #
 #         for k,v in kwargs.items():
-#             if k not in self.__dict__:
-#                 self.__dict__[k] = v
+#             if hasattr(object, k):
+#                 setattr(object, k, v)
 
+def copy_dict_attrs(source_dict):
+    res = dict()
+    for k, v in source_dict.items():
+        if not k in res:
+            res[k] = v
+
+    return res
 
 def make_default_item():
     item = dict()
@@ -44,15 +53,16 @@ def make_default_item():
     item['call_level'] = None
     item['result'] = t_NONE
     item['text'] = ''
-    item['items'] = []
+    item['items'] = list()
     item['xmlnode'] = None
     item['filename'] = ''
     item['prev'] = None
     item['item_type'] = ''  # action,check,test
     item['tag'] = ''  # первый тег на котором "сработал" фильтр
     item['tags'] = ''  # теги
-    item['nrecur'] = 0  # уровень рекурсии
+    item['level'] = 0  # уровень где вызывается тест (уровень рекурсии)
     item['start_time'] = time.time()
+    item['test_type'] = '' # TEST, EQUAL, OUTLINK, LINK, =, !=, >, >=, <, <=, MSLEEP, SCRIPT, и т.п. (см. docs)
 
     # датчик на котором произошёл вылет теста (в формате name@node)
     # так же в этом поле может быть два датчика (в случае <compare> проверок)
@@ -63,22 +73,22 @@ def make_default_item():
     return item
 
 
-def make_fail_result(text, ftype='(TestSuiteXMLPlayer)', copyFrom=None):
+def make_fail_result(text, ftest_type='(TestSuiteXMLPlayer)', copyFrom=None):
     fail = make_default_item()
     if copyFrom:
-        fail = copyFrom
+        fail = copy_dict_attrs(copyFrom)
     fail['result'] = t_FAILED
     fail['text'] = text
-    fail['type'] = ftype
+    fail['test_type'] = ftest_type
     return fail
 
 
-def make_info_item(text, ftype='(TestSuiteXMLPlayer)', copy_from=None):
+def make_info_item(text, ftest_type='(TestSuiteXMLPlayer)', copy_from=None):
     info = make_default_item()
     if copy_from:
-        info = copy_from
+        info = copy_dict_attrs(copy_from)
 
-    info['type'] = ftype
+    info['test_type'] = ftest_type
     info['text'] = text
     return info
 
@@ -101,6 +111,37 @@ def get_replace_list(raw_str):
             slist.append([key, 0])
 
     return slist
+
+
+def get_arg_param(param, defval=""):
+    for i in range(0, len(sys.argv)):
+        if sys.argv[i] == param:
+            if i + 1 < len(sys.argv):
+                return sys.argv[i + 1]
+            else:
+                break
+
+    return defval
+
+
+def get_arg_int(param, defval=0):
+    for i in range(0, len(sys.argv)):
+        if sys.argv[i] == param:
+            if i + 1 < len(sys.argv):
+                return UGlobal.to_int(sys.argv[i + 1])
+            else:
+                break
+
+    return defval
+
+
+def check_arg_param(param, defval=""):
+    for i in range(0, len(sys.argv)):
+        if sys.argv[i] == param:
+            return True
+
+    return defval
+
 
 def is_executable(filename):
     """Проверка что файл можно запустить"""
@@ -126,43 +167,6 @@ def is_executable(filename):
 
     return False
 
-class TestSuiteReporter():
-    """ Базовый класс для формирователей отчётов """
-
-    def __init__(self):
-        self.start_time = time.time()
-        self.finish_time = time.time()
-        self.showTestTreeMode = False
-
-    def print_log(self, item):
-        pass
-
-    def print_actlog(self, act):
-        pass
-
-    def setShowTestTreeMode(self, state):
-        self.showTestTreeMode = state
-
-    def make_report(self, results, checkScenarioMode=False):
-        pass
-
-    def make_call_trace(self, results, call_limit):
-        pass
-
-    def start_tests(self, tm=None):
-        if not tm:
-            self.start_time = time.time()
-        else:
-            self.start_time = tm
-
-    def finish_tests(self, tm=None):
-        if not tm:
-            self.finish_time = time.time()
-        else:
-            self.finish_time = tm
-
-    def finish_test_event(self):
-        pass
 
 class TestSuiteException(Exception):
     def __init__(self, err='', test_time=-1, item=None):
@@ -182,6 +186,7 @@ class TestSuiteException(Exception):
 
     def getFinishTime(self):
         return self.ftime
+
 
 class TestSuiteValidateError(TestSuiteException):
     def __init__(self, err=''):

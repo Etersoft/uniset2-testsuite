@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
-    <TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101">
+    <TestList replace="MyGlobalVar2:104,MyGlobalVar:101">
         <test ignore_failed="1" name="HOLD test" comment="Коментарий теста">
             <action set="104=20" comment="Проверка action"/>
             <check check_pause="500" test="104=20" holdtime="4000" comment="Проверка 1 датчика 104"/>

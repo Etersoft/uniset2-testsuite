@@ -1,5 +1,5 @@
 #!/bin/sh
 
-./TestSuiteXMLPlayer.py --testfile modbus_test.xml --show-test-log --show-action-log --show-result-report $*
+./TestSuiteXMLPlayer.py --testfile modbus_test.xml --log-show-tests --log-show-actions $*
 
 # --unideb-add-levels info,warn,crit

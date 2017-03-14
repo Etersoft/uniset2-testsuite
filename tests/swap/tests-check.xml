@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
-    <TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101">
+    <TestList replace="MyGlobalVar2:104,MyGlobalVar:101">
         <test name="simple test">
             <check test="101@3001=0"/>
         </test>

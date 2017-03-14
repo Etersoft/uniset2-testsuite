@@ -1,6 +1,5 @@
 <?xml version = '1.0' encoding = 'utf-8'?>
 <TestScenario>
-<!--TestList type="uniset" logfile="01.01-test_text.txt" logfile_trunc="1"-->
 <TestList type="uniset">
 
     <test num="1" name="start2_1" comment="Начальная инициализация">

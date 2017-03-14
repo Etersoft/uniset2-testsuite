@@ -7,53 +7,86 @@ import string
 from TestSuiteGlobal import *
 from uniset2.UGlobal import *
 from uniset2.pyUExceptions import UException
+from TestSuiteReporter import *
 
 
 class TestSuiteConsoleReporter(TestSuiteReporter):
-    """ Вывод на экран (надо сделать Singleton-ом!)"""
+    '''
+    Класс реализующий вывод лога на экран. Управляется аргументами командной строки
+    начинающимися с префикса --log-xxxx.
+    '''
 
-    def __init__(self):
-        TestSuiteReporter.__init__(self)
+    def __init__(self, arg_prefix='log', **kwargs):
+        TestSuiteReporter.__init__(self, **kwargs)
 
         self.colsep = ":"  # символ разделитель столбцов (по умолчанию)
-        self.col_comment_width = 50
-        self.col_tree_width = 45
-        self.log_numstr = 0
+        self.log_col_comment_width = 50
+        self.log_col_tree_width = 45
+        self.numstr = 0
         self.log_show_numline = False
-        self.printlog = False
-        self.printactlog = False
-        self.notimestamp = False
-        self.show_test_type = False
+        self.log_show_tests = False
+        self.log_show_actions = False
+        self.log_show_timestamp = False
+        self.log_show_type = False
         self.log_show_comments = False
         self.log_show_test_comment = False
         self.log_hide_time = False
         self.log_hide_msec = False
-        self.log_show_testtype = False
-        self.no_coloring_output = False
-        self.calltrace_disable_extinfo = False
-        self.show_test_filename = False
+        self.log_show_type = False
+        self.log_no_coloring_output = False
+        self.log_calltrace_disable_extended_info = False
+        self.log_show_test_filename = False
+
+        TestSuiteReporter.commandline_to_attr(self, arg_prefix, 'log')
+
+        if checkArgParam('--' + arg_prefix + '-show-result-only', False):
+            self.log_show_actions = False
+            self.log_show_tests = False
+
+    @staticmethod
+    def print_help(prefix='log'):
+
+        print 'TestSuiteConsoleReporter (--' + prefix + ')'
+        print '--------------------------------------------'
+        print '--' + prefix + '-show-tests              - Show tests log'
+        print '--' + prefix + '-show-actions            - Show actions log'
+        print '--' + prefix + '-show-result-only        - Show only result report (Ignore [show-actions,show-tests])'
+        print '--' + prefix + '-show-comments           - Display all comments (test,check,action)'
+        print '--' + prefix + '-show-numline            - Display line numbers'
+        print '--' + prefix + '-show-timestamp          - Display the time'
+        print '--' + prefix + '-show-test-filename      - Display test filename in test tree'
+        print '--' + prefix + '-show-test-comment       - Display test comment'
+        print '--' + prefix + '-show-test-type          - Display the test test type'
+        print '--' + prefix + '-hide-time               - Hide elasped time'
+        print '--' + prefix + '-hide-msec               - Hide milliseconds'
+        print '--' + prefix + '-col-comment-width val   - Width for column "comment"'
+        print '--' + prefix + '-no-coloring-output      - Disable colorization output'
+        print '--' + prefix + '-calltrace-disable-extended-info - Disable show calltrace extended information'
+
+    def is_enabled(self):
+        return True
 
     def finish_test_event(self):
 
-        if self.printlog:
+        if self.log_show_tests:
             print "---------------------------------------------------------------------------------------------------------------------"
 
     def print_log(self, item):
 
         txt = self.make_log(item)
 
-        if self.showTestTreeMode:
-            if item['item_type'] == 'test' and item['type'] != 'FINISH':
+        if self.show_test_tree:
+            if item['item_type'] == 'TEST' and item['test_type'] != 'FINISH':
                 print txt
             return
 
-        if self.printlog:
+        if self.log_show_tests:
             print txt
 
     def make_log(self, item):
 
         t_comment = item['comment']
-        t_test = item['type']
+        t_test = item['test_type']
         txt = item['text']
         t_result = item['result']
         try:
@@ -67,33 +100,33 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
 
         ntab = False
-        if item['item_type'] == 'check' or item['item_type'] == 'action':
+        if item['item_type'] == 'CHECK' or item['item_type'] == 'ACTION':
             ntab = True
 
-        txt2 = self.set_tab_space(txt, item['nrecur'], ntab)
+        txt2 = self.set_tab_space(txt, item['level'], ntab)
 
-        if self.showTestTreeMode:
-            if item['item_type'] == 'test' and item['type'] != 'FINISH':
-                self.log_numstr += 1
+        if self.show_test_tree:
+            if item['item_type'] == 'TEST' and item['test_type'] != 'FINISH':
+                self.numstr += 1
 
             if self.log_show_numline:
-                txt2 = '%4s %s' % (self.log_numstr, txt2)
+                txt2 = '%4s %s' % (self.numstr, txt2)
 
             # if self.log_show_comments or self.log_show_test_comment:
-            txt2 = "%s %s" % (txt2.ljust(self.col_tree_width), t_comment)
+            txt2 = "%s %s" % (txt2.ljust(self.log_col_tree_width), t_comment)
 
-            if self.show_test_filename:
+            if self.log_show_test_filename:
                 txt2 = "[%35s]   %s" % (item['filename'], txt2)
 
             return txt2
 
-        self.log_numstr += 1
+        self.numstr += 1
 
         txt = str('[%s] %s%8s%s %s' % (
             self.colorize_result(t_result), self.colsep, t_test, self.colsep,
             self.colorize_text(t_result, t_test, txt2)))
 
-        if not self.log_show_testtype:
+        if not self.log_show_type:
             txt = str('[%s] %s %s' % (
                 self.colorize_result(t_result), self.colsep, self.colorize_text(t_result, t_test, txt2)))
 
@@ -104,7 +137,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             try:
                 txt = '%s %s %s' % (
                     self.colorize_text(t_result, t_test,
-                                       t_comment.ljust(self.col_comment_width)[0:self.col_comment_width]),
+                                       t_comment.ljust(self.log_col_comment_width)[0:self.log_col_comment_width]),
                     self.colsep, txt)
             except UnicodeDecodeError:
                 pass
@@ -116,14 +149,14 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         if not self.log_hide_time:
             txt = '%s %s %s' % (etm, self.colsep, txt)
 
-        if self.show_test_type:
+        if self.log_show_type:
             txt = '%6s %s %s' % ("CHECK", self.colsep, txt)
 
-        if not self.notimestamp:
+        if self.log_show_timestamp:
             txt = "%s %s%s" % (t_tm, self.colsep, txt)
 
         if self.log_show_numline:
-            txt = '%4s %s %s' % (self.log_numstr, self.colsep, txt)
+            txt = '%4s %s %s' % (self.numstr, self.colsep, txt)
 
         return txt
 
@@ -131,18 +164,18 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         txt = self.make_actlog(act)
 
-        if self.showTestTreeMode:
-            if act['item_type'] == 'test' and act['type'] != 'FINISH':
+        if self.show_test_tree:
+            if act['item_type'] == 'TEST' and act['test_type'] != 'FINISH':
                 print txt
             return
 
-        if self.printactlog:
+        if self.log_show_actions:
             print txt
 
     def make_actlog(self, act):
 
         t_comment = act['comment']
-        t_act = act['type']
+        t_act = act['test_type']
         txt = act['text']
         t_result = act['result']
 
@@ -157,32 +190,32 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
 
         ntab = False
-        if act['item_type'] == 'action' or act['item_type'] == 'check':
+        if act['item_type'] == 'ACTION' or act['item_type'] == 'CHECK':
             ntab = True
 
-        txt2 = self.set_tab_space(txt, act['nrecur'], ntab)
+        txt2 = self.set_tab_space(txt, act['level'], ntab)
 
-        if self.showTestTreeMode:
-            if act['item_type'] == 'test' and act['type'] != 'FINISH':
-                self.log_numstr += 1
+        if self.show_test_tree:
+            if act['item_type'] == 'TEST' and act['test_type'] != 'FINISH':
+                self.numstr += 1
 
             if self.log_show_numline:
-                txt2 = '%4s %s' % (self.log_numstr, txt2)
+                txt2 = '%4s %s' % (self.numstr, txt2)
 
             # if self.log_show_comments or self.log_show_test_comment:
             txt2 = "%s\t\t%s" % (txt2, t_comment)
 
-            if self.show_test_filename:
+            if self.log_show_test_filename:
                 txt2 = "[%35s]   %s" % (act['filename'], txt2)
 
             return txt2
 
-        self.log_numstr += 1
+        self.numstr += 1
 
         txt = str('[%7s] %s%8s%s %s' % (
             self.colorize_result(t_result), self.colsep, t_act, self.colsep, self.colorize_text(t_result, t_act, txt2)))
 
-        if not self.log_show_testtype:
+        if not self.log_show_type:
             txt = str('[%7s] %s %s' % (
                 self.colorize_result(t_result), self.colsep, self.colorize_text(t_result, t_act, txt2)))
 
@@ -193,7 +226,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             try:
                 txt = '%s %s %s' % (
                     self.colorize_text(t_result, t_act,
-                                       t_comment.ljust(self.col_comment_width)[0:self.col_comment_width]),
+                                       t_comment.ljust(self.log_col_comment_width)[0:self.log_col_comment_width]),
                     self.colsep, txt)
             except UnicodeDecodeError:
                 pass
@@ -205,25 +238,25 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         if not self.log_hide_time:
             txt = '%s %s %s' % (etm, self.colsep, txt)
 
-        if self.show_test_type:
+        if self.log_show_type:
             txt = '%6s %s %s' % ('ACTION', self.colsep, txt)
 
-        if not self.notimestamp:
+        if self.log_show_timestamp:
             txt = '%s %s%s' % (t_tm, self.colsep, txt)
 
         if self.log_show_numline:
-            txt = '%4s %s %s' % (self.log_numstr, self.colsep, txt)
+            txt = '%4s %s %s' % (self.numstr, self.colsep, txt)
 
         return txt
 
-    def make_report(self, results, check_scenario_mode=False):
+    def make_report(self, tree_tests, check_scenario_mode=False):
 
-        if self.showTestTreeMode:
+        if self.show_test_tree:
             return
 
         filename = ''
-        if len(results) > 0:
-            filename = results[0]['filename']
+        if len(tree_tests) > 0:
+            filename = tree_tests[0]['filename']
 
         csm = ""
         if check_scenario_mode is True:
@@ -239,11 +272,17 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         print "%s\n%s" % (head, head2)
         i = 1
         ttime = 0
-        for res in results:
+
+        for res in tree_tests:
+
+            # Выводим только тесты первого(0) уровня
+            if res['level'] != 0:
+                continue
+
             td = datetime.timedelta(0, res['time'])
+
             print '%s. [%s] - %40s |%s|' % (
-                string.rjust(str(i), 3), self.colorize_result(res['result']), string.ljust(res['name'], 45),
-                td)
+                string.rjust(str(i), 3), self.colorize_result(res['result']), string.ljust(res['name'], 45), td)
             i = i + 1
             ttime = ttime + res['time']
 
@@ -254,7 +293,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
     def colorize(self, t_result, txt):
 
-        if self.no_coloring_output:
+        if self.log_no_coloring_output:
             return txt
 
         if t_result == t_PASSED:
@@ -269,7 +308,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         return txt
 
     def colorize_test_begin(self, txt):
-        if self.no_coloring_output:
+        if self.log_no_coloring_output:
             return txt
 
         return "\033[1;37m%s\033[1;m" % txt
@@ -281,7 +320,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         # return self.colorize_test_name(txt)
 
     def colorize_test_outlink(self, txt):
-        if self.no_coloring_output:
+        if self.log_no_coloring_output:
             return txt
 
         return "\033[1;36m%s\033[1;m" % txt
@@ -305,12 +344,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
     def colorize_result(self, t_result):
         return self.colorize(t_result, "%7s" % t_result)
-
-    def set_notime(self, state):
-        self.log_hide_time = state
-
-    def set_notimestamp(self, state):
-        self.notimestamp = state
 
     def elapsed_time(self, t=None):
         if t is None:
@@ -340,7 +373,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             pass
 
         try:
-            t_comment = '%s' % t_comment.ljust(self.col_comment_width)[0:self.col_comment_width]
+            t_comment = '%s' % t_comment.ljust(self.log_col_comment_width)[0:self.log_col_comment_width]
         except UnicodeDecodeError:
             pass
         except TypeError:
@@ -349,11 +382,11 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         return t_comment
 
     @staticmethod
-    def set_tab_space(txt, nrecur, ntab):
+    def set_tab_space(txt, level, ntab):
         # сдвиг "уровня" в зависимости от рекурсии
         s_tab = ""
-        if nrecur > 0:
-            for i in range(0, nrecur):
+        if level > 0:
+            for i in range(0, level):
                 s_tab = '%s.   ' % s_tab
         txt = '%s%s' % (s_tab, txt)
 
@@ -361,24 +394,6 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             txt = '.   %s' % txt
 
         return txt
-
-    def set_show_comments(self, show_comments):
-        self.log_show_comments = show_comments
-
-    def set_show_numline(self, show_numline):
-        self.log_show_numline = show_numline
-
-    def set_hide_time(self, hide_time):
-        self.log_hide_time = hide_time
-
-    def set_show_test_type(self, show_test_type):
-        self.log_show_testtype = show_test_type
-
-    def set_col_comment_width(self, col_comment_width):
-        self.col_comment_width = col_comment_width
-
-    def set_show_test_comment(self, show_test_comment):
-        self.log_show_test_comment = show_test_comment
 
     @staticmethod
     def build_fail_trace(call_trace):
@@ -452,7 +467,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
     def show_extended_information(self, fail_item):
 
-        if self.calltrace_disable_extinfo == True:
+        if self.log_calltrace_disable_extended_info == True:
             return
 
         print "\n================================= EXTENDED INFORMATION =================================\n"
@@ -475,8 +490,8 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             stime = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(sensorChangeInfo.tv_sec))
             # При выводе делаем nanosec --> millisec
             print "(%d)'%s' ==> last update %s.%d value=%d owner=%d\n" % (
-            faultySensor[0], fail_item['faulty_sensor'], stime, sensorChangeInfo.tv_nsec / 1000000,
-            sensorChangeInfo.value, sensorChangeInfo.supplier)
+                faultySensor[0], fail_item['faulty_sensor'], stime, sensorChangeInfo.tv_nsec / 1000000,
+                sensorChangeInfo.value, sensorChangeInfo.supplier)
 
             # Получаем информацию о том кто заказывал этот датчик
             # возврщется массив запрошенных датчиков с кратким описанием и списоком заказчиков по каждому датчику

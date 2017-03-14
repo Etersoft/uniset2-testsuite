@@ -21,7 +21,10 @@ from TestSuiteGlobal import *
     <item name="node2" ip="test.net-snmp.org" comment="UPS2"/>
     <item name="ups3" ip="demo.snmplabs.com" comment="DDD"/>
   </Nodes>
-
+  <MIBdirs>
+	  <dir path="conf/" mask="*.mib"/>
+	  <dir path="conf2/" mask="*.mib"/>
+  </MIBdirs>
   <Parameters defaultReadCommunity="demopublic" defaultWriteCommunity="demoprivate">
     <item name="uptime" OID=".1.3.6.1.2.1.1.3.0" r_community="demopublic"/>
 	<item name="uptimeName" community="demopublic" ObjectName="sysUpTime.0"/>
@@ -58,7 +61,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
         self.mibparams = dict()
         self.nodes = dict()
-        self.mibdirs = dict()
+        self.mibdirs = list()
         self.confile = snmpConFile
         self.init_from_file(snmpConFile)
 
@@ -76,7 +79,7 @@ class UTestInterfaceSNMP(UTestInterface):
                                'Reason: noAccess',
                                'Error',
                                'Timeout',
-                               'Bad variable type'
+                               'Bad variable test_type'
                                ]
 
     def init_from_file(self, xmlfile):
@@ -199,7 +202,7 @@ class UTestInterfaceSNMP(UTestInterface):
                     "(snmp):  <MIBdirs> : ERR: path='%s' NOT FOUND ['%s']" % (
                         item['path'], xml.getFileName()))
 
-            self.mibdirs[item['path']] = item
+            self.mibdirs.append(item)
 
             node = xml.nextNode(node)
 
@@ -339,16 +342,16 @@ class UTestInterfaceSNMP(UTestInterface):
 
     def parse_value(self, lst):
 
-        vtype = lst[0].upper()
+        vtest_type = lst[0].upper()
         sval = lst[1]
 
-        if vtype == 'INTEGER' or vtype == 'GAUGE32' or vtype == 'COUNTER32' or vtype == 'UNSIGNED32':
+        if vtest_type == 'INTEGER' or vtest_type == 'GAUGE32' or vtest_type == 'COUNTER32' or vtest_type == 'UNSIGNED32':
             return uglobal.to_int(sval)
 
-        if vtype == 'STRING':
+        if vtest_type == 'STRING':
             return sval
 
-        if vtype == 'TIMETICKS':
+        if vtest_type == 'TIMETICKS':
             ret = self.re_timeticks.findall(sval)
             if not ret or len(ret) == 0:
                 return None
@@ -378,7 +381,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
         var_name = None
 
-        #  \todo Пока-что поддерживается только type INTEGER'''
+        #  \todo Пока-что поддерживается только test_type INTEGER'''
         var_type = "i"
 
         if param['OID']:
@@ -484,7 +487,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
         # Проверка переменных через MIB-файлы
         mibfiles = list()
-        for k, mibdir in self.mibdirs.items():
+        for mibdir in self.mibdirs:
             if not os.path.isdir(mibdir['path']):
                 errors.append("\t(snmp): CONF[%s] ERROR: MIB-directory '%s' not found" % (self.confile, mibdir['path']))
                 res_ok = False

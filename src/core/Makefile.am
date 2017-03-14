@@ -1,5 +1,4 @@
-pyexec_SCRIPTS = TestSuiteXMLPlayer.py
-pyexecdir=$(pkgpythondir)
+py_DATA = *.py
+pydir=$(pkgdatadir)
 
-py_DATA = TestSuiteInterface.py TestSuiteGlobal.py TestSuite*Reporter.py UTestInterface.py TestSuitePlayer.py ProcessMonitor.py
-pydir=$(pkgpythondir)
+bin_SCRIPTS=@PACKAGE@-xmlplayer

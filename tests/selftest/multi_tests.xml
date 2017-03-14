@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+<Config>
+  <aliases>
+    <item type="uniset" alias="u" confile="configure.xml" default="1"/>
+    <item type="modbus" alias="mb" mbslave="localhost:2048"/>
+    <item type="snmp" alias="snmp" snmp="conf/snmp.xml"/>
+  </aliases>
+</Config>
+<RunList after_run_pause="5000">
+  <item name="SharedMemory" script="./start_fg.sh" chdir="../../Utils/SharedMemory/" silent_mode="1"/>
+  <item name="MBSlave1" script="./start_mbslave1.sh" args="-c 10" chdir="../../Utils/Modbus/" silent_mode="1"/>
+</RunList>
+<TestList>
+   <test name="check: Equal test">
+     <action set="111=10"/>
+     <check test="111=10"/>
+     <check test="uptime@node1>1" config="snmp"/>
+     <check test="0x10!=0" config="mb"/>
+    </test>
+</TestList>
+</TestScenario>

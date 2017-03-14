@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
-    <TestList replace="ses:ses1,QGX_:QG1">
-        <test name="simple test">
-			<check test="QGX_isOn_S@ses=0" timeout="15000" comment="Включен"/>
-			<check test="QGX_isOff_S@ses=1" timeout="15000" comment="Выключен"/>
+    <TestList replace="ses:ses1,[X]:1">
+        <test name="simple test" replace="[Z]:[X]">
+			<check test="QG[Z]_isOn_S@ses=0" timeout="15000" comment="Включен"/>
+			<check test="QG[X]_isOff_S@ses=1" timeout="15000" comment="Выключен"/>
 		</test>
         <test name="out chesk" replace="[delay]:0,[X]:3">
 			<check file="tests-replace-bug2.xml" replace="[delay]:5000" link="ALL" test="outlink"/>

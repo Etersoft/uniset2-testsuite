@@ -3,7 +3,7 @@
 	<Failure>
 	<item script="./failure.sh"/>
 	</Failure>
-    <TestList logfile="" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101">
+    <TestList replace="MyGlobalVar2:104,MyGlobalVar:101">
         <test name="Test N5 (fail test)" tname="t5">
             <check test="101wedwe=0"/>
         </test>

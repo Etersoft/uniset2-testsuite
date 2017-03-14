@@ -15,3 +15,4 @@ function run_test()
 run_test ./test-check.sh
 run_test ./test-compare.sh
 run_test ./test-snmp.sh
+run_test ./test-multi.sh

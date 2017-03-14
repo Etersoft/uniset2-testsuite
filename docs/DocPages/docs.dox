@@ -39,7 +39,7 @@
 
 	\section uts_Common Общая часть
      В самом общем виде процесс тестирования можно сформулировать как "подать некоторое воздействие на систему и проверить реакцию".
-     \b uniset-testsuite предназначен для автоматизации этого процесса. При этом система тестирования расчитана на взаимодействие
+     \b uniset-testsuite предназначен для автоматизации этого процесса. При этом система расчитана на взаимодействие
      с тестируемой системой по цифровому протоколу.
      
      На данный момент поддерживаются следующие интерфейсы:
@@ -49,7 +49,7 @@
     
     Встроенная система плагинов, позволяет лего расширять список поддерживаемых интерфесов путём добавления своих реализаций.
     
-    Подача тестовых воздействий и проверка реакции записывается в виде тестового сценария, который можно проигрывать сколько угодно раз.
+    Подача тестовых воздействий и проверка реакции записывается в виде тестового сценария, который можно исполнять сколько угодно раз.
 
    \section uts_TestScenario Тестовый сценарий.
    В общем случае сценарий может быть написан в любом виде. Главное при этом, чтобы был для этого "вида" написан "проигрыватель".
@@ -58,43 +58,46 @@
    \section uts_Scenario Сценарий
 
    Сценарий представляет из себя xml-файл с инструкциями. При этом все тесты необходимо распологать между тегами \<TestList>..\</TestList>. 
-На данный момент поддерживается два вида сценариев:
+На данный момент поддерживаются сценарии:
  - uniset
  - modbus
  - snmp
  
- Тип сценария записывается в теге \b \<TestList type="..."> ("modbus" или "uniset"). Эти два вида различаются только способом задания параметров.
-
+ Тип сценария записывается в теге \b \<TestList type="xxx">.
  Отдельно можно указывать тип для конкретной конфигурации. См. \ref uts_multiInterface_Scenario.
 
- Ниже приведён пример записи uniset-сценария из двух тестов.
+ Ниже приведён пример записи uniset-сценария из трёх тестов.
 \code
-<?xml version = '1.0' encoding = 'utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
-<Config>
-...
-</Config>
-<TestList type="uniset">
-	<test num="2" name="DG1 Running">
-		<check test="SES1_CtlMode_AS=2"  comm="SES1: mode=PultControl"/>
-		<action set="DG1_Start_S=1"  reset_time="300" rval="0" comm="start DG1"/>
-		<check test="SEES1_State_AS=9"  comm="SES1: state=Running" timeout="15000" check_pause="200"/>
-		<check test="DG1_LampON_C!=0" />
-		<action msleep="2000" />
-		<check test="DG1_Start_C=0" />
-		<check test="DG1_Stop_C=0" />
-	</test>
-	<test num="3" name="QG1 ON">
-		<check test="SEES1_State_AS=9"  comm="SES1: state=Running"/>
-		<action set="QG1_On_S=1"  reset_time="300" rval="0" comm="QG1 on command"/>
-		<check test="QG1_State_AS=1"  timeout="8000" check_pause="500" comm="QG1: state=ON"/>
-		<check test="SEES1_State_AS=1"  comm="SES1: state=ON"/>
-		<check test="QG1_LampON_C!=0" comm="QG1: lamp ON"/>
-		<action msleep="2000" />
-		<check test="QG1_On_C=0" comm="QG1: on command OFF"/>
-		<check test="QG1_Off_C=0" comm="QG1: off command OFF"/>
-		<check test="SEES1_NotAloneWorking_C!=0" />
-    </test>
+ <Config>
+ ...
+ </Config>
+ <RunList after_run_pause="3000">
+ ...
+ </RunList>
+ <TestList>
+  <test name="Stopped" comment="Проверка что без команды 'ничего не делаем'">
+   <action set="OnControl_S=0" comment="Снимаем команду 'начать работу'"/>
+   <check test="CmdLoad_C=0" comment="команда 'наполнить' не меняется" holdtime="3000"/>
+   <check test="CmdUnload_C=0" comment="команда 'опустошить' не меняется" holdtime="3000"/>
+   <check test="Level_AS=0" comment="уровень не меняется" holdtime="6000"/>
+  </test>
+  <test name="Processing" comment="Проверка работы процесса">
+   <action set="OnControl_S=1" comment="Подаём команду 'начать работу'"/>
+   <check test="CmdLoad_C=1" comment="Подана команда 'наполнение'"/>
+   <check test="CmdUnload_C=0" comment="Cнята команда 'опустошение'"/>
+   <check test="Level_AS>=90" comment="Цистерна наполняется.." timeout="15000"/>
+   <check test="CmdLoad_C=0" comment="Снята команда 'наполнение'"/>
+   <check test="CmdUnload_C=1" comment="Подана команда 'опустошение'"/>
+   <check test="Level_AS<=10" comment="Цистерна опустошается.." timeout="15000"/>
+  </test>
+  <test name="Stopped" comment="Проверка остановки процесса">
+   <action set="OnControl_S=0" comment="Снимаем команду 'начать работу'"/>
+   <check test="CmdLoad_C=0" comment="команда 'наполнить' не меняется" holdtime="3000"/>
+   <check test="CmdUnload_C=0" comment="команда 'опустошить' не меняется" holdtime="3000"/>
+   <check test="Level_AS<=80" comment="Уровень не меняется" holdtime="10000"/>
+  </test>
 </TestList>
 </TestScenario>
 \endcode
@@ -113,7 +116,7 @@
 	<item script="./start_mbslave1.sh" args=""  silent_mode="1" chdir="../../Utils/Modbus/" ignore_terminated="0" ignore_run_failed="0" name="MBSlave1"/>
     <item script="./start_mbslave2.sh" args="" chdir="../../Utils/Modbus/" ignore_terminated="0" ignore_run_failed="0" name="MBSlave2"/>
 </RunList>
-<TestList logfile="result.txt" logfile_trunc="1" replace="MyGlobalVar2:104,MyGlobalVar:101" type="modbus">
+<TestList replace="MyGlobalVar2:104,MyGlobalVar:101" type="modbus">
 	<test name="Test simple read" ignore_failed="1">
 		<action set="0x10=2" />
 		<check test="0x10!=0" />
@@ -128,7 +131,6 @@
 	<test name="Test other 'check'" ignore_failed="1">
 		<check test="0x20=0x20"  timeout="1000" check_pause="100"/>
 		<check test="0x20=0x20" />
-		<check test="multicheck" id="0x25=0x25,0x20:04=0x20,0x19:03=0x19" />
 	</test>
 	<test name="Test 'great'" ignore_failed="1">
 		<action set="109=10" />
@@ -147,11 +149,7 @@
 </TestScenario>
 \endcode
 
- При этом для всего сценария можно задать следующие параметры:
-
- \b logfile="filname" - задаёт имя файла куда будет писатся лог прохождения теста
-
- \b logfile_trunc="1" - "1" означает каждый раз писать файл сначала (очищать перед записью)
+ При этом в секции \b TestList для сценария можно задать следующие параметры:
 
  \b notimestamp="1"  - "1" означает не выводить дату и время при прохождении тестов
 
@@ -199,6 +197,7 @@
 			vtU2		// беззнаковое целое (4 байта). В виде строки задаётся как "U2".
 		};
 \endcode
+	\warning Следует иметь ввиду, что в текущей реализации работа ведётся только с целыми значениями, поэтому все 'float'-значения округляются до целых.
 
    При этом для функций записи регистра используются только поля \b mbreg, \b mbaddr, \b mbfunc.
    Поля \b mbaddr, \b mbfunc так же являются не обязательными.
@@ -206,7 +205,7 @@
 	
    \section uts_Test Тесты
    
-   Каждый тест заключается в теги \<test>...\</test>. Все тесты проигрываются последовательно.
+   Каждый тест заключается в теги \<test>...\</test>. Все тесты исполняются последовательно.
 
    Возможные действия деляться на три вида
    - \b "action" - 'выставление датчика'
@@ -231,7 +230,7 @@
   Где в set - можно задавать, как число или как имя.
   reset_time - Время в мсек. через которое датчик примет значение заданное параметром rval.
   \note Следует иметь ввиду, что сброс значения происходит параллельно работе теста.
-  Т.е. тест продолжается сразу после выставления значения.
+  Т.е. тест продолжается сразу после выставления значения. Но переход к следующему тесту будет осуществлён, только после "сброса"(reset_time).
   
   Помимо этого разрешается выставление сразу нескольких значений.
      Датчики и их значения перечисляются через запятую. И записываются в формате "id1=val,id2@host2=val2,...".
@@ -239,7 +238,7 @@
   <action set="101=1,102=3,123=4" />
   <action set="TestSensor=1,TestSensor2@Node4=23,340=5" />
 \endcode
-  Где также id - можно задавать, числом или как именем.   
+  Где также id - можно задавать, числом или именем.   
    
    \subsection uts_Actions_MSLEEP 2. 'MSLEEP'. Пауза.
      Реализация паузы в милесекундах.
@@ -405,12 +404,6 @@
    ignore_failed="1" - Не останавливаться в случае "провала" теста. По умолчанию тестирование будет прервано.
    ignore="1" - Пропустить данный тест при проверке.
    
-   Помимо этого каждому тесту можно отдельно указать файл для записи лога. Эти настройки "перекрывают" глобальные.
-
-   \b logfile="filname" - задаёт имя файла куда будет писаться лог прохождения теста
-
-   \b logfile_trunc="1" - "1" означает каждый раз писать файл сначала (очищать перед записью)
-
 \code
 	<test num="1" name="Test N21"  ignore_failed="1">
 	 	<action set="101 =0" />
@@ -428,7 +421,7 @@
   
   В uniset-testsuite встроен механизм позволяющий делать автоматические замены. Определяется он при помощи свойства
   replace="var1:val1,var2:val2,..". Заменять можно любое свойство относящееся к стандартным (обрабатываемым плээром),
-  включая настроечные поля (test,id,link,val,name,ignore_failed,logfile,logfile_trunc и т.п.) и даже свойство replace (!)
+  включая настроечные поля (test,id,link,val,name,ignore_failed и т.п.) и даже свойство replace (!)
   \note Следует иметь ввиду что происходит замена той части слова которая совпала с одним из "ключей". При этом далее
 замене подвергается уже "модифицированное" предыдущей заменой слово.
   \warning Замены производятся в порядке указанном в списке \a replace. Следует также учитывать, что цепочка замен
@@ -557,7 +550,7 @@
   \code
 <Config>
   <aliases>
-	<item type="modbus" default="1" alias="c1" mbslave="localhost:2048" config="reglist.xml"/>
+	<item type="modbus" default="1" alias="c1" mbslave="localhost:2048"/>
 	<item type="modbus" alias="c2" mbslave="localhost:2049"/>
   </aliases>
 </Config>
@@ -659,36 +652,24 @@
 \code
 <?xml version="1.0" encoding="utf-8"?>
 <TestScenario>
-	<RunList after_run_pause="5000">
-		<item after_run_pause="0" chdir="../../Utils/SharedMemory/" ignore_run_failed="1" ignore_terminated="1" name="SharedMemory" script="./start_fg.sh" silent_mode="1"/>
-	</RunList>
-    <Config>
-        <aliases>
-            <item type="uniset" alias="c1" confile="configure.xml"/>
-            <item type="modbus" alias="c2" mbslave="localhost:2049"/>
-            <item type="snmp" alias="c3" snmp="snmp.xml"/>
-        </aliases>
-    </Config>
-	<TestList>
-     <test name="Test simple read" ignore_failed="1">
-            <check test="0x10!=0"/>
-            <check test="0x24:0x04!=0"/>
-            <check test="0x24!=0"/>
-            <check test="0x1@0x02:0x02!=0" config="c2"/>
-            <check test="0x24:0x06!=0"/>
-        </test>
-        <test name="Test simple write" ignore_failed="1">
-            <action set="0x25=10"/>
-            <action set="0x25:0x10=10"/>
-            <action set="16=10"/>
-            <action set="0x25@0x02=10" config="c2"/>
-            <action set="0x25@0x02:0x05=10" config="c2"/>
-        </test>
-        <test name="Test snmp">
-            <check test="uptime@node1>1" comment="Uptime" config="c3"/>
-            <check test="uptimeName@node2>=1" comment="Статус батареи" config="c3"/>
-        </test>
-	</TestList>
+<Config>
+  <aliases>
+    <item type="uniset" alias="u" confile="configure.xml" default="1"/>
+    <item type="modbus" alias="mb" mbslave="localhost:2048"/>
+    <item type="snmp" alias="snmp" snmp="conf/snmp.xml"/>
+  </aliases>
+</Config>
+<RunList>
+...
+</RunList>
+<TestList>
+   <test name="check: Equal test">
+     <action set="111=10"/>
+     <check test="111=10"/>
+     <check test="uptime@node1>1" config="snmp"/>
+     <check test="0x10!=0" config="mb"/>
+    </test>
+</TestList>
 </TestScenario>
 \endcode
 
@@ -812,8 +793,8 @@
   а не \a Test5 (потому-что он не имеет тега \a #D1).
   
   \section uts_ShowTestTree Вывод дерева тестов
-	Для вывода дерева тестов необходимо указать команду --show-test-tree. При этом эта команда 
-	поддерживает теги (см. \ref uts_Tags), а так же команду --show-numline
+	Для вывода дерева тестов необходимо указать команду --log-show-test-tree. При этом эта команда 
+	поддерживает теги (см. \ref uts_Tags), а так же команду --log-show-numline
 
 	
 	
@@ -826,5 +807,5 @@
 	В случае если тестовый сценарий был \b type='uniset', то помимо вывода дерева вызовов, так же выводится информация о том,
 	какой объект менял датчик (на котором произошёл вылет), когда это было последний раз,
 	а так же информацию по всем заказчикам которые заказали этот датчик.
-	Т.к. выводится очень много информации, то можно отключить её вывод параметром \b --calltrace-disable-extended-info
+	Т.к. выводится очень много информации, то можно отключить её вывод параметром \b --log-calltrace-disable-extended-info
 */

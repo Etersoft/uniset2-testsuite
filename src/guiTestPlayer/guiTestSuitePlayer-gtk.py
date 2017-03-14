@@ -15,6 +15,7 @@ from TestSuiteInterface import *
 from GtkProcessMonitor import *
 from dlg_xlist import *
 from ScenarioParamEditor import *
+from TestSuiteGlobal import *
 
 
 # универсальный код для диалогов
@@ -35,7 +36,7 @@ class gfid():
     tname = 3
     bg = 4
     xmlnode = 5
-    etype = 6
+    etest_type = 6
     t_time = 7
     pbar = 8
     pbar_vis = 9
@@ -82,8 +83,8 @@ class guiTestSuitePlayer():
 
         self.tsi = TestSuiteInterface()
 
-        testfile = self.tsi.getArgParam("--testfile", "")
-        conflist = self.tsi.getArgParam("--confile", "")
+        testfile = get_arg_param("--testfile", "")
+        conflist = get_arg_param("--confile", "")
         # show_log = ts.checkArgParam("--show-test-log",False)
         #        show_actlog = ts.checkArgParam("--show-actions-log",False)
         #        show_result = ts.checkArgParam("--show-result-report",False)
@@ -93,7 +94,7 @@ class guiTestSuitePlayer():
         cf = conflist.split(',')
 
         is_system_run_flag = sys.argv[0].startswith("./")
-        self.datdir = ( "/usr/share/uniset2-testsuite/player/" if not is_system_run_flag else "./" )
+        self.datdir = ( "/usr/share/uniset2-testsuite/gtkplayer/" if not is_system_run_flag else "./" )
         self.imgdir = self.datdir + "images/"
         self.moddir = self.datdir + "editors/"
 
@@ -196,7 +197,7 @@ class guiTestSuitePlayer():
                                    str,  # test name
                                    str,  # backgorund
                                    object,  # xmlnode
-                                   int,  # element type (TestSuiteXMLPlayer.tt)
+                                   int,  # element test_type (TestSuiteXMLPlayer.tt)
                                    float,  # t_time
                                    int,  # progress bar
                                    'gboolean',  # progress visible
@@ -350,7 +351,7 @@ class guiTestSuitePlayer():
 
         if event.button == 3:
             self.test_popup.popup(None, None, None, event.button, event.time)
-            t = model.get_value(iter, gfid.etype)
+            t = model.get_value(iter, gfid.etest_type)
             # if t == tt.Test:
             #              self.builder.get_object("mi_addCheck").set_sensitive(False)
             #           else:
@@ -358,7 +359,7 @@ class guiTestSuitePlayer():
 
             return False
 
-        if event.button == 1 and event.type == gtk.gdk._2BUTTON_PRESS:
+        if event.button == 1 and event.test_type == gtk.gdk._2BUTTON_PRESS:
             self.on_edit(model, iter)
 
         return False
@@ -390,7 +391,7 @@ class guiTestSuitePlayer():
         if not iter:
             return
 
-        t = model.get_value(iter, gfid.etype)
+        t = model.get_value(iter, gfid.etest_type)
         xmlnode = model.get_value(iter, gfid.xmlnode)
         xml = model.get_value(iter, gfid.xml)
         if t == tt.Test:
@@ -424,7 +425,7 @@ class guiTestSuitePlayer():
         if not iter:
             return
 
-        t = model.get_value(iter, gfid.etype)
+        t = model.get_value(iter, gfid.etest_type)
 
         if t != tt.Test:
             iter = model.iter_parent(iter)
@@ -455,7 +456,7 @@ class guiTestSuitePlayer():
         tbox.set_sensitive(True)
         xmlnode = model.get_value(iter, gfid.xmlnode)
         old_name = xmlnode.prop("name")
-        t = model.get_value(iter, gfid.etype)
+        t = model.get_value(iter, gfid.etest_type)
         editor_name = ""
         for i in range(1, 10):
             if xmlnode.name == "test":
@@ -497,7 +498,7 @@ class guiTestSuitePlayer():
                 editor_name = "check"
                 break;
             else:
-                print "(editor): UNKNOWN item type = '%s'\n" % xmlnode.name
+                print "(editor): UNKNOWN item test_type = '%s'\n" % xmlnode.name
                 return False
 
         self.edit_iter = iter
@@ -523,16 +524,16 @@ class guiTestSuitePlayer():
                 self.edit_iter = None
                 return
 
-            if self.editor.get_etype() == "test":
-                self.model.set_value(p_iter, gfid.etype, tt.Test)
-            elif self.editor.get_etype() == "action":
-                self.model.set_value(p_iter, gfid.etype, tt.Action)
-            elif self.editor.get_etype() == "check":
-                self.model.set_value(p_iter, gfid.etype, tt.Check)
-                if self.editor.get_etype() == "link":
-                    self.model.set_value(p_iter, gfid.etype, tt.Link)
-                elif self.editor.get_etype() == "outlink":
-                    self.model.set_value(p_iter, gfid.etype, tt.Link)
+            if self.editor.get_etest_type() == "test":
+                self.model.set_value(p_iter, gfid.etest_type, tt.Test)
+            elif self.editor.get_etest_type() == "action":
+                self.model.set_value(p_iter, gfid.etest_type, tt.Action)
+            elif self.editor.get_etest_type() == "check":
+                self.model.set_value(p_iter, gfid.etest_type, tt.Check)
+                if self.editor.get_etest_type() == "link":
+                    self.model.set_value(p_iter, gfid.etest_type, tt.Link)
+                elif self.editor.get_etest_type() == "outlink":
+                    self.model.set_value(p_iter, gfid.etest_type, tt.Link)
 
             p_iter = model.convert_iter_to_child_iter(iter)
             self.update_info(p_iter, old_name)
@@ -566,7 +567,7 @@ class guiTestSuitePlayer():
             return False
 
         p_iter = self.fmodel.convert_iter_to_child_iter(iter)
-        # t = model.get_value(iter,gfid.etype)
+        # t = model.get_value(iter,gfid.etest_type)
         print "PLAY SELECTED: %s" % (self.model.get_value(p_iter, gfid.tname))
 
         self.play_selected_iter = p_iter
@@ -614,19 +615,19 @@ class guiTestSuitePlayer():
     def rebuild_tree(self, iter=None):
 
         xmlnode = None
-        etype = None
+        etest_type = None
         if iter:
             xmlnode = self.model.get_value(iter, gfid.xmlnode)
-            etype = self.model.get_value(iter, gfid.etype)
+            etest_type = self.model.get_value(iter, gfid.etest_type)
 
         self.model.clear()
         self.build_test_scenario(self.player.xml)
 
         it = self.model.get_iter_first()
         if iter:
-            it = self.find_iter(it, xmlnode, etype)
+            it = self.find_iter(it, xmlnode, etest_type)
             if it:
-                if etype == tt.Test:
+                if etest_type == tt.Test:
                     self.tv.expand_row(self.model.get_path(it), True)
                 else:
                     p_it = self.model.iter_parent(it)
@@ -635,15 +636,15 @@ class guiTestSuitePlayer():
                 f_it = self.fmodel.convert_child_iter_to_iter(it)
                 self.tv.set_cursor(self.fmodel.get_path(f_it))
 
-    def find_iter(self, iter, xmlnode, etype):
+    def find_iter(self, iter, xmlnode, etest_type):
         while iter is not None:
 
-            if self.model.get_value(iter, gfid.xmlnode) == xmlnode and self.model.get_value(iter, gfid.etype) == etype:
+            if self.model.get_value(iter, gfid.xmlnode) == xmlnode and self.model.get_value(iter, gfid.etest_type) == etest_type:
                 return iter;
 
             it1 = self.model.iter_children(iter)
             if it1:
-                res = self.find_iter(it1, xmlnode, etype)
+                res = self.find_iter(it1, xmlnode, etest_type)
                 if res:
                     return res;
 
@@ -705,7 +706,7 @@ class guiTestSuitePlayer():
                                        [img, '', '', txt, bg_DEFAULT, node, tt.Action, 0, 0, False, True, num, xml,
                                         s_num, None, False, True, None, False, None])
             else:
-                print "Unknown type: '" + str(node.name) + "'. Ignore..."
+                print "Unknown test_type: '" + str(node.name) + "'. Ignore..."
 
             num += 1
             node = xml.nextNode(node)
@@ -781,7 +782,7 @@ class guiTestSuitePlayer():
         self.player.del_from_replace(r_list)
 
     def update_info(self, iter, old_name):
-        t = self.model.get_value(iter, gfid.etype)
+        t = self.model.get_value(iter, gfid.etest_type)
         xmlnode = self.model.get_value(iter, gfid.xmlnode)
         if t == tt.Check:
             txt = self.tsi.get_check_info(xmlnode)
@@ -823,11 +824,11 @@ class guiTestSuitePlayer():
                 it = self.model.get_iter_first()
                 self.update_link(it, old_name, n_name)
         else:
-            print "(update_info): update for unknown etype='%d'" % t
+            print "(update_info): update for unknown etest_type='%d'" % t
 
     def update_link(self, it, old_name, new_name):
         while it is not None:
-            t = self.model.get_value(it, gfid.etype)
+            t = self.model.get_value(it, gfid.etest_type)
             if t == tt.Link or t == tt.Outlink:
                 link_xmlnode = self.model.get_value(it, gfid.link_xmlnode)
                 if link_xmlnode:
@@ -889,7 +890,7 @@ class guiTestSuitePlayer():
         self.model.set_value(iter, gfid.t_time, 0)
         self.model.set_value(iter, gfid.pbar, 0)
         self.model.set_value(iter, gfid.i_fail, True)
-        t = self.model.get_value(iter, gfid.etype)
+        t = self.model.get_value(iter, gfid.etest_type)
         if t == tt.Test or t == tt.Outlink or t == tt.Link:
             self.model.set_value(iter, gfid.pic, None)
             self.model.set_value(iter, gfid.pbar_vis, False)
@@ -948,7 +949,7 @@ class guiTestSuitePlayer():
             self.on_finish_scenario()
             return False
 
-        t = self.model.get_value(self.play_iter, gfid.etype)
+        t = self.model.get_value(self.play_iter, gfid.etest_type)
         if t == tt.Test or t == tt.Outlink or t == tt.Link:
             res = self.on_begin_test(self.play_iter)
             if res == t_FAILED:
@@ -1059,7 +1060,7 @@ class guiTestSuitePlayer():
         return ( self.model.get_string_from_iter(l_iter) == self.model.get_string_from_iter(r_iter) )
 
     def show_progress(self, iter):
-        # t = self.model.get_value(iter,gfid.etype)
+        # t = self.model.get_value(iter,gfid.etest_type)
         #if t == tt.Test or t == tt.Outlink or t == tt.Link:
         #   return
         t_it = self.model.iter_parent(iter)
@@ -1095,7 +1096,7 @@ class guiTestSuitePlayer():
     def on_begin_test(self, iter):
         print "begin test: " + str(self.model.get_value(iter, gfid.t_num))
         self.to_log(t_RUN, "%s. %s" % (self.model.get_value(iter, gfid.t_num), (self.model.get_value(iter, gfid.tname))))
-        t = self.model.get_value(iter, gfid.etype)
+        t = self.model.get_value(iter, gfid.etest_type)
         if t != tt.Test and t != tt.Outlink and t != tt.Link:
             return t_FAILED
 
@@ -1159,7 +1160,7 @@ class guiTestSuitePlayer():
         return t_PASSED
 
     def on_finish_test(self, iter):
-        t = self.model.get_value(iter, gfid.etype)
+        t = self.model.get_value(iter, gfid.etest_type)
         if t != tt.Test and t != tt.Outlink and t != tt.Link:
             return
 
@@ -1344,7 +1345,7 @@ class guiTestSuitePlayer():
             if t_ignore:
                 res = t_IGNORE
             else:
-                t = self.model.get_value(iter, gfid.etype)
+                t = self.model.get_value(iter, gfid.etest_type)
                 if t == tt.Check or t == tt.Action:
                     xmlnode = self.model.get_value(iter, gfid.xmlnode)
 
@@ -1462,7 +1463,7 @@ class guiTestSuitePlayer():
             xmlnode.setProp("timeout", "0")
 
             # а так же включаем игнорирование "неудачи", т.е. сами обрабатываем..
-            old_ignorefailed = self.player.tsi.get_ignorefailed()
+            old_ignorefailed = self.player.tsi.is_ignorefailed()
             self.player.tsi.set_ignorefailed(True)
 
             while t_now < t_end:
@@ -1582,7 +1583,7 @@ class guiTestSuitePlayer():
         self.to_log(t_BREAK, "Нажата кнопка 'Остановить'")
         if self.tmr:
             gobject.source_remove(self.tmr)
-        t = self.model.get_value(self.play_iter, gfid.etype)
+        t = self.model.get_value(self.play_iter, gfid.etest_type)
         iter = self.play_iter
         if t != tt.Test and t != tt.Outlink and t != tt.Link:
             iter = self.model.iter_parent(self.play_iter)
@@ -1600,7 +1601,7 @@ class guiTestSuitePlayer():
         if self.play_timer_running == False:
             return
 
-        #t = self.model.get_value(self.play_iter,gfid.etype)
+        #t = self.model.get_value(self.play_iter,gfid.etest_type)
         iter = self.play_iter
         #if t != tt.Test and t != tt.Action and t != tt.Link:
         #   iter = self.model.iter_parent(self.play_iter)
@@ -1635,7 +1636,7 @@ class guiTestSuitePlayer():
         if it == None:
             return True
 
-        t = model.get_value(it, gfid.etype)
+        t = model.get_value(it, gfid.etest_type)
 
         if self.no_view_actions.get_active() == True and t == tt.Action:
             return False
@@ -1734,7 +1735,7 @@ class guiTestSuitePlayer():
             self.logview_popup.popup(None, None, None, event.button, event.time)
             return False
 
-        #        if event.button == 1 and event.type == gtk.gdk._2BUTTON_PRESS:
+        #        if event.button == 1 and event.test_type == gtk.gdk._2BUTTON_PRESS:
 
         return False
 
@@ -1777,7 +1778,7 @@ class guiTestSuitePlayer():
                 if ename == sel_name:
                     self.editor = widget
                     xmlnode = self.fmodel.get_value(self.edit_iter, gfid.xmlnode)
-                    t = self.fmodel.get_value(self.edit_iter, gfid.etype)
+                    t = self.fmodel.get_value(self.edit_iter, gfid.etest_type)
                     if t == tt.Link or t == tt.Outlink:
                         xmlnode = self.fmodel.get_value(self.edit_iter, gfid.link_xmlnode)
                     xml = self.fmodel.get_value(self.edit_iter, gfid.xml)
@@ -1822,7 +1823,7 @@ class guiTestSuitePlayer():
             face = m.create_module(self.moddir)
             ebox.add(face)
             face.hide()
-            emodel.append([m.module_name(), face, face.get_etype()])
+            emodel.append([m.module_name(), face, face.get_etest_type()])
 
     def on_about_activate(self, mi):
         self.dlg_about.run()
@@ -1831,8 +1832,16 @@ class guiTestSuitePlayer():
 
 if __name__ == "__main__":
 
+    path = os.environ.get('UNISET_TESTSUITE_DATADIR', '/usr/share/uniset2-testsuite')
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+    playerdir = os.path.join(path, "gtkplayer")
+    if playerdir not in sys.path:
+        sys.path.insert(0, playerdir)
+
     try:
-        player = guiTestSuitePlayer()
+        player = guiTestSuitePlayer(datadir=path, playerdir=playerdir)
         gtk.main()
         exit(0)
 
