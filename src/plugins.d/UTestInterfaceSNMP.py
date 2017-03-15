@@ -249,7 +249,7 @@ class UTestInterfaceSNMP(UTestInterface):
             node = xml.nextNode(node)
 
     @staticmethod
-    def parse_id(name):
+    def parse_name(name):
         """
         Parse test parameter from <check> or <action>
         :param name:
@@ -272,14 +272,14 @@ class UTestInterfaceSNMP(UTestInterface):
         except (KeyError, ValueError):
             return None
 
-    def get_value(self, name):
+    def get_value(self, name, context):
 
         ret, err = self.validate_parameter(name)
 
         if ret == False:
             raise TestSuiteValidateError("(snmp): get_value : ERR: '%s'" % err)
 
-        id, nodename, sname = self.parse_id(name)
+        id, nodename, sname = self.parse_name(name)
 
         param = self.get_parameter(id)
         node = self.get_node(nodename)
@@ -364,13 +364,13 @@ class UTestInterfaceSNMP(UTestInterface):
 
         return None
 
-    def set_value(self, name, value, supplierID):
+    def set_value(self, name, value, context):
         ret, err = self.validate_parameter(name)
 
         if ret == False:
             raise TestSuiteValidateError("(snmp): set_value : ERR: '%s'" % err)
 
-        id, nodename, sname = self.parse_id(name)
+        id, nodename, sname = self.parse_name(name)
 
         param = self.get_parameter(id)
         node = self.get_node(nodename)
@@ -467,9 +467,10 @@ class UTestInterfaceSNMP(UTestInterface):
 
         return False
 
-    def validate_configuration(self):
+    def validate_configuration(self, context):
         """
         Проверка конфигурации snmp
+        :param context:
         :return: result[] - см. TestSuiteGlobal make_default_item():
         """
         res_ok = True
@@ -534,10 +535,10 @@ class UTestInterfaceSNMP(UTestInterface):
 
         return [res_ok, err]
 
-    def validate_parameter(self, name):
+    def validate_parameter(self, name, context):
 
         try:
-            vname, vnode, fname = self.parse_id(name)
+            vname, vnode, fname = self.parse_name(name)
             if vname == '':
                 return [False, "(snmp): Unknown ID for '%s'" % str(name)]
 

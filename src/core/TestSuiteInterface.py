@@ -36,17 +36,18 @@ class TestSuiteInterface():
         # self.params = uniset2.Params_inst()
         self.ignore_nodes = False
         self.level = 0
-        self.supplierID = uniset2.DefaultSupplerID
         self.checkScenarioMode = False
         self.checkScenarioMode_ignorefailed = False
         self.showTestTreeMode = False
         self.reporters = list()
 
-        self.rcheck = re.compile(r"([\w@\ :]+)([!><]*[=]*)([-\d\ ]+)")
-        self.rcompare = re.compile(r"([\w@\ :]+)([!><]*[=]*)([\w@\ :]+)")
+        self.rcheck = re.compile(r"([\w\.\\\-_/@:]+)[\ ]{0,}([!><]*[=]*)[\ ]{0,}([-\d\ ]+)[\ ]{0,}")
+        self.rcompare = re.compile(r"([\w\.\\\-_/@:]+)[\ ]{0,}([!><]*[=]*)[\ ]{0,}([\w\.\\\-_/@:]+)[\ ]{0,}")
 
         self.env = os.environ.copy()
         self.envPrefix = "UNISET_TESTSUITE"
+        self.context = dict()
+        self.context['supplierID'] = None
 
         self.plugins = dict()
         self.datadir = '/usr/share/uniset2-testsuite'
@@ -192,7 +193,7 @@ class TestSuiteInterface():
         """
         self.env[self.make_environ_varname(varname)] = str(value)
 
-    def set_user_envirion_variables(self, edict):
+    def set_user_environ_variables(self, edict):
         """
         Добавление переменных окружения которые будут выставлены при запуске скриптов
         :param edict: словарь {VAR:VAL, VAR2:VAL2...}
@@ -213,7 +214,10 @@ class TestSuiteInterface():
             ui.set_ignore_nodes(state)
 
     def set_supplier_id(self, sup_id):
-        self.supplierID = sup_id
+        self.context['supplierID'] = sup_id
+
+    def add_context(self,key,val):
+        self.context[key] = val
 
     def set_ignorefailed(self, state):
         self.ignorefailed = state
@@ -342,7 +346,7 @@ class TestSuiteInterface():
         for k, ui in self.ui_list.items():
             if not hasattr(ui, 'checked') or not ui.checked:
                 ui.checked = True  # защита от повторной проверки
-                ok, err = ui.validate_configuration()
+                ok, err = ui.validate_configuration(self.context)
                 if not ok:
                     errors.append(str(err))
                     res_ok = False
@@ -355,13 +359,15 @@ class TestSuiteInterface():
 
     def get_value(self, s_id, ui):
 
+        self.add_context('environment', self.env)
+
         if self.is_check_scenario_mode():
-            ret, err = ui.validate_parameter(s_id)
+            ret, err = ui.validate_parameter(s_id,self.context)
             if ret == False:
                 raise TestSuiteValidateError(err)
             return 0
 
-        return ui.get_value(s_id)
+        return ui.get_value(s_id, self.context)
 
     def isTrue(self, s_id, t_out, t_check, item, ui):
 
@@ -1054,18 +1060,20 @@ class TestSuiteInterface():
             act['test_type'] = 'SETVALUE'
             act['ui'] = ui
 
+            self.add_context('environment', self.env)
+
             if ui is None:
                 ui = self.default_ui
 
             if self.is_check_scenario_mode():
-                ret, err = ui.validate_parameter(s_id)
+                ret, err = ui.validate_parameter(s_id,self.context)
                 if ret == False:
                     act['result'] = t_FAILED
                     act['text'] = err
                     act['faulty_sensor'] = s_id
                     raise TestSuiteValidateError(err)
             else:
-                ui.set_value(s_id, s_val, self.supplierID)
+                ui.set_value(s_id, s_val, self.context)
 
             act['result'] = t_PASSED
             self.set_action_result(act, False)
@@ -1167,13 +1175,13 @@ class TestSuiteInterface():
                 tname = 'MULTICHECK'
 
         if tname == '=':
-            s = ui.parse_id(s_id)
+            s = ui.parse_name(s_id)
             res = "%s=%s timeout=%d" % (s[2], s_val, to_int(node.prop("timeout")))
         elif tname == '>' or tname == '>=':
-            s = ui.parse_id(s_id)
+            s = ui.parse_name(s_id)
             res = "%s %s %s timeout=%d" % (s[2], tname, s_val, to_int(node.prop("timeout")))
         elif tname == '<' or tname == '<=':
-            s = ui.parse_id(s_id)
+            s = ui.parse_name(s_id)
             res = "%s %s %s timeout=%d" % (s[2], tname, s_val, to_int(node.prop("timeout")))
         elif tname == 'MULTICHECK':
             res = "%s" % (node.prop("set"))

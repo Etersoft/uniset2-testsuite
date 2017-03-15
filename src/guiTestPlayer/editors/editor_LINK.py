@@ -54,7 +54,7 @@ class Editor_LINK(gtk.HBox):
             return False
 
         # xmlnode = self.cbox.get_model().get_value(iter,1)
-        linkname = self.cbox.get_model().get_value(iter, 0)
+        linkname = self.cbox.get_model().get_value(iter, None)
         # т.к. список строили по name, то сохраняем ссылку в виде name=XXX
         self.xmlnode.setProp("link", "name=%s" % linkname)
         self.xmlnode.setProp("test", "link")

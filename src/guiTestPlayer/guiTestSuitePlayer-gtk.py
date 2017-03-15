@@ -351,7 +351,7 @@ class guiTestSuitePlayer():
 
         if event.button == 3:
             self.test_popup.popup(None, None, None, event.button, event.time)
-            t = model.get_value(iter, gfid.etest_type)
+            t = model.get_value(iter, None)
             # if t == tt.Test:
             #              self.builder.get_object("mi_addCheck").set_sensitive(False)
             #           else:
@@ -376,7 +376,7 @@ class guiTestSuitePlayer():
         if res == gtk.RESPONSE_NO:
             return False
 
-        xmlnode = model.get_value(iter, gfid.xmlnode)
+        xmlnode = model.get_value(iter, None)
         if xmlnode:
             xmlnode.unlinkNode()
 
@@ -391,9 +391,9 @@ class guiTestSuitePlayer():
         if not iter:
             return
 
-        t = model.get_value(iter, gfid.etest_type)
-        xmlnode = model.get_value(iter, gfid.xmlnode)
-        xml = model.get_value(iter, gfid.xml)
+        t = model.get_value(iter, None)
+        xmlnode = model.get_value(iter, None)
+        xml = model.get_value(iter, None)
         if t == tt.Test:
             p_node = xmlnode
             xmlnode = xml.lastNode(p_node.children)
@@ -425,13 +425,13 @@ class guiTestSuitePlayer():
         if not iter:
             return
 
-        t = model.get_value(iter, gfid.etest_type)
+        t = model.get_value(iter, None)
 
         if t != tt.Test:
             iter = model.iter_parent(iter)
 
-        xmlnode = model.get_value(iter, gfid.xmlnode)
-        xml = model.get_value(iter, gfid.xml)
+        xmlnode = model.get_value(iter, None)
+        xml = model.get_value(iter, None)
         p_node = xmlnode.parent
         new_xmlnode = p_node.newChild(None, "test", None)
         if xmlnode:
@@ -454,9 +454,9 @@ class guiTestSuitePlayer():
     def on_edit(self, model, iter, newItem=False):
         tbox = self.editor_ui.get_object("testlist")
         tbox.set_sensitive(True)
-        xmlnode = model.get_value(iter, gfid.xmlnode)
+        xmlnode = model.get_value(iter, None)
         old_name = xmlnode.prop("name")
-        t = model.get_value(iter, gfid.etest_type)
+        t = model.get_value(iter, None)
         editor_name = ""
         for i in range(1, 10):
             if xmlnode.name == "test":
@@ -1636,7 +1636,7 @@ class guiTestSuitePlayer():
         if it == None:
             return True
 
-        t = model.get_value(it, gfid.etest_type)
+        t = model.get_value(it, None)
 
         if self.no_view_actions.get_active() == True and t == tt.Action:
             return False
@@ -1695,8 +1695,8 @@ class guiTestSuitePlayer():
         out = open(filename, "w")
         it = self.log_model.get_iter_first()
         while it is not None:
-            s = "%19s|%10s|%s\n" % (self.log_model.get_value(it, lid.dt), self.log_model.get_value(it, lid.res),
-                                    self.log_model.get_value(it, lid.txt))
+            s = "%19s|%10s|%s\n" % (self.log_model.get_value(it, None), self.log_model.get_value(it, None),
+                                    self.log_model.get_value(it, None))
             out.write(s)
             it = self.log_model.iter_next(it)
         out.close()
@@ -1754,7 +1754,7 @@ class guiTestSuitePlayer():
         model = cbox.get_model()
         it = model.get_iter_first()
         while it is not None:
-            if val.upper() == str(model.get_value(it, 0)).upper():
+            if val.upper() == str(model.get_value(it, None)).upper():
                 cbox.set_active_iter(it)
                 return
             it = model.iter_next(it)
@@ -1767,21 +1767,21 @@ class guiTestSuitePlayer():
         # скрывает все "невыбранные" и делает show только того, который выбран
         model = cbox.get_model()
         it = model.get_iter_first()
-        sel_name = model.get_value(cbox.get_active_iter(), 0)
-        widget = model.get_value(cbox.get_active_iter(), 1)
+        sel_name = model.get_value(cbox.get_active_iter(), None)
+        widget = model.get_value(cbox.get_active_iter(), None)
         self.editor = None
         #        print "********* TEST CHANGED: %s"%sel_name
         while it is not None:
-            ename = model.get_value(it, 0)
-            widget = model.get_value(it, 1)
+            ename = model.get_value(it, None)
+            widget = model.get_value(it, None)
             if widget and widget.get_name() != "dummy":
                 if ename == sel_name:
                     self.editor = widget
-                    xmlnode = self.fmodel.get_value(self.edit_iter, gfid.xmlnode)
-                    t = self.fmodel.get_value(self.edit_iter, gfid.etest_type)
+                    xmlnode = self.fmodel.get_value(self.edit_iter, None)
+                    t = self.fmodel.get_value(self.edit_iter, None)
                     if t == tt.Link or t == tt.Outlink:
-                        xmlnode = self.fmodel.get_value(self.edit_iter, gfid.link_xmlnode)
-                    xml = self.fmodel.get_value(self.edit_iter, gfid.xml)
+                        xmlnode = self.fmodel.get_value(self.edit_iter, None)
+                    xml = self.fmodel.get_value(self.edit_iter, None)
                     self.player.init_config(xml)
                     config = self.player.get_item_config(xmlnode)
                     self.editor.init(xmlnode, config, self.dlg_xlist, xml)

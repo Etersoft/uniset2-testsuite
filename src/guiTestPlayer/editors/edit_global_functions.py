@@ -25,14 +25,14 @@ def select_cbox_element(cbox, val, fnum=0):
     model = cbox.get_model()
     it = model.get_iter_first()
     while it is not None:
-        if val.upper() == str(model.get_value(it, fnum)).upper():
+        if val.upper() == str(model.get_value(it, None)).upper():
             cbox.set_active_iter(it)
             return
         it = model.iter_next(it)
 
 
 def get_select_cbox_element(cbox, fnum=0):
-    return cbox.get_model().get_value(cbox.get_active_iter(), fnum)
+    return cbox.get_model().get_value(cbox.get_active_iter(), None)
 
 
 def find_list_element(model, val, fnum=0):
@@ -41,7 +41,7 @@ def find_list_element(model, val, fnum=0):
 
     it = model.get_iter_first()
     while it is not None:
-        if val.upper() == str(model.get_value(it, fnum)).upper():
+        if val.upper() == str(model.get_value(it, None)).upper():
             return it
         it = model.iter_next(it)
 
@@ -144,7 +144,7 @@ def init_elements_value(obj, elist, snode):
             continue
         cname = str(obj.__dict__[e[0]].__class__.__name__)
         if cname == "SpinButton":
-            obj.__dict__[e[0]].set_value(to_int(snode.prop(e[2])))
+            obj.__dict__[e[0]].set_value(to_int(snode.prop(e[2])), None)
         elif cname == "Entry":
             obj.__dict__[e[0]].set_text(to_str(snode.prop(e[2])))
         elif cname == "CheckButton":
@@ -214,7 +214,7 @@ def set_combobox_element(cbox, val, fid=0):
     model = cbox.get_model()
     it = model.get_iter_first()
     while it is not None:
-        if val.upper() == str(model.get_value(it, fid)).upper():
+        if val.upper() == str(model.get_value(it, None)).upper():
             cbox.set_active_iter(it)
             return
         it = model.iter_next(it)

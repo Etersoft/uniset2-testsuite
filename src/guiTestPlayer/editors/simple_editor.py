@@ -93,7 +93,7 @@ class SimpleEditor(gtk.HBox):
 
         it = m.get_iter_first()
         while it is not None:
-            if txt.upper() == str(m.get_value(it, 0)).upper():
+            if txt.upper() == str(m.get_value(it, None)).upper():
                 self.u_testbox.set_active_iter(it)
                 return
             it = m.iter_next(it)
@@ -109,7 +109,7 @@ class SimpleEditor(gtk.HBox):
         if m == None:
             return "="
 
-        return str(m.get_value(it, 0))
+        return str(m.get_value(it, None))
 
     def init(self, xmlnode, config, dlg_xlist, xml):
         self.simple_init(xmlnode, config, dlg_xlist, xml)
@@ -130,9 +130,9 @@ class SimpleEditor(gtk.HBox):
             mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(to_str(xmlnode.prop("id")), "0x04", True)
 
             self.e_mbreg.set_text(mbreg)
-            self.e_mbaddr.set_value(to_int(mbaddr))
+            self.e_mbaddr.set_value(to_int(mbaddr), None)
             select_cbox_element(self.e_mbfunc, mbfunc, 1)
-            self.e_nbit.set_value(to_int(nbit))
+            self.e_nbit.set_value(to_int(nbit), None)
             select_cbox_element(self.e_vtype, vtype, 1)
 
         else:
@@ -168,7 +168,7 @@ class SimpleEditor(gtk.HBox):
                 if is_id(s_id):
                     it = self.dlg_xlist.set_selected_id(s_id, config)
                     if it != None:
-                        s_name = self.dlg_xlist.model.get_value(it, xlist_fid.name)
+                        s_name = self.dlg_xlist.model.get_value(it, None)
                 else:
                     self.dlg_xlist.set_selected_name(s_id, config)
 
@@ -208,9 +208,9 @@ class SimpleEditor(gtk.HBox):
                 txt = "%s@%s:%s:%s:%s" % (
                     self.e_mbreg.get_text(),
                     to_str(self.e_mbaddr.get_value_as_int()),
-                    self.e_mbfunc.get_model().get_value(self.e_mbfunc.get_active_iter(), 1),
+                    self.e_mbfunc.get_model().get_value(self.e_mbfunc.get_active_iter(), None),
                     to_str(self.e_nbit.get_value_as_int()),
-                    self.e_vtype.get_model().get_value(self.e_vtype.get_active_iter(), 1),
+                    self.e_vtype.get_model().get_value(self.e_vtype.get_active_iter(), None),
                 )
 
         if txt == "":

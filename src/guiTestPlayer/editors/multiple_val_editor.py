@@ -182,7 +182,7 @@ class MultipleValEditor(gtk.HBox):
 
         it = m.get_iter_first()
         while it is not None:
-            if txt.upper() == str(m.get_value(it, 0)).upper():
+            if txt.upper() == str(m.get_value(it, None)).upper():
                 e.u_testbox.set_active_iter(it)
                 return
             it = m.iter_next(it)
@@ -290,9 +290,9 @@ class MultipleValEditor(gtk.HBox):
 
                 e, b = self.mb_wlist[k]
                 e.e_mbreg.set_text(mbreg)
-                e.e_mbaddr.set_value(to_int(mbaddr))
+                e.e_mbaddr.set_value(to_int(mbaddr), None)
                 select_cbox_element(e.e_mbfunc, mbfunc, 1)
-                e.e_nbit.set_value(to_int(nbit))
+                e.e_nbit.set_value(to_int(nbit), None)
                 select_cbox_element(e.e_vtype, vtype, 1)
                 e.mb_val.set_text(s_val)
                 k += 1
@@ -368,9 +368,9 @@ class MultipleValEditor(gtk.HBox):
                 s_out = "%s%s@%s:%s:%s:%s=%s" % (prefix,
                                                  e.e_mbreg.get_text(),
                                                  to_str(e.e_mbaddr.get_value_as_int()),
-                                                 e.e_mbfunc.get_model().get_value(e.e_mbfunc.get_active_iter(), 1),
+                                                 e.e_mbfunc.get_model().get_value(e.e_mbfunc.get_active_iter(), None),
                                                  to_str(e.e_nbit.get_value_as_int()),
-                                                 e.e_vtype.get_model().get_value(e.e_vtype.get_active_iter(), 1),
+                                                 e.e_vtype.get_model().get_value(e.e_vtype.get_active_iter(), None),
                                                  e.mb_val.get_text()
                 )
 
@@ -393,7 +393,7 @@ class MultipleValEditor(gtk.HBox):
                 snode = ""
                 it = e.u_node.get_active_iter()
                 if it:
-                    snode = e.u_node.get_model().get_value(it, 0)
+                    snode = e.u_node.get_model().get_value(it, None)
                     if snode != "":
                         snode = "@%s" % snode
 
@@ -436,12 +436,12 @@ class MultipleValEditor(gtk.HBox):
         if is_id(s_id):
             it = self.dlg_xlist.set_selected_id(s_id, self.config)
             if it != None:
-                s_name = self.dlg_xlist.model.get_value(it, xlist_fid.name)
-                snode = self.dlg_xlist.model.get_value(it, xlist_fid.xmlnode)
+                s_name = self.dlg_xlist.model.get_value(it, None)
+                snode = self.dlg_xlist.model.get_value(it, None)
         else:
             it = self.dlg_xlist.set_selected_name(s_id, self.config)
             if it:
-                snode = self.dlg_xlist.model.get_value(it, xlist_fid.xmlnode)
+                snode = self.dlg_xlist.model.get_value(it, None)
 
         snode = self.dlg_xlist.run(self.builder.get_object("MainWindow"), snode)
         if snode == None:

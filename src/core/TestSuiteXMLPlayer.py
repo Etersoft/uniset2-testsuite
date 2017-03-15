@@ -29,10 +29,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         TestSuitePlayer.TestSuitePlayer.__init__(self, testsuiteinterface)
 
+        self.tsi.add_context('xmlnode', None)
         self.rootworkdir = os.getcwd()
         # список мониторов (ключ в словаре - название xml-файла)
         self.pmonitor = dict()
 
+        self.mcheck = re.compile(r"([\w@\ #$%_\]\[\{\}]{1,})=([-\d\ ]{1,})")
         self.rless = re.compile(r"test=\"([\w@\ #$%_\ :\]\[\{\}]{1,})(<{1,})([-\ \w:=@#$%_]{0,})\"")
 
         # список запущенных reset-потоков
@@ -202,7 +204,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             env[to_str(node.prop("name"))] = to_str(node.prop("value"))
             node = xml.nextNode(node)
 
-        self.tsi.set_user_envirion_variables(env)
+        self.tsi.set_user_environ_variables(env)
 
     def init_testList(self, xml):
         xml.begnode = xml.findNode(xml.getDoc(), "TestList")[0]
@@ -446,11 +448,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         return self.tsi.get_default_ui()
 
     def get_outlink_filename(self, node):
-        # r_list = get_replace_list(to_str(node.prop("replace")))
-        # r_list = self.replace_list(r_list)
-        # self.add_to_replace(r_list)
+        r_list = get_replace_list(to_str(node.prop("replace")))
+        r_list = self.replace_list(r_list)
+        self.add_to_replace(r_list)
         t_file = to_str(self.replace(node.prop("file"))).strip()
-        # self.del_from_replace(r_list)
+        self.del_from_replace(r_list)
         return t_file
 
     def get_link_param(self, node):
@@ -781,8 +783,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     info['item_type'] = result['item_type']
                     self.tsi.set_result(info, False)
                     self.tsi.level += 1
-
-                    print "REPLACES: %s" % str(self.replace_stack)
                     res = self.play_xml(t_xml, r_list)
                     return res
 
@@ -1006,12 +1006,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             reset_msec = to_int(self.replace(node.prop("reset_time")))
 
             if reset_msec <= 0:
-                self.tsi.set_value(s_id, s_val, result, ui)
+                self.tsi.set_value(s_id, s_val, None)
                 return result
 
             s_v2 = to_int(self.replace(node.prop("rval")))
 
-            self.tsi.set_value(s_id, s_val, result, ui)
+            self.tsi.set_value(s_id, s_val, None)
 
             if self.tsi.is_check_scenario_mode():
                 return result
@@ -1032,7 +1032,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             # собираем обратно, и уже разбираем как полагается (с разбивкой на id и val)
             slist = self.str_to_idlist(to_str(self.replace(node.prop("set"))), ui)
             for s in slist:
-                res = self.tsi.set_value(self.replace(s[0]), self.replace(s[1]), result, ui)
+                res = self.tsi.set_value(self.replace(s[0]), self.replace(s[1]), None)
                 if res == False and self.tsi.ignorefailed == False:
                     return result
 
@@ -1068,7 +1068,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         act['item_type'] = 'action'
         self.tsi.set_action_result(act, False)
         try:
-            self.tsi.set_value(s_id, s_val, act, ui)
+            self.tsi.set_value(s_id, s_val, None)
             act['result'] = t_PASSED
         except TestSuiteException, e:
             act['result'] = t_FAILED
@@ -1341,6 +1341,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def play_item(self, inode, xml):
         self.check_keyboard_interrupt()
+        self.tsi.add_context('xmlnode', inode)
+
         if inode.name == "action":
             return self.action_item(inode)
         elif inode.name == "check":
@@ -1348,6 +1350,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         elif inode.name == "compare":
             return self.compare_item(inode, xml)
 
+        self.tsi.add_context('xmlnode',None)
         ret = make_default_item()
         ret['result'] = t_UNKNOWN
         ret['text'] = "UNKNOWN ACTION TYPE"

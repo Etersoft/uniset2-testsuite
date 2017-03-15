@@ -68,11 +68,11 @@ class UTestInterfaceUniSet(UTestInterface):
     def parseID(self, name):
         return to_sid(name, self.ui)
 
-    def validate_configuration(self):
+    def validate_configuration(self, context):
         # todo Реализовать функцию проверки конфигурации
         return [True, ""]
 
-    def validate_parameter(self, s_id):
+    def validate_parameter(self, name, context):
 
         try:
             s = self.parseID(s_id)
@@ -92,7 +92,7 @@ class UTestInterfaceUniSet(UTestInterface):
         except UException, e:
             return [False, "%s" % e.getError()]
 
-    def get_value(self, s_id):
+    def get_value(self, name, context):
 
         try:
             s = self.parseID(s_id)
@@ -104,7 +104,7 @@ class UTestInterfaceUniSet(UTestInterface):
         except UException, e:
             raise TestSuiteException(e.getError())
 
-    def set_value(self, s_id, s_value, supplierID):
+    def set_value(self, name, value, context):
         try:
             s = self.parseID(s_id)
             if self.ignore_nodes:

@@ -42,16 +42,16 @@ class UTestInterfaceModbus(UTestInterface):
             raise TestSuiteValidateError("(modbus:init): ERR: %s " % e.getError())
 
     @staticmethod
-    def parse_id(pname):
+    def parse_name(pname):
 
         mbaddr, mbreg, mbfunc, nbit, vtest_type = get_mbquery_param(pname, "0x04")
         return [str(mbreg), str(mbaddr), pname]
 
-    def validate_configuration(self):
+    def validate_configuration(self, context):
         # todo Реализовать функцию проверки конфигурации
         return [True, ""]
 
-    def validate_parameter(self, pname):
+    def validate_parameter(self, name, context):
 
         try:
             if self.itest_type == "modbus":
@@ -72,7 +72,7 @@ class UTestInterfaceModbus(UTestInterface):
         except UException, e:
             return [False, "%s" % e.getError()]
 
-    def get_value(self, name):
+    def get_value(self, name, context):
 
         try:
             mbaddr, mbreg, mbfunc, nbit, vtest_type = get_mbquery_param(name, "0x04")
@@ -89,7 +89,7 @@ class UTestInterfaceModbus(UTestInterface):
         except UException, e:
             raise TestSuiteException(e.getError())
 
-    def set_value(self, name, value, supplierID):
+    def set_value(self, name, value, context):
         try:
             # ip,port,mbaddr,mbreg,mbfunc,vtest_type,nbit = ui.get_modbus_param(s_id)
             mbaddr, mbreg, mbfunc, nbit, vtest_type = get_mbquery_param(name, "0x06")

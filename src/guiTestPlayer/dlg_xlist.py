@@ -126,9 +126,9 @@ class XListDialog():
 
     def sfunc(self, model, column, key, iter):
 
-        if model.get_value(iter, xfid.id).find(key) != -1:
+        if model.get_value(iter, None).find(key) != -1:
             return False
-        if model.get_value(iter, xfid.name).find(key) != -1:
+        if model.get_value(iter, None).find(key) != -1:
             return False
             # if model.get_value(iter,2).find(key) != -1:
         #           return False
@@ -219,13 +219,13 @@ class XListDialog():
             if sel_mode == gtk.SELECTION_SINGLE:
                 (model, iter) = self.tv.get_selection().get_selected()
                 if iter:
-                    return model.get_value(iter, xfid.xmlnode)
+                    return model.get_value(iter, None)
 
             elif sel_mode == gtk.SELECTION_MULTIPLE:
                 (model, plist) = self.tv.get_selection().get_selected_rows()
                 nlist = []
                 for p in plist:
-                    nlist.append(model.get_value(model.get_iter(p), xfid.xmlnode))
+                    nlist.append(model.get_value(model.get_iter(p), None))
                 # treeselection.selected_foreach(self.foreach_sel_list,plist)
                 #               model = sel.get_treeview().get_model()
                 #               return (model, pathlist)
@@ -246,8 +246,8 @@ class XListDialog():
     def on_confbox_changed(self, cbox):
         self.allConf = True
         mod = self.cbox.get_model()
-        if self.cbox.get_active_iter() != None and mod.get_value(self.cbox.get_active_iter(), 0) != mod.get_value(
-                mod.get_iter_first(), 0):
+        if self.cbox.get_active_iter() != None and mod.get_value(self.cbox.get_active_iter(), None) != mod.get_value(
+                mod.get_iter_first(), None):
             self.allConf = False
 
         self.fmodel.refilter()
@@ -273,7 +273,7 @@ class XListDialog():
             return True
 
         if self.allConf == False:
-            if model.get_value(it, xfid.conf) != self.cbox.get_active_text():
+            if model.get_value(it, None) != self.cbox.get_active_text():
                 return False
 
         t = self.fentry.get_text()
@@ -282,13 +282,13 @@ class XListDialog():
 
         case = self.case_cb.get_active()
 
-        if self.id_check.get_active() and self.find_str(model.get_value(it, xfid.id), t, case):
+        if self.id_check.get_active() and self.find_str(model.get_value(it, None), t, case):
             return True
 
-        if self.name_check.get_active() and self.find_str(model.get_value(it, xfid.name), t, case):
+        if self.name_check.get_active() and self.find_str(model.get_value(it, None), t, case):
             return True
 
-        if self.tname_check.get_active() and self.find_str(model.get_value(it, xfid.tname), t, case):
+        if self.tname_check.get_active() and self.find_str(model.get_value(it, None), t, case):
             return True
 
         if self.id_check.get_active() or self.name_check.get_active() or self.tname_check.get_active():

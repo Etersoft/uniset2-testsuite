@@ -94,7 +94,7 @@ class Editor_TEST(gtk.HBox):
         self.xmlnode.setProp("ignore_failed", ign)
 
         iter = self.cbox.get_active_iter()
-        alias = self.cbox.get_model().get_value(iter, 1)
+        alias = self.cbox.get_model().get_value(iter, None)
         self.xmlnode.setProp("config", alias)
         return True
 

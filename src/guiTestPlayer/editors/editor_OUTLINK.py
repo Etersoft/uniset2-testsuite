@@ -83,7 +83,7 @@ class Editor_OUTLINK(gtk.HBox):
             return False
 
         # xmlnode = self.cbox.get_model().get_value(iter,1)
-        linkname = self.cbox.get_model().get_value(iter, 0)
+        linkname = self.cbox.get_model().get_value(iter, None)
         # т.к. список строили по name, то сохраняем ссылку в виде name=XXX
         if linkname == "ALL":
             self.xmlnode.setProp("link", "ALL")

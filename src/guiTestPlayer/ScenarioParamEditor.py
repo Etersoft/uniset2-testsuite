@@ -81,7 +81,7 @@ class ScenarioParamEditor():
         if res == gtk.RESPONSE_NO:
             return False
 
-        xmlnode = model.get_value(iter, 3)
+        xmlnode = model.get_value(iter, None)
         if xmlnode:
             xmlnode.unlinkNode()
 
@@ -105,7 +105,7 @@ class ScenarioParamEditor():
         if res == gtk.RESPONSE_NO:
             return False
 
-        xmlnode = model.get_value(iter, 3)
+        xmlnode = model.get_value(iter, None)
         if xmlnode:
             xmlnode.unlinkNode()
 
@@ -114,7 +114,7 @@ class ScenarioParamEditor():
     def on_cb_changed(self, cb, path, model, fid):
         cb.set_active(not cb.get_active())
         iter = model.get_iter(path)
-        model.set_value(iter, fid, cb.get_active())
+        model.set_value(iter, fid, None)
 
     def col_edited_txt(self, cell, path, new_text, model, field):
         model[path][field] = new_text
@@ -170,22 +170,22 @@ class ScenarioParamEditor():
             it = model.get_iter_first()
             while it is not None:
 
-                if model.get_value(it, 0) == "" or model.get_value(it, 0) == txtNEW:
+                if model.get_value(it, None) == "" or model.get_value(it, None) == txtNEW:
                     it = model.iter_next(it)
                     continue
 
-                xnode = model.get_value(it, 9)
+                xnode = model.get_value(it, None)
                 if xnode == None:
                     xnode = rlist.newChild(None, "item", None)
 
-                xnode.setProp("script", model.get_value(it, 0))
-                xnode.setProp("args", model.get_value(it, 1))
-                xnode.setProp("chdir", model.get_value(it, 2))
-                xnode.setProp("ignore_terminated", bool2str(model.get_value(it, 3)))
-                xnode.setProp("ignore_run_failed", bool2str(model.get_value(it, 4)))
-                xnode.setProp("name", model.get_value(it, 5))
-                xnode.setProp("after_run_pause", str(model.get_value(it, 6)))
-                xnode.setProp("silent_mode", bool2str(model.get_value(it, 7)))
+                xnode.setProp("script", model.get_value(it, None))
+                xnode.setProp("args", model.get_value(it, None))
+                xnode.setProp("chdir", model.get_value(it, None))
+                xnode.setProp("ignore_terminated", bool2str(model.get_value(it, None)))
+                xnode.setProp("ignore_run_failed", bool2str(model.get_value(it, None)))
+                xnode.setProp("name", model.get_value(it, None))
+                xnode.setProp("after_run_pause", str(model.get_value(it, None)))
+                xnode.setProp("silent_mode", bool2str(model.get_value(it, None)))
                 it = model.iter_next(it)
 
             model = self.tvconf.get_model()
@@ -200,16 +200,16 @@ class ScenarioParamEditor():
 
             it = model.get_iter_first()
             while it is not None:
-                if model.get_value(it, 0) == "" and model.get_value(it, 1) == "":
+                if model.get_value(it, None) == "" and model.get_value(it, None) == "":
                     it = model.iter_next(it)
                     continue
 
-                xnode = model.get_value(it, 3)
+                xnode = model.get_value(it, None)
                 if xnode == None:
                     xnode = cnode.newChild(None, "item", None)
 
-                xnode.setProp("alias", model.get_value(it, 0))
-                xnode.setProp("confile", model.get_value(it, 1))
+                xnode.setProp("alias", model.get_value(it, None))
+                xnode.setProp("confile", model.get_value(it, None))
                 it = model.iter_next(it)
 
         return ret

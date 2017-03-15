@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestScenario>
+	<Config>
+		<environment>
+			<item name="MyTEST_VAR1" value="MyTEST_VALUE1"/>
+			<item name="MyTEST_VAR2" value="MyTEST_VALUE2"/>
+			<item name="MyTEST_VAR3" value="MyTEST_VALUE3"/>
+		</environment>
+		<aliases>
+			 <item type="scripts" alias="s" default="1"/>
+		</aliases>
+	</Config>
+	<TestList type="scripts">
+        <test name="Test run script" ignore_failed="1">
+            <check test="./test-script.sh != 10" params="--param1 3 --param2 4" timeout="2000"/>
+			<check test="./test-script.sh = 100" params="param1=3,param2=4"/>
+			<check test="./test-script.sh > 80"/>
+			<check test="./test-script-negative-number.sh = -20"  show_output="1"/>
+			<check test="./test-script-error.sh > 10"/>
+        </test>
+    </TestList>
+</TestScenario>
