@@ -33,6 +33,9 @@ class ChildProcess():
         self.chdir = xmlnode.prop('chdir')
         self.runing = False
 
+        if len(self.script) == 0:
+            raise TestSuiteException("<RunList>: ERROR: Unknown script file for item %s" % str(xmlnode))
+
     def run(self, waitfinish=False):
         sout = None
         serr = None
