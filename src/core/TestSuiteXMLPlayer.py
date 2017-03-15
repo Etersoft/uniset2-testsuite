@@ -33,7 +33,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         # список мониторов (ключ в словаре - название xml-файла)
         self.pmonitor = dict()
 
-        self.mcheck = re.compile(r"([\w@\ #$%_\]\[\{\}]{1,})=([-\d\ ]{1,})")
         self.rless = re.compile(r"test=\"([\w@\ #$%_\ :\]\[\{\}]{1,})(<{1,})([-\ \w:=@#$%_]{0,})\"")
 
         # список запущенных reset-потоков
@@ -447,11 +446,11 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         return self.tsi.get_default_ui()
 
     def get_outlink_filename(self, node):
-        r_list = get_replace_list(to_str(node.prop("replace")))
-        r_list = self.replace_list(r_list)
-        self.add_to_replace(r_list)
+        # r_list = get_replace_list(to_str(node.prop("replace")))
+        # r_list = self.replace_list(r_list)
+        # self.add_to_replace(r_list)
         t_file = to_str(self.replace(node.prop("file"))).strip()
-        self.del_from_replace(r_list)
+        # self.del_from_replace(r_list)
         return t_file
 
     def get_link_param(self, node):
@@ -782,6 +781,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                     info['item_type'] = result['item_type']
                     self.tsi.set_result(info, False)
                     self.tsi.level += 1
+
+                    print "REPLACES: %s" % str(self.replace_stack)
                     res = self.play_xml(t_xml, r_list)
                     return res
 

@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.5
-Release: alt8
+Release: alt9
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -86,6 +86,9 @@ SNMP Plugin for uniset2-testsuite
 %endif
 
 %changelog
+* Wed Mar 15 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt9
+- fixed bug for replace in outlink check
+
 * Tue Mar 14 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt8
 - reporter refactoring
 - fixed junit reporter
