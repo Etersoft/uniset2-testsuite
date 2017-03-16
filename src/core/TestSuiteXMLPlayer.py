@@ -228,7 +228,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             xml.global_replace_list = get_replace_list(to_str(xml.begnode.prop("replace")))
             self.global_conf = self.replace(xml.begnode.prop("config"))
             # WARNING!! Модифицируем класс, добавляем своё поле (не красиво наверно, но сам язык позволяет)
-            xml.begnode = xml.begnode.children
+            xml.begnode = xml.firstNode(xml.begnode.children)
             self.begin_tests(xml)
         else:
             self.tsi.set_result(make_fail_result("Can`t find begin node <TestList> in %s" % xml.getFileName()), True)
@@ -1083,9 +1083,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
         return False
 
-    def begin(self, tnode):
+    def begin(self, tnode, xml):
         if tnode is not None:
-            return tnode.children
+            return xml.firstNode(tnode.children)
 
         fail = make_default_item()
         fail['text'] = 'Can`t find children items for <test>'
@@ -1100,7 +1100,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         testnode = xml.findNode(xml.begnode, "test")[0]
         if testnode is not None:
             testnode = xml.firstNode(testnode)
-            firstnode = testnode.children
+            firstnode = xml.firstNode(testnode.children)
             return [testnode, firstnode]
 
         fail = make_default_item()
@@ -1341,6 +1341,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         return res_ok
 
     def play_item(self, inode, xml):
+
         self.check_keyboard_interrupt()
         self.tsi.add_context('xmlnode', inode)
 
@@ -1354,10 +1355,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         self.tsi.add_context('xmlnode',None)
         ret = make_default_item()
         ret['result'] = t_UNKNOWN
-        ret['text'] = "UNKNOWN ACTION TYPE"
+        ret['text'] = "ERROR: UNKNOWN ACTION TYPE"
         ret['level'] = self.tsi.level
         ret['item_type'] = 'check'
-        return ret
+        raise TestSuiteException(
+            "ERROR: BAD STRUCTURE in <test>: Unknown tag '<%s ..>' in test. Must be <check>,<action>,<compare>" % str(
+                inode.name), item=ret)
 
     def play_test(self, xml, testnode, spec_replace_list=list()):
 
@@ -1428,7 +1431,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             result['prev'] = prevStackItem
             return result
 
-        curnode = self.begin(testnode)
+        curnode = self.begin(testnode, xml)
+        curnode = xml.firstNode(curnode)
 
         r_list = get_replace_list(to_str(self.replace(testnode.prop('replace'))))
         r_list = self.replace_list(r_list)
@@ -1452,7 +1456,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
                 curnode = xml.nextNode(curnode)
 
         except (TestSuiteException, TestSuiteValidateError), ex:
-
             if ex.failed_item:
                 result['items'].append(ex.failed_item)
 

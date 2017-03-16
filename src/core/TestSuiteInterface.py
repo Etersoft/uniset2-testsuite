@@ -385,6 +385,8 @@ class TestSuiteInterface():
         if t_out > 0:
             t_tick -= 1
 
+        if t_tick < 0:
+            t_tick = 0
         try:
             while t_tick >= 0:
                 if self.get_value(s_id, ui) == True or self.is_check_scenario_mode():
@@ -423,6 +425,9 @@ class TestSuiteInterface():
         # (т.к. ноль включается в цикл)
         if t_out > 0:
             t_tick -= 1
+
+        if t_tick < 0:
+            t_tick = 0
 
         try:
             while t_tick >= 0:
@@ -467,6 +472,9 @@ class TestSuiteInterface():
         if t_out > 0:
             t_tick -= 1
 
+        if t_tick < 0:
+            t_tick = 0
+
         try:
             while t_tick >= 0:
 
@@ -505,6 +513,9 @@ class TestSuiteInterface():
         # (т.к. ноль включается в цикл)
         if t_out > 0:
             t_tick -= 1
+
+        if t_tick < 0:
+            t_tick = 0
 
         try:
             while t_tick >= 0:
@@ -548,6 +559,9 @@ class TestSuiteInterface():
         # (т.к. ноль включается в цикл)
         if t_out > 0:
             t_tick -= 1
+
+        if t_tick < 0:
+            t_tick = 0
 
         v1 = 0
         v2 = 0
@@ -609,6 +623,9 @@ class TestSuiteInterface():
         # (т.к. ноль включается в цикл)
         if t_out > 0:
             t_tick -= 1
+
+        if t_tick < 0:
+            t_tick = 0
 
         v1 = 0
         v2 = 0
@@ -674,6 +691,9 @@ class TestSuiteInterface():
         if t_out > 0:
             t_tick -= 1
 
+        if t_tick < 0:
+            t_tick = 0
+
         v1 = 0
         v2 = 0
 
@@ -735,6 +755,9 @@ class TestSuiteInterface():
         # (т.к. ноль включается в цикл)
         if t_out > 0:
             t_tick -= 1
+
+        if t_tick < 0:
+            t_tick = 0
 
         v1 = 0
         v2 = 0
@@ -801,6 +824,9 @@ class TestSuiteInterface():
         if t_out > 0:
             t_tick -= 1
 
+        if t_tick < 0:
+            t_tick = 0
+
         v = 0
         v1 = 0
         v2 = 0
@@ -861,6 +887,9 @@ class TestSuiteInterface():
         # (т.к. ноль включается в цикл)
         if t_out > 0:
             t_tick -= 1
+
+        if t_tick < 0:
+            t_tick = 0
 
         v = val
         v1 = 0
@@ -929,6 +958,9 @@ class TestSuiteInterface():
         if t_out > 0:
             t_tick -= 1
 
+        if t_tick < 0:
+            t_tick = 0
+
         v = 0
         v1 = 0
         v2 = 0
@@ -987,6 +1019,9 @@ class TestSuiteInterface():
         # (т.к. ноль включается в цикл)
         if t_out > 0:
             t_tick -= 1
+
+        if t_tick < 0:
+            t_tick = 0
 
         v = val
         v1 = 0
