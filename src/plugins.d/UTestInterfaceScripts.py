@@ -137,7 +137,7 @@ class UTestInterfaceScripts(UTestInterface):
         return uglobal.to_int(lst)
 
     def set_value(self, name, value, context):
-        pass
+        raise TestSuiteException("(scripts:set_value): error: Function 'set' is not supported. Use <action script='..'> for %s" % name)
 
 
 def uts_create_from_args(**kwargs):

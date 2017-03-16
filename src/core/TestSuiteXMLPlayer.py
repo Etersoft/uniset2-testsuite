@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import sys
 import os
 
@@ -1359,6 +1360,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         return ret
 
     def play_test(self, xml, testnode, spec_replace_list=list()):
+
+        if testnode.name != 'test':
+            raise TestSuiteException("BAD STRUCTURE in <TestList>: Unknown tag '%s'. Must be <test>" % str(testnode.name))
 
         self.add_to_test_replace(spec_replace_list)
 
