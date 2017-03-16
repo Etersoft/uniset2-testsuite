@@ -6,7 +6,7 @@ from TestSuiteGlobal import *
 
 class UTestInterface():
     """
-    Базовый интерфейс для тестирования
+    Базовый интерфейс тестирования
     """
 
     def __init__(self, itest_type, **kwargs):

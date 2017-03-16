@@ -14,9 +14,10 @@
         <test name="Test run script" ignore_failed="1">
             <check test="./test-script.sh != 10" params="--param1 3 --param2 4" timeout="2000"/>
 			<check test="./test-script.sh = 100" params="param1=3,param2=4"/>
-			<check test="./test-script.sh > 80"/>
 			<check test="./test-script-negative-number.sh = -20"  show_output="1"/>
+			<check test="./test-script-longtime.sh = 100" timeout="3000"/>
 			<check test="./test-script-error.sh > 10"/>
+			<check test="./non-existent-script.sh > 10"/>
         </test>
     </TestList>
 </TestScenario>

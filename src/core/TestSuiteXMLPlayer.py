@@ -1352,7 +1352,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         elif inode.name == "compare":
             return self.compare_item(inode, xml)
 
-        self.tsi.add_context('xmlnode',None)
+        self.tsi.add_context('xmlnode', None)
         ret = make_default_item()
         ret['result'] = t_UNKNOWN
         ret['text'] = "ERROR: UNKNOWN ACTION TYPE"
@@ -1365,7 +1365,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
     def play_test(self, xml, testnode, spec_replace_list=list()):
 
         if testnode.name != 'test':
-            raise TestSuiteException("BAD STRUCTURE in <TestList>: Unknown tag '%s'. Must be <test>" % str(testnode.name))
+            raise TestSuiteException(
+                "BAD STRUCTURE in <TestList>: Unknown tag '%s'. Must be <test>" % str(testnode.name))
 
         self.add_to_test_replace(spec_replace_list)
 
@@ -1742,7 +1743,7 @@ if __name__ == "__main__":
         #         sys.stdin = sys.__stdin__
         if global_player is not None and print_calltrace and global_result != True:
             global_player.show_call_trace(print_calltrace_limit)
-        # if sys.stdin.closed == False:
-        #     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+            # if sys.stdin.closed == False:
+            #     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
     exit(1)

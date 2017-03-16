@@ -21,8 +21,8 @@ class UTestInterfaceScripts(UTestInterface):
         show_output=1 - вывести на экран stdout..
 
     Глобальные конфигурационные параметры (секция <Config>):
-      max_output_read="value" - максимальное количество символов читаемое из вывода скрипта, чтобы получить результат.
-      По умолчанию: 500
+      max_output_read="value" - максимальное количество первых байт читаемое из вывода скрипта, чтобы получить результат.
+      По умолчанию: 1000
     """
 
     def __init__(self, **kwargs):
@@ -31,7 +31,7 @@ class UTestInterfaceScripts(UTestInterface):
         """
         UTestInterface.__init__(self, 'scripts', **kwargs)
 
-        self.max_read = 500
+        self.max_read = 1000
 
         if 'xmlConfNode' in kwargs:
             xmlConfNode = kwargs['xmlConfNode']
@@ -112,11 +112,14 @@ class UTestInterfaceScripts(UTestInterface):
         cmd = scriptname + " " + params
 
         try:
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=test_env, close_fds=True, shell=True)
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=test_env, close_fds=True,
+                                 shell=True)
 
             s_out = p.stdout.read(self.max_read)
             s_err = p.stderr.read(self.max_read)
+
             retcode = p.wait()
+
             if retcode != 0:
                 emessage = "SCRIPT RETCODE(%d) != 0. stderr: %s" % (retcode, s_err.replace("\n", " "))
                 raise TestSuiteException("(scripts:get_value): %s" % emessage)
@@ -125,7 +128,7 @@ class UTestInterfaceScripts(UTestInterface):
             raise TestSuiteException("(scripts:get_value): %s for %s" % (e.message, name))
 
         if xmlnode.prop("show_output"):
-           print s_out
+            print s_out
 
         ret = self.re_result.findall(s_out)
         if not ret or len(ret) == 0:
@@ -138,7 +141,8 @@ class UTestInterfaceScripts(UTestInterface):
         return uglobal.to_int(lst)
 
     def set_value(self, name, value, context):
-        raise TestSuiteException("(scripts:set_value): Function 'set' is not supported. Use <action script='..'> for %s" % name)
+        raise TestSuiteException(
+            "(scripts:set_value): Function 'set' is not supported. Use <action script='..'> for %s" % name)
 
 
 def uts_create_from_args(**kwargs):

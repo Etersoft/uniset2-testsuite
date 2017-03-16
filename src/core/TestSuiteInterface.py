@@ -216,7 +216,7 @@ class TestSuiteInterface():
     def set_supplier_id(self, sup_id):
         self.context['supplierID'] = sup_id
 
-    def add_context(self,key,val):
+    def add_context(self, key, val):
         self.context[key] = val
 
     def set_ignorefailed(self, state):
@@ -362,7 +362,7 @@ class TestSuiteInterface():
         self.add_context('environment', self.env)
 
         if self.is_check_scenario_mode():
-            ret, err = ui.validate_parameter(s_id,self.context)
+            ret, err = ui.validate_parameter(s_id, self.context)
             if ret == False:
                 raise TestSuiteValidateError(err)
             return 0
@@ -1101,7 +1101,7 @@ class TestSuiteInterface():
                 ui = self.default_ui
 
             if self.is_check_scenario_mode():
-                ret, err = ui.validate_parameter(s_id,self.context)
+                ret, err = ui.validate_parameter(s_id, self.context)
                 if ret == False:
                     act['result'] = t_FAILED
                     act['text'] = err
