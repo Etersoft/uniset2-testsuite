@@ -95,12 +95,12 @@ class UTestInterfaceScripts(UTestInterface):
             xmlnode = context['xmlnode']
 
         if not xmlnode:
-            raise TestSuiteException("(scripts:get_value): ERROR: Unknown xmlnode for '%s'" % name)
+            raise TestSuiteException("(scripts:get_value): Unknown xmlnode for '%s'" % name)
 
         scriptname, params = self.parse_name(name, context)
 
         if len(scriptname) == 0:
-            raise TestSuiteException("(scripts:get_value): ERROR: Unknown script name for '%s'" % name)
+            raise TestSuiteException("(scripts:get_value): Unknown script name for '%s'" % name)
 
         test_env = None
         if 'environment' in context:
@@ -116,14 +116,15 @@ class UTestInterfaceScripts(UTestInterface):
 
             s_out = p.stdout.read(self.max_read)
             s_err = p.stderr.read(self.max_read)
-
-            if p.wait() != 0:
-                raise TestSuiteException("(scripts:get_value): ERROR: %s" % s_err.replace("\n", " "))
+            retcode = p.wait()
+            if retcode != 0:
+                emessage = "SCRIPT RETCODE(%d) != 0. stderr: %s" % (retcode, s_err.replace("\n", " "))
+                raise TestSuiteException("(scripts:get_value): %s" % emessage)
 
         except subprocess.CalledProcessError, e:
-            raise TestSuiteException("(scripts:get_value): error: %s for %s" % (e.message, name))
+            raise TestSuiteException("(scripts:get_value): %s for %s" % (e.message, name))
 
-        if xmlnode and xmlnode.prop("show_output"):
+        if xmlnode.prop("show_output"):
            print s_out
 
         ret = self.re_result.findall(s_out)
@@ -137,7 +138,7 @@ class UTestInterfaceScripts(UTestInterface):
         return uglobal.to_int(lst)
 
     def set_value(self, name, value, context):
-        raise TestSuiteException("(scripts:set_value): error: Function 'set' is not supported. Use <action script='..'> for %s" % name)
+        raise TestSuiteException("(scripts:set_value): Function 'set' is not supported. Use <action script='..'> for %s" % name)
 
 
 def uts_create_from_args(**kwargs):

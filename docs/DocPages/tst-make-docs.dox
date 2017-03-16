@@ -12,12 +12,12 @@
 t: test 1
 s: 123=34,345=456
 c: 123>34
-c:      55<=45
-m:4000
+c: 55<=45
+m: 4000
 
 t: test 23;num="1"
-s: rlk@fsdf=3
-c: wrf@tte>5
+s: name@node1=3
+c: sensor@node2>5
 l: num=12
 o: num=1; test.xml
 o: num=23
@@ -46,8 +46,8 @@ o: num=23
     <action msleep="4000"/>
   </test>
   <test name="test 23" num="1">
-    <action set="rlk@fsdf=3"/>
-    <check test="wrf@tte>5"/>
+    <action set="name@node1=3"/>
+    <check test="sensor@node2>5"/>
     <check test="link" link="num=12"/>
     <check test="outlink" link="num=1" file="test.xml"/>
     <check test="outlink" link="num=23" file="UNKNOWN"/>
