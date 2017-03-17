@@ -39,6 +39,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         TestSuiteReporter.commandline_to_attr(self, arg_prefix, 'log')
 
+        self.log_col_comment_width = int(self.log_col_comment_width)
+        self.log_col_tree_width = int(self.log_col_tree_width)
+
         if checkArgParam('--' + arg_prefix + '-show-result-only', False):
             self.log_show_actions = False
             self.log_show_tests = False
@@ -89,8 +92,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         t_test = item['test_type']
         txt = item['text']
         t_result = item['result']
+
         try:
-            if t_comment is not None and len(t_comment) > 0:
+            if t_comment and len(t_comment) > 0:
                 t_comment = unicode(t_comment, "UTF-8", errors='replace')
         except UnicodeDecodeError:
             pass
@@ -131,6 +135,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
                 self.colorize_result(t_result), self.colsep, self.colorize_text(t_result, t_test, txt2)))
 
         if self.log_show_comments or self.log_show_test_comment:
+
             if not t_comment or (self.log_show_test_comment and not self.log_show_comments and t_test != 'BEGIN'):
                 t_comment = ""
 

@@ -75,9 +75,9 @@ class UTestInterfaceUniSet(UTestInterface):
     def validate_parameter(self, name, context):
 
         try:
-            s = self.parseID(s_id)
+            s = self.parseID(name)
             if s[0] == DefaultID:
-                return [False, "(uniset): Unknown ID for '%s'" % str(s_id)]
+                return [False, "(uniset): Unknown ID for '%s'" % str(name)]
 
             # id@node
             fullname = s[2]
@@ -85,7 +85,7 @@ class UTestInterfaceUniSet(UTestInterface):
 
             # если задан узел но его ID не найден
             if len(v) > 1 and v[1] and s[1] == DefaultID:
-                return [False, "(uniset): Unknown ID for node '%s' in '%s'" % (v[1], str(s_id))]
+                return [False, "(uniset): Unknown ID for node '%s' in '%s'" % (v[1], str(name))]
 
             return [True, ""]
 
@@ -95,7 +95,7 @@ class UTestInterfaceUniSet(UTestInterface):
     def get_value(self, name, context):
 
         try:
-            s = self.parseID(s_id)
+            s = self.parseID(name)
             if self.ignore_nodes:
                 s[1] = DefaultID
 
@@ -106,11 +106,11 @@ class UTestInterfaceUniSet(UTestInterface):
 
     def set_value(self, name, value, context):
         try:
-            s = self.parseID(s_id)
+            s = self.parseID(name)
             if self.ignore_nodes:
                 s[1] = DefaultID
 
-            self.ui.setValue(s[0], s_value, s[1], self.supplierID)
+            self.ui.setValue(s[0], value, s[1], self.supplierID)
             return
 
         except UException, e:

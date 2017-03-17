@@ -190,7 +190,7 @@ class UTestInterfaceSNMP(UTestInterface):
                     "(snmp): <MIBdirs> : unknown path='' for string '%s' in file %s" % (
                         str(node), xml.getFileName()))
 
-            item['mask'] = uglobal.to_str(self.get_prop(node,"mask",defaultMask))
+            item['mask'] = uglobal.to_str(self.get_prop(node, "mask", defaultMask))
 
             if item['path'] in self.nodes:
                 raise TestSuiteValidateError(
@@ -274,7 +274,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
     def get_value(self, name, context):
 
-        ret, err = self.validate_parameter(name)
+        ret, err = self.validate_parameter(name, context)
 
         if ret == False:
             raise TestSuiteValidateError("(snmp): get_value : ERR: '%s'" % err)
@@ -365,7 +365,7 @@ class UTestInterfaceSNMP(UTestInterface):
         return None
 
     def set_value(self, name, value, context):
-        ret, err = self.validate_parameter(name)
+        ret, err = self.validate_parameter(name, context)
 
         if ret == False:
             raise TestSuiteValidateError("(snmp): set_value : ERR: '%s'" % err)
@@ -495,7 +495,7 @@ class UTestInterfaceSNMP(UTestInterface):
 
             mibmask = mibdir['mask']
             if mibmask and len(mibmask) == 0:
-                mibmask='*'
+                mibmask = '*'
 
             mdir = "%s/%s" % (mibdir['path'], mibmask)
             for f in glob.glob(mdir):
@@ -503,12 +503,12 @@ class UTestInterfaceSNMP(UTestInterface):
                     mibfiles.append(f)
 
         if len(mibfiles) > 0:
-            mibs = list() # список словарей [oid]=name
-            mibs_names = list() # список словарей [name]=oid
+            mibs = list()  # список словарей [oid]=name
+            mibs_names = list()  # список словарей [name]=oid
             for f in mibfiles:
                 d = self.get_variables_from_mib(f)
                 mibs.append(d)
-                d2 = dict((v,k) for k, v in d.iteritems())
+                d2 = dict((v, k) for k, v in d.iteritems())
                 mibs_names.append(d2)
 
             # Ищем переменные во всех загруженных словарях..
@@ -520,13 +520,13 @@ class UTestInterfaceSNMP(UTestInterface):
                 if var['OID']:
                     if not self.check_oid(var['OID'], mibs):
                         errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND OID '%s (%s)' in mibfiles.." % (
-                        self.confile, var['OID'], oname))
+                            self.confile, var['OID'], oname))
                         res_ok = False
 
                 if var['ObjectName']:
                     if not self.check_oid(var['ObjectName'], mibs_names):
                         errors.append("\t(snmp): CONF[%s] ERROR: NOT FOUND ObjectName '%s (%s)' in mibfiles.." % (
-                        self.confile, var['ObjectName'], oname))
+                            self.confile, var['ObjectName'], oname))
                         res_ok = False
 
         err = ''

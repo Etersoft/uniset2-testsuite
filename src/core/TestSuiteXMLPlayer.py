@@ -1007,12 +1007,12 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             reset_msec = to_int(self.replace(node.prop("reset_time")))
 
             if reset_msec <= 0:
-                self.tsi.set_value(s_id, s_val, None)
+                self.tsi.set_value(s_id, s_val, result, ui)
                 return result
 
             s_v2 = to_int(self.replace(node.prop("rval")))
 
-            self.tsi.set_value(s_id, s_val, None)
+            self.tsi.set_value(s_id, s_val, result, ui)
 
             if self.tsi.is_check_scenario_mode():
                 return result
@@ -1033,7 +1033,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             # собираем обратно, и уже разбираем как полагается (с разбивкой на id и val)
             slist = self.str_to_idlist(to_str(self.replace(node.prop("set"))), ui)
             for s in slist:
-                res = self.tsi.set_value(self.replace(s[0]), self.replace(s[1]), None)
+                res = self.tsi.set_value(self.replace(s[0]), self.replace(s[1]), result, ui)
                 if res == False and self.tsi.ignorefailed == False:
                     return result
 
@@ -1069,7 +1069,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         act['item_type'] = 'action'
         self.tsi.set_action_result(act, False)
         try:
-            self.tsi.set_value(s_id, s_val, None)
+            self.tsi.set_value(s_id, s_val, act, ui)
             act['result'] = t_PASSED
         except TestSuiteException, e:
             act['result'] = t_FAILED
@@ -1492,8 +1492,8 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
 
     def get_cumulative_result(self, items):
 
-        if len(items) == 0:
-            print "WARING: ?!!! get_cumulative_result for EMPTY ITEMS ?!!!"
+        # if len(items) == 0:
+        #     print "TESTSUITE WARNING: get_cumulative_result for EMPTY ITEMS ?!"
 
         i_res = 0
         f_res = 0

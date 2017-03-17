@@ -55,7 +55,7 @@ class UTestInterfaceModbus(UTestInterface):
 
         try:
             if self.itest_type == "modbus":
-                mbaddr, mbreg, mbfunc, nbit, vtest_type = get_mbquery_param(pname, "0x04")
+                mbaddr, mbreg, mbfunc, nbit, vtest_type = get_mbquery_param(name, "0x04")
                 err = []
                 if not mbaddr:
                     err.append("Unknown mbaddr")
