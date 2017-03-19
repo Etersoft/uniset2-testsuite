@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset2-testsuite], [2.5])
+AC_INIT([uniset2-testsuite], [2.6])
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
 #AM_GNU_GETTEXT([external])

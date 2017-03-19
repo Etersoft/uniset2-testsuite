@@ -1,8 +1,8 @@
 %def_enable doc
 
 Name: uniset2-testsuite
-Version: 2.5
-Release: alt10
+Version: 2.6
+Release: alt1
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
