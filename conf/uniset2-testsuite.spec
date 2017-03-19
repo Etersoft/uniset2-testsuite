@@ -86,6 +86,9 @@ SNMP Plugin for uniset2-testsuite
 %endif
 
 %changelog
+* Sun Mar 19 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1
+- release 
+
 * Sat Mar 18 2017 Pavel Vainerman <pv@altlinux.ru> 2.5-alt10
 - up build
 
