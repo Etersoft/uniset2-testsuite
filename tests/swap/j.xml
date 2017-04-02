@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="tests.xml" tests="2">
-  <testcase name="'Test 'less''" time="0..001349" id="1"/>
-  <testcase name="'Test 'great''" time="0..000496" id="2"/>
-</testsuite>
