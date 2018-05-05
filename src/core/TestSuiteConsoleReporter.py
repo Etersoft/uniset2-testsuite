@@ -88,18 +88,10 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
     def make_log(self, item):
 
-        t_comment = item['comment']
         t_test = item['test_type']
         txt = item['text']
         t_result = item['result']
-
-        try:
-            if t_comment and len(t_comment) > 0:
-                t_comment = unicode(t_comment, "UTF-8", errors='replace')
-        except UnicodeDecodeError:
-            pass
-        except TypeError:
-            pass
+        t_comment = self.format_comment(item['comment'])
 
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
 
@@ -141,9 +133,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
             try:
                 txt = '%s %s %s' % (
-                    self.colorize_text(t_result, t_test,
-                                       t_comment.ljust(self.log_col_comment_width)[0:self.log_col_comment_width]),
-                    self.colsep, txt)
+                    self.colorize_text(t_result, t_test, t_comment), self.colsep, txt)
             except UnicodeDecodeError:
                 pass
             except TypeError:
@@ -179,18 +169,10 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
     def make_actlog(self, act):
 
-        t_comment = act['comment']
         t_act = act['test_type']
         txt = act['text']
         t_result = act['result']
-
-        try:
-            if t_comment is not None and len(t_comment) > 0:
-                t_comment = unicode(t_comment, "UTF-8", errors='replace')
-        except UnicodeDecodeError:
-            pass
-        except TypeError:
-            pass
+        t_comment = self.format_comment(act['comment'])
 
         t_tm = str(time.strftime('%Y-%m-%d %H:%M:%S'))
 
@@ -230,9 +212,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
             try:
                 txt = '%s %s %s' % (
-                    self.colorize_text(t_result, t_act,
-                                       t_comment.ljust(self.log_col_comment_width)[0:self.log_col_comment_width]),
-                    self.colsep, txt)
+                    self.colorize_text(t_result, t_act, t_comment), self.colsep, txt)
             except UnicodeDecodeError:
                 pass
             except TypeError:
@@ -369,6 +349,8 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         return '%02d:%02d:%02d [%7.3f]' % (h, m, s, t)
 
     def format_comment(self, txt):
+        if not txt:
+            return ''
         t_comment = txt
         try:
             t_comment = unicode(txt, "UTF-8", errors='replace')
