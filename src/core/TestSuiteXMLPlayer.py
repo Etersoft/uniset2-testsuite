@@ -1435,7 +1435,7 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         curnode = self.begin(testnode, xml)
         curnode = xml.firstNode(curnode)
 
-        r_list = get_replace_list(to_str(self.replace(testnode.prop('replace'))))
+        r_list = get_replace_list(to_str(testnode.prop('replace')))
         r_list = self.replace_list(r_list)
         self.add_to_test_replace(r_list)
 
