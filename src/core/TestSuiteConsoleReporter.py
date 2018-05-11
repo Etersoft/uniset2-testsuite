@@ -349,11 +349,15 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         return '%02d:%02d:%02d [%7.3f]' % (h, m, s, t)
 
     def format_comment(self, txt):
-        if not txt:
-            return ''
+
         t_comment = txt
+
+        if not t_comment:
+            t_comment = ''
+
         try:
-            t_comment = unicode(txt, "UTF-8", errors='replace')
+            if len(t_comment) > 0:
+                t_comment = unicode(t_comment, "UTF-8", errors='replace')
         except UnicodeDecodeError:
             pass
         except TypeError:
