@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.6
-Release: alt5
+Release: alt6
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -86,6 +86,9 @@ SNMP Plugin for uniset2-testsuite
 %endif
 
 %changelog
+* Tue May 22 2018 Pavel Vainerman <pv@altlinux.ru> 2.6-alt6
+- up version
+
 * Tue May 22 2018 Pavel Vainerman <pv@altlinux.ru> 2.6-alt5
 - fixed utf encode for comments
 
