@@ -356,8 +356,8 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             t_comment = ''
 
         try:
-            if len(t_comment) > 0:
-                t_comment = unicode(t_comment, "UTF-8", errors='replace')
+            if len(txt) > 0:
+                t_comment = txt.decode('utf-8', errors='replace')
         except UnicodeDecodeError:
             pass
         except TypeError:
