@@ -38,18 +38,20 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.log_calltrace_disable_extended_info = False
         self.log_show_test_filename = False
         self.log_default_encoding = ''
+        self.log_screen_width = 0  # 0 - unlimit
 
         TestSuiteReporter.commandline_to_attr(self, arg_prefix, 'log')
 
         self.log_col_comment_width = int(self.log_col_comment_width)
         self.log_col_tree_width = int(self.log_col_tree_width)
+        self.log_screen_width = int(self.log_screen_width)
 
         if checkArgParam('--' + arg_prefix + '-show-result-only', False):
             self.log_show_actions = False
             self.log_show_tests = False
 
         if len(self.log_default_encoding) > 0:
-            self.setup_console_encode(self.log_default_encoding)
+            self.setup_console_encoding(self.log_default_encoding)
 
     @staticmethod
     def print_help(prefix='log'):
@@ -70,32 +72,45 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         print '--' + prefix + '-col-comment-width val   - Width for column "comment"'
         print '--' + prefix + '-no-coloring-output      - Disable colorization output'
         print '--' + prefix + '-calltrace-disable-extended-info - Disable show calltrace extended information'
-        print '--' + prefix + '-default-encoding enc - Set default encoding for system. Default: utf-8'
+        print '--' + prefix + '-default-encoding enc    - Set default encoding for system. Default: utf-8'
+        print '--' + prefix + '-screen-width width      - Set the maximum width for the displayed text. Default: unlimit'
 
     @staticmethod
-    def setup_console_encode(enc="utf-8"):
+    def setup_console_encoding(enc="utf-8"):
         reload(sys)
         sys.setdefaultencoding(enc)
 
     def is_enabled(self):
         return True
 
+    def my_print(self, txt):
+
+        # вообще могут быть непечатные символы и это нужно было бы учитывать
+        if self.log_screen_width > 0 and len(txt) > self.log_screen_width:
+            txt = txt[0:self.log_screen_width]
+
+        print txt
+
     def finish_test_event(self):
 
         if self.log_show_tests:
-            print "---------------------------------------------------------------------------------------------------------------------"
+            self.my_print(
+                "---------------------------------------------------------------------------------------------------------------------")
 
     def print_log(self, item):
 
         txt = self.make_log(item)
 
+        if self.log_screen_width > 0 and len(txt) > self.log_screen_width:
+            txt = txt[0:self.log_screen_width]
+
         if self.show_test_tree:
             if item['item_type'] == 'TEST' and item['test_type'] != 'FINISH':
-                print txt
+                self.my_print(txt)
             return
 
         if self.log_show_tests:
-            print txt
+            self.my_print(txt)
 
     def make_log(self, item):
 
@@ -172,11 +187,11 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
         if self.show_test_tree:
             if act['item_type'] == 'TEST' and act['test_type'] != 'FINISH':
-                print txt
+                self.my_print(txt)
             return
 
         if self.log_show_actions:
-            print txt
+            self.my_print(txt)
 
     def make_actlog(self, act):
 
@@ -265,7 +280,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             head2 += '*'
             foot2 += "-"
 
-        print "%s\n%s" % (head, head2)
+        self.my_print("%s\n%s" % (head, head2))
         i = 1
         ttime = 0
 
@@ -277,15 +292,15 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
             td = datetime.timedelta(0, res['time'])
 
-            print '%s. [%s] - %40s |%s|' % (
-                string.rjust(str(i), 3), self.colorize_result(res['result']), string.ljust(res['name'], 45), td)
+            self.my_print('%s. [%s] - %40s |%s|' % (
+                string.rjust(str(i), 3), self.colorize_result(res['result']), string.ljust(res['name'], 45), td))
             i = i + 1
             ttime = ttime + res['time']
 
         # td = datetime.timedelta(0, ttime)
         # ts = str(td).split('.')[0]
-        print foot2
-        print 'Total time: %s\n' % self.elapsed_time_str()
+        self.my_print(foot2)
+        self.my_print('Total time: %s\n' % self.elapsed_time_str())
 
     def colorize(self, t_result, txt):
 
@@ -440,9 +455,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         call_limit = abs(call_limit)
         ttab = "=== TESTFILE ==="
 
-        print "%s| %s" % (
+        self.my_print("%s| %s" % (
             self.colorize_test_begin(ttab.ljust(tname_width)),
-            self.colorize_test_begin("=== TEST CALL TRACE (limit: %d) ===" % call_limit))
+            self.colorize_test_begin("=== TEST CALL TRACE (limit: %d) ===" % call_limit)))
 
         fail_test = failtrace[-0]  # это просто последний тест с конца
         for stackItem in failtrace[-call_limit::]:
@@ -457,9 +472,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             # if not self.show_xmlfile:
             #     t_fname = ""
 
-            print "%s%s| %s%s" % (stackItem['filename'].ljust(tname_width), t_comment, tab, stackItem['name'])
+            self.my_print("%s%s| %s%s" % (stackItem['filename'].ljust(tname_width), t_comment, tab, stackItem['name']))
 
-        print ""
+        self.my_print("")
 
         # ищем тест на котором произошёл вылет
         # это последний item в "сбойном тесте"
@@ -472,18 +487,18 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         if self.log_calltrace_disable_extended_info == True:
             return
 
-        print "\n================================= EXTENDED INFORMATION =================================\n"
+        self.my_print("\n================================= EXTENDED INFORMATION =================================\n")
 
         ui = fail_item['ui']
         if ui is None:
-            print "Extended information is not available. Error: UI is None\n"
+            self.my_print("Extended information is not available. Error: UI is None\n")
             return
 
         try:
             faultySensor = to_sid(fail_item['faulty_sensor'], ui)
 
             if faultySensor[0] == DefaultID:
-                print "Extended information is not available. Error: Unknown faulty sensor.\n"
+                self.my_print("Extended information is not available. Error: Unknown faulty sensor.\n")
                 return
 
             # Получаем информацию кто и когда менял последний раз датчик
@@ -491,9 +506,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
 
             stime = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(sensorChangeInfo.tv_sec))
             # При выводе делаем nanosec --> millisec
-            print "(%d)'%s' ==> last update %s.%d value=%d owner=%d\n" % (
+            self.my_print("(%d)'%s' ==> last update %s.%d value=%d owner=%d\n" % (
                 faultySensor[0], fail_item['faulty_sensor'], stime, sensorChangeInfo.tv_nsec / 1000000,
-                sensorChangeInfo.value, sensorChangeInfo.supplier)
+                sensorChangeInfo.value, sensorChangeInfo.supplier))
 
             # Получаем информацию о том кто заказывал этот датчик
             # возврщется массив запрошенных датчиков с кратким описанием и списоком заказчиков по каждому датчику
@@ -501,38 +516,40 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             listSensors = jsonConsumers['sensors']
 
             if len(listSensors) == 0:
-                print "..no consumers.."
+                self.my_print("..no consumers..")
                 return
 
             # т.к. мы запрашивали информацию об одно датчике, то в ответе (по идее) только один элемент
             sensorInfo = listSensors[0]
             if len(sensorInfo['consumers']) == 0:
-                print "..no consumers for sensor '%s'..\n" % fail_item['faulty_sensor']
+                self.my_print("..no consumers for sensor '%s'..\n" % fail_item['faulty_sensor'])
                 return
 
             addon = ""
             for n in range(0, len(faultySensor[2])):
                 addon = "%s=" % addon
 
-            print "CONSUMERS INFORMATION ('%s'):" % faultySensor[2]
-            print "========================%s===\n" % addon
+            self.my_print("CONSUMERS INFORMATION ('%s'):" % faultySensor[2])
+            self.my_print("========================%s===\n" % addon)
 
             # Вывод информации по каждому заказчикам датчика
             for c in sensorInfo['consumers']:
                 o_name = "%d@%d" % (c['id'], c['node'])
                 try:
-                    print "%s\n" % str(ui.getObjectInfo(o_name))
+                    self.my_print("%s\n" % str(ui.getObjectInfo(o_name)))
                 except UException, e:
-                    print "Get information for '%s' error: %s\n" % (o_name, e.getError())
+                    self.my_print("Get information for '%s' error: %s\n" % (o_name, e.getError()))
 
             ownerID = sensorChangeInfo.supplier
             if ownerID == DefaultID:
-                print "Extended information 'OWNER' is not available. Error:  Unknown owner ID for sensor %s\n" % \
-                      fail_item['faulty_sensor']
+                self.my_print(
+                    "Extended information 'OWNER' is not available. Error:  Unknown owner ID for sensor %s\n" % \
+                    fail_item['faulty_sensor'])
                 return
 
             if ownerID == DefaultSupplerID:
-                print "Extended information 'OWNER' is not available. Perhaps the update was done with 'uniset-admin'\n"
+                self.my_print(
+                    "Extended information 'OWNER' is not available. Perhaps the update was done with 'uniset-admin'\n")
                 return
 
             # Получаем информацию о том кто поменял датчик
@@ -542,9 +559,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
             for n in range(0, len(o_name)):
                 addon = "%s=" % addon
 
-            print "OWNER INFORMATION (%s):" % o_name
-            print "==================%s===\n" % addon
-            print "%s\n" % str(ui.getObjectInfo(o_name))
+            self.my_print("OWNER INFORMATION (%s):" % o_name)
+            self.my_print("==================%s===\n" % addon)
+            self.my_print("%s\n" % str(ui.getObjectInfo(o_name)))
 
         except UException, e:
-            print "Get extended information error: %s\n" % e.getError()
+            self.my_print("Get extended information error: %s\n" % e.getError())

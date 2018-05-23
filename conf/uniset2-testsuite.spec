@@ -2,7 +2,7 @@
 
 Name: uniset2-testsuite
 Version: 2.6
-Release: alt8
+Release: alt9
 Summary: UniSet test suite
 Group: Development/Python
 License: LGPL
@@ -86,6 +86,9 @@ SNMP Plugin for uniset2-testsuite
 %endif
 
 %changelog
+* Thu May 24 2018 Pavel Vainerman <pv@altlinux.ru> 2.6-alt9
+- added '--log-screen-width max'
+
 * Wed May 23 2018 Pavel Vainerman <pv@altlinux.ru> 2.6-alt8
 - up version
 
