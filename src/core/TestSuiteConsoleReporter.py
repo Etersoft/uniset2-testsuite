@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 import json
 import datetime
 import string
@@ -36,6 +37,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         self.log_no_coloring_output = False
         self.log_calltrace_disable_extended_info = False
         self.log_show_test_filename = False
+        self.log_default_encoding = ''
 
         TestSuiteReporter.commandline_to_attr(self, arg_prefix, 'log')
 
@@ -45,6 +47,9 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         if checkArgParam('--' + arg_prefix + '-show-result-only', False):
             self.log_show_actions = False
             self.log_show_tests = False
+
+        if len(self.log_default_encoding) > 0:
+            self.setup_console_encode(self.log_default_encoding)
 
     @staticmethod
     def print_help(prefix='log'):
@@ -65,6 +70,12 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         print '--' + prefix + '-col-comment-width val   - Width for column "comment"'
         print '--' + prefix + '-no-coloring-output      - Disable colorization output'
         print '--' + prefix + '-calltrace-disable-extended-info - Disable show calltrace extended information'
+        print '--' + prefix + '-default-encoding enc - Set default encoding for system. Default: utf-8'
+
+    @staticmethod
+    def setup_console_encode(enc="utf-8"):
+        reload(sys)
+        sys.setdefaultencoding(enc)
 
     def is_enabled(self):
         return True
@@ -353,7 +364,7 @@ class TestSuiteConsoleReporter(TestSuiteReporter):
         t_comment = txt
 
         if not t_comment:
-            t_comment = ''
+            t_comment = u''
 
         try:
             if len(txt) > 0:
