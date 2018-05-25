@@ -1,1 +1,2 @@
-SUBDIRS = core plugins.d guiTestPlayer
+SUBDIRS = core plugins.d 
+# guiTestPlayer

@@ -7,4 +7,4 @@ datadir=@datadir@
 sysconfdir=@sysconfdir@
 
 export UNISET_TESTSUITE_DATADIR=${datadir}/@PACKAGE@ 
-exec env python ${datadir}/@PACKAGE@/guiTestSuitePlayer-gtk.py $*
+exec env python ${datadir}/@PACKAGE@/gtkplayer/guiTestSuitePlayer-gtk.py $*

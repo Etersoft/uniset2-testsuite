@@ -4,6 +4,7 @@ from gettext import gettext as _
 import gtk
 import gobject
 import uniset2
+import re
 
 from edit_global_functions import *
 from dlg_xlist import xfid as xlist_fid

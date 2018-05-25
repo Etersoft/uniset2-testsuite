@@ -79,7 +79,7 @@ pic_WARNING = 'test_warning.png'
 
 
 class guiTestSuitePlayer():
-    def __init__(self):
+    def __init__(self, datadir, playerdir):
 
         self.tsi = TestSuiteInterface()
 
@@ -94,7 +94,7 @@ class guiTestSuitePlayer():
         cf = conflist.split(',')
 
         is_system_run_flag = sys.argv[0].startswith("./")
-        self.datdir = ( "/usr/share/uniset2-testsuite/gtkplayer/" if not is_system_run_flag else "./" )
+        self.datdir = playerdir
         self.imgdir = self.datdir + "images/"
         self.moddir = self.datdir + "editors/"
 
@@ -1823,7 +1823,7 @@ class guiTestSuitePlayer():
             face = m.create_module(self.moddir)
             ebox.add(face)
             face.hide()
-            emodel.append([m.module_name(), face, face.get_etest_type()])
+            emodel.append([m.module_name(), face, face.get_etype()])
 
     def on_about_activate(self, mi):
         self.dlg_about.run()
@@ -1836,7 +1836,7 @@ if __name__ == "__main__":
     if path not in sys.path:
         sys.path.insert(0, path)
 
-    playerdir = os.path.join(path, "gtkplayer")
+    playerdir = os.environ.get('UNISET_TESTSUITE_GTKPLAYER_DATADIR', os.path.join(path, "gtkplayer") )
     if playerdir not in sys.path:
         sys.path.insert(0, playerdir)
 
