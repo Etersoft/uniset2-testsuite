@@ -53,6 +53,7 @@ SNMP Plugin for uniset2-testsuite
 %make_install install DESTDIR=%buildroot
 
 %files
+%dir %_datadir/%name
 %_datadir/%name/*.*
 %_bindir/%name-xmlplayer
 %_bindir/%name-conv
