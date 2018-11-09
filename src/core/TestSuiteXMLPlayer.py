@@ -914,16 +914,19 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         if len(self.tags) == 0:
             return True
 
-        # Проверять надо по списку представляющему собой то, что есть в tags но нет в disable_tags
+        taglist = tag.split('#')[1:]
+
+        # если теги просто встречаются с списке tags или disable_tags, значит Ok
+        for t in taglist:
+            if t in self.tags or t in self.disable_tags:
+                return True
+
+        # Исключаем из проверки теги, которые уже "отключены" (т.е. есть в disable_tags)
         check_list = [i for i in self.tags if i not in self.disable_tags]
 
-        if len(check_list) == 0:
-            return True
-
-        taglist = tag.split('#')
         for t in taglist:
             if t in check_list:
-                return True
+                 return True
 
         return False
 
@@ -1382,8 +1385,6 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
         result['item_type'] = 'TEST'
         result['test_type'] = 'TEST'
 
-        self.add_disable_tags(result['disable_tags'])
-
         testname = "'%s'" % result['name']
 
         if len(result['tags']) > 0 and len(result['tag']) > 0:
@@ -1405,6 +1406,9 @@ class TestSuiteXMLPlayer(TestSuitePlayer.TestSuitePlayer):
             self.del_from_test_replace(spec_replace_list)
             self.del_disable_tags(result['disable_tags'])
             return result
+
+        # disable_tags надо доблять после проверки тегов, т.к. disable действует на последующие вызовы (внутри текущего)
+        self.add_disable_tags(result['disable_tags'])
 
         # в results не поподают тесты которые IGNORE
         self.results.append(result)
